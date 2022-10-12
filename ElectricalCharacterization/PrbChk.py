@@ -29,11 +29,7 @@ def ProbeCardCheck2x12(eChar, test):
     n = 0
     while MC.setNext():
 
-        stop = False
-        while not eChar.Stop.empty():
-            stop = eChar.Stop.get()
-
-        if stop:
+        if eChar.checkStop():
             break
 
         out = eChar.E5274A.SpotMeasurement(Chns, VorI, Val, IComp=IComp)

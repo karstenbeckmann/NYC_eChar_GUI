@@ -11,7 +11,6 @@ import pyvisa as vs
 import datetime as dt 
 import time as tm
 import queue as qu
-from Exceptions import *
 
 
 class FormFactor: 
@@ -27,9 +26,6 @@ class FormFactor:
     ProbeStationName = "FormFactorDefault"
 
     def __init__(self,rm=None,GPIB_adr=None, Device=None):
-        
-
-        print(self.ProbeStationName)
 
         if (rm == None or GPIB_adr == None) and Device == None:
             self.write("%s: Either rm and GPIB_adr or a device must be given transmitted" %(self.ProbeStationName))  #maybe a problem, tranmitting None type
@@ -73,9 +69,9 @@ class FormFactor:
 
     def setTimeOut(self, timeout):
         if not isinstance(timeout,(float,int)):
-            raise ProbeStation_InputError("Timeout must be of type float bigger than 0. The unit is milliseconds.")
+            raise TypeError("Timeout must be of type float bigger than 0. The unit is milliseconds.")
         if timeout <= 0:
-            raise ProbeStation_InputError("Timeout must be of type float bigger than 0. The unit is milliseconds.")
+            raise ValueError("Timeout must be of type float bigger than 0. The unit is milliseconds.")
         if self.__online:
             self.inst.timeout = timeout
         else:
@@ -89,7 +85,10 @@ class FormFactor:
 
     def instWrite(self, command):
         if self.__online:
+            command = "%s\n" %(command)
+            print("tw5", tm.time(), command)
             self.inst.write(command)
+            print("tw6", tm.time(), command)
             if self.printOutput:
                 print("Write: ", command)
         else:
@@ -108,7 +107,10 @@ class FormFactor:
     def instQuery(self, command):
         ret = None
         if self.__online:
+            command = "%s\n" %(command)
+            print("tm5", tm.time(), command)
             ret = self.inst.query(command)
+            print("tm6", tm.time(), ret)
             if self.printOutput:
                 print("Query: ", command)
 
@@ -141,6 +143,24 @@ class FormFactor:
         ret = self.instQuery("EnableMotorQuiet 0")
         return ret
 
+    def EnableChuckAutoQuiet(self):
+        self.instQuery("SetChuckMode 2 2 2 2 2 1")
+
+    def DisableChuckAutoQuiet(self):
+        self.instQuery("SetChuckMode 2 2 2 2 2 0")
+
+    def EnableScopeAutoQuiet(self):
+        self.instQuery("SetScopeMode 1 2")
+
+    def DisableScopeAutoQuiet(self):
+        self.instQuery("SetScopeMode 0 2")
+    
+    def EnableScopeFollowMode(self):
+        self.instQuery("SetScopeMode 2 1")
+
+    def DisableScopeFollowMode(self):
+        self.instQuery("SetScopeMode 2 0")
+
     def close(self):
         if self.__online:
             self.inst.close()
@@ -157,7 +177,7 @@ class FormFactor:
         if not (X == 0 and Y == 0):
             ret = self.instQuery("MoveChuck %s %s %s %s %s" %(-X,-Y,relativTo, unit, velocity))
             if not ret.strip() == "0:":
-                raise ProbeStationError(ret)
+                raise SystemError(ret)
 
     #Move Chuck by Index (one die)
     #realtiveTo can be: H: Home; Z: Zero; C: Center; R: Current Position;
@@ -170,7 +190,7 @@ class FormFactor:
         if not (X == 0 and Y == 0 and (not relativTo=="C")):
             ret = self.instQuery("MoveChuckIndex  %s %s %s %s" %(X,Y,relativTo, velocity))
             if not ret.strip() == "0:":
-                raise ProbeStationError(ret)
+                raise SystemError(ret)
 
     def MoveChuckMicron(self, X, Y, relativTo="R", velocity=100):
         self.checkXYValue(X, 'X')
@@ -179,7 +199,7 @@ class FormFactor:
             self.checkPosRef(relativTo)
             ret = self.instQuery("MoveChuck %s %s %s Y %s" %(X,Y,relativTo, velocity))
             if not ret.strip() == "0:":
-                raise ProbeStationError(ret)
+                raise SystemError(ret)
 
     def MoveChuckAlign(self, velocity=100):
         self.instQuery("MoveChuckAlign %s" %(velocity))
@@ -187,7 +207,7 @@ class FormFactor:
     def MoveChuckContact(self, vel=100):
         ret = self.instQuery("MoveChuckContact %d" %(vel))
         if not ret.strip() == "0:":
-            raise ProbeStationError(ret)
+            raise SystemError(ret)
 
     #Moves the chuck to the upper (0) or lower = lifted (1) position. This initiates motion only, the actual movement may take some seconds.
     def MoveChuckLift(self, Pos):
@@ -270,9 +290,15 @@ class FormFactor:
             output.append(float(x))
         return output
 
-    #Read the actual set or calculated temperature.
+    #Read the chuck Status.
     def ReadChuckStatus(self):
         ret = self.instQuery("ReadChuckStatus")
+        ret = ret.split(' ')[1:]
+        return ret
+
+    #Read the Scope Status.
+    def ReadScopeStatus(self):
+        ret = self.instQuery("ReadScopeStatus")
         ret = ret.split(' ')[1:]
         return ret
 
@@ -335,21 +361,21 @@ class FormFactor:
     ############## check Values:################ 
     def checkIndex(self, n, axis): 
         if not isinstance(n, int):
-            raise ProbeStation_InputError("The index for axis %s must be an int between 0 and 50." %(axis))
+            raise ValueError("The index for axis %s must be an int between 0 and 50." %(axis))
         if n < -50 or n > 50: 
-            raise ProbeStation_InputError("The index for axis %s must be an int between 0 and 50." %(axis))
+            raise ValueError("The index for axis %s must be an int between 0 and 50." %(axis))
 
     def checkXYValue(self, n, axis): 
         if not isinstance(n, (float, int)):
-            raise ProbeStation_InputError("The index for axis %s must be a double value between 0 and +-150000. (Cur. Val. %s)" %(axis, n))
+            raise ValueError("The index for axis %s must be a double value between 0 and +-150000. (Cur. Val. %s)" %(axis, n))
         if n < -150000 or n > 150000: 
-            raise ProbeStation_InputError("The index for axis %s must be a double value between 0 and +-150000. (Cur. Val. %s)" %(axis, n))
+            raise ValueError("The index for axis %s must be a double value between 0 and +-150000. (Cur. Val. %s)" %(axis, n))
 
     def checkPosRef(self, pos): 
         if not isinstance(pos, str):
-            raise ProbeStation_InputError("The position reference must be 'H' (Home), 'Z' (Zero), 'C' (Center) or 'R' (Current position).")
+            raise ValueError("The position reference must be 'H' (Home), 'Z' (Zero), 'C' (Center) or 'R' (Current position).")
         if not (pos == 'H' or pos == 'Z' or pos == 'C' or pos == 'R'):
-            raise ProbeStation_InputError("The position reference must be 'H' (Home), 'Z' (Zero), 'C' (Center) or 'R' (Current position).")
+            raise ValueError("The position reference must be 'H' (Home), 'Z' (Zero), 'C' (Center) or 'R' (Current position).")
 
     ###########################################################################################################################################
     ###########################################################################################################################################
@@ -413,9 +439,9 @@ class Cascade_S300:
 
     def setTimeOut(self, timeout):
         if not isinstance(timeout,(float,int)):
-            raise ProbeStation_InputError("Timeout must be of type float bigger than 0. The unit is milliseconds.")
+            raise TypeError("Timeout must be of type float bigger than 0. The unit is milliseconds.")
         if timeout <= 0:
-            raise ProbeStation_InputError("Timeout must be of type float bigger than 0. The unit is milliseconds.")
+            raise ValueError("Timeout must be of type float bigger than 0. The unit is milliseconds.")
         if self.__online:
             self.inst.timeout = timeout
         else:
@@ -450,7 +476,7 @@ class Cascade_S300:
         if self.__online:
             ret = self.inst.query(command)
             if self.printOutput:
-                print("Query: ", command)
+                print("Query!")
         else:
             self.ErrorQueue.put("Probe Station is offline.")
         return ret
@@ -577,7 +603,7 @@ class Cascade_S300:
         self.instWrite(":move:contact %d" %(self.deviceID))
         ret = self.instQuery(":move:contact? %d" %(self.deviceID))
         if not ret.strip() == "TRUE":
-            raise ProbeStationError(ret)
+            raise SystemError(ret)
 
     #Moves the chuck to the upper (0) or lower = lifted (1) position. This initiates motion only, the actual movement may take some seconds.
     def MoveChuckLift(self, Pos):
@@ -589,7 +615,7 @@ class Cascade_S300:
             ret = self.instQuery(":move:down? %d" %(self.deviceID))
 
         if not ret.strip() == "TRUE":
-            raise ProbeStationError(ret)
+            raise SystemError(ret)
 
     #Moves the Chuck stage in X, Y, Z and Theta to the load position.
     def MoveChuckLoad(self, Pos=1):
@@ -602,7 +628,7 @@ class Cascade_S300:
         out = self.instQuery(":set:cont:spee?")
 
         if int(out) != speed: 
-            raise ProbeStationError("Setting contact Speed unsuccessful!")
+            raise SystemError("Setting contact Speed unsuccessful!")
 
     def SetVelocity(self, Vel, direction="xyz"):
        
@@ -633,7 +659,7 @@ class Cascade_S300:
         self.instWrite(":mov:sep  %d" %(self.deviceID))
         ret = self.instQuery(":mov:sep ? %d" %(self.deviceID))
         if not ret.strip() == "TRUE":
-            raise ProbeStationError(ret)
+            raise SystemError(ret)
 
     #Moves the Chuck to Home position.
     def MoveChuckHome(self, Vel=100):
@@ -773,27 +799,27 @@ class Cascade_S300:
     ############## check Values:################ 
     def checkIndex(self, n, axis): 
         if not isinstance(n, int):
-            raise ProbeStation_InputError("The index for axis %s must be an int between 0 and 50." %(axis))
+            raise ValueError("The index for axis %s must be an int between 0 and 50." %(axis))
         if n < -50 or n > 50: 
-            raise ProbeStation_InputError("The index for axis %s must be an int between 0 and 50." %(axis))
+            raise ValueError("The index for axis %s must be an int between 0 and 50." %(axis))
 
     def checkXYValue(self, n, axis): 
         if not isinstance(n, (float, int)):
-            raise ProbeStation_InputError("The index for axis %s must be a double value between 0 and +-150000. (Cur. Val. %s)" %(axis, n))
+            raise ValueError("The index for axis %s must be a double value between 0 and +-150000. (Cur. Val. %s)" %(axis, n))
         if n < -150000 or n > 150000: 
-            raise ProbeStation_InputError("The index for axis %s must be a double value between 0 and +-150000. (Cur. Val. %s)" %(axis, n))
+            raise ValueError("The index for axis %s must be a double value between 0 and +-150000. (Cur. Val. %s)" %(axis, n))
 
     def checkPosRef(self, pos): 
         if not isinstance(pos, str):
-            raise ProbeStation_InputError("The position reference must be 'H' (Home), 'Z' (Zero), 'C' (Center) or 'R' (Current position).")
+            raise ValueError("The position reference must be 'H' (Home), 'Z' (Zero), 'C' (Center) or 'R' (Current position).")
         if not (pos == 'H' or pos == 'R'):
-            raise ProbeStation_InputError("The position reference must be 'H' (Home), 'R' (Current position).")
+            raise ValueError("The position reference must be 'H' (Home), 'R' (Current position).")
     
     def checkTempWindow(self, temp):
         if not isinstance(temp, (float,int)):
-            raise ProbeStation_InputError("The temperature window must be a float value between 0.1 and 9.9C.")
+            raise ValueError("The temperature window must be a float value between 0.1 and 9.9C.")
         if 0.1 < temp > 9.9:
-            raise ProbeStation_InputError("The temperature window must be a float value between 0.1 and 9.9C.")
+            raise ValueError("The temperature window must be a float value between 0.1 and 9.9C.")
         
 
         

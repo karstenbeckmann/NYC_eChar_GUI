@@ -28,7 +28,7 @@ class ResultWindow(QtWidgets.QMainWindow):
         self.styles = ["-", "--", ":", "-.", ".", ",", "o", "v", "^", "<", ">"]
         self.sizes = [0.5,1,1.5,2,3]
         self.colors = ['blue', 'red', 'black', 'green', "orange"]    
-        
+                
         self.QFont=QFont
         self.QMargin = QMargin
         self.QSpacing = QSpacing
@@ -45,6 +45,8 @@ class ResultWindow(QtWidgets.QMainWindow):
         self.icon = icon
         self.FigCancas = None
         self.Fig = None
+
+        self.defColor = MainGI.defColor
         
         self.columns = 9
         self.rows = 20
@@ -73,13 +75,13 @@ class ResultWindow(QtWidgets.QMainWindow):
         try: 
             self.setWindowIcon(self.icon)
         except:
-            self.MainGI.writeError("Icon not found in window %s" %(title))
+            self.MainGI.WriteError("Icon not found in window %s" %(title))
         
         self._main = stdObj.stdFrameGrid(self, self.MainGI, self.columns, self.rows, self.__width, self.__height)
         self._main.setFont(self.QFont)
         self._main.setContentsMargins(*self.QMargin)
         self.resize(self.__width, self.__height)
-        #self._main.resize(self.__width, self.__height)
+        self._main.resize(self.__width, self.__height)
         self.layout = self._main.layout
         self.Menus = []
         self.IntWid = []

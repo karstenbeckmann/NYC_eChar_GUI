@@ -234,10 +234,7 @@ def AnalogRet_PG81110(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent,
         PercDelCompl[-1].append(Pdev)
 
         # set operation
-        while not eChar.Stop.empty():
-            stop = eChar.Stop.get()
-        if stop:    
-            eChar.finished.put(True)
+        if eChar.checkStop():
             break
 
         k = 0
@@ -357,10 +354,7 @@ def AnalogRet_PG81110(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent,
         r = 1
         while r <= MaxPulses:
             
-            while not eChar.Stop.empty():
-                stop = eChar.Stop.get()
-            if stop:    
-                eChar.finished.put(True)
+            if eChar.checkStop():
                 break
 
             if R > Rgoal: 
@@ -495,10 +489,7 @@ def AnalogRet_PG81110(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent,
         tmstart = tm.time()
         for ret in range(NumOfPul):
             
-            while not eChar.Stop.empty():
-                stop = eChar.Stop.get()
-            if stop:    
-                eChar.finished.put(True)
+            if eChar.checkStop():
                 break
 
             tloop = tm.time()
@@ -917,10 +908,7 @@ def AnalogRet_PGBNC765(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent
         PercDelCompl[-1].append(Pdev)
 
         # set operation
-        while not eChar.Stop.empty():
-            stop = eChar.Stop.get()
-        if stop:    
-            eChar.finished.put(True)
+        if eChar.checkStop():
             break
 
         k = 0
@@ -1002,10 +990,7 @@ def AnalogRet_PGBNC765(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent
         r = 1
         while r <= MaxPulses:
             
-            while not eChar.Stop.empty():
-                stop = eChar.Stop.get()
-            if stop:    
-                eChar.finished.put(True)
+            if eChar.checkStop():
                 break
 
             if R > Rgoal: 
@@ -1101,10 +1086,7 @@ def AnalogRet_PGBNC765(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent
         tmstart = tm.time()
         for ret in range(NumOfPul):
             
-            while not eChar.Stop.empty():
-                stop = eChar.Stop.get()
-            if stop:    
-                eChar.finished.put(True)
+            if eChar.checkStop():
                 break
 
             tloop = tm.time()
@@ -1542,10 +1524,7 @@ def AnalogSwi_PG81110A(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent
         while r <= MaxPulsesPerStepReset and float(R) <= MaxResistance:
             print("r", r)
 
-            while not eChar.Stop.empty():
-                stop = eChar.Stop.get()
-            if stop:    
-                eChar.finished.put(True)
+            if eChar.checkStop():
                 break
 
             ####### Reset
@@ -1697,10 +1676,7 @@ def AnalogSwi_PG81110A(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent
             Swrote = False
             while s <= MaxPulsesPerStepSet:
 
-                while not eChar.Stop.empty():
-                    stop = eChar.Stop.get()
-                if stop:    
-                    eChar.finished.put(True)
+                if eChar.checkStop():
                     break
 
                 ####### Set
@@ -2196,10 +2172,7 @@ def AnalogSwi_PGBNC765(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent
         while r <= MaxPulsesPerStepReset and float(R) <= MaxResistance:
             print("r", r)
 
-            while not eChar.Stop.empty():
-                stop = eChar.Stop.get()
-            if stop:    
-                eChar.finished.put(True)
+            if eChar.checkStop():
                 break
 
             ####### Reset
@@ -2314,10 +2287,7 @@ def AnalogSwi_PGBNC765(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent
         Swrote = False
         while s <= MaxPulsesPerStepSet:
 
-            while not eChar.Stop.empty():
-                stop = eChar.Stop.get()
-            if stop:    
-                eChar.finished.put(True)
+            if eChar.checkStop():
                 break
 
             ####### Set
@@ -2739,10 +2709,7 @@ def AnalogForm_PGBNC765(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurren
     while r <= MaxPulses and float(R) >= Rform:
         print("Forming try", r)
 
-        while not eChar.Stop.empty():
-            stop = eChar.Stop.get()
-        if stop:    
-            eChar.finished.put(True)
+        if eChar.checkStop():
             break
 
         ####### Form
@@ -3386,10 +3353,7 @@ def AnalogSwi_PGBNC765_Burst(eChar, PGPulseChnSetReset, PGPulseChnRead, OscPulse
        
         #print("r", r)
 
-        while not eChar.Stop.empty():
-            stop = eChar.Stop.get()
-        if stop:    
-            eChar.finished.put(True)
+        if eChar.checkStop():
             break
         
         Oscilloscope.writeAcquisitionChn(OscGNDChn, "ClearSweeps")
@@ -4043,10 +4007,7 @@ def AnalogSwi_PGBNC765_BurstRead(eChar, PGPulseChnSetReset, PGPulseChnRead, OscP
        
         #print("r", r)
 
-        while not eChar.Stop.empty():
-            stop = eChar.Stop.get()
-        if stop:    
-            eChar.finished.put(True)
+        if eChar.checkStop():
             break
         
         for h in range(ResetReps):
@@ -4277,10 +4238,7 @@ def AnalogSwi_PGBNC765_BurstRead(eChar, PGPulseChnSetReset, PGPulseChnRead, OscP
         
             #print("r", r)
 
-            while not eChar.Stop.empty():
-                stop = eChar.Stop.get()
-            if stop:    
-                eChar.finished.put(True)
+            if eChar.checkStop():
                 break
             
             Oscilloscope.writeAcquisitionChn(OscGNDChn, "ClearSweeps")

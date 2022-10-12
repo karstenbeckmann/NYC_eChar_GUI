@@ -159,8 +159,7 @@ def MesurementExecutionWPS(deviceCharacterization, eChar, Configuration, threads
     for entry in deviceCharacterization:
         
         ret = eChar.executeMeasurement(entry['Folder'], entry['Name'], entry['Parameters']) 
-        if ret == "stop":
-            break
+
         
     devBatch = eChar.StatOutValues
     threads.put(devBatch.WriteBatch(eChar))
@@ -471,8 +470,6 @@ def MesurementExecutionPS(deviceCharacterization, eChar, Configuration, threads,
                                     eChar.writeLog(logEntry)
 
                                     ret = eChar.executeMeasurement(entry['Folder'], entry['Name'], parList) 
-                                    if ret == "stop":
-                                        stop = True
                                     break
                                     
                                 except (SystemError, ValueError, vs.VisaIOError, IndexError) as e:
@@ -517,8 +514,6 @@ def MesurementExecutionPS(deviceCharacterization, eChar, Configuration, threads,
                                     eChar.writeLog(logEntry)
                                     
                                     ret = eChar.executeMeasurement(entry['Folder'], entry['Name'], parList) 
-                                    if ret == "stop":
-                                        stop = True
                                     break
 
                                 except (SystemError, ValueError, vs.VisaIOError, IndexError) as e:
@@ -684,7 +679,7 @@ def getMeasurementLogHeader(eChar, deviceCharacterization, ConfigCopy):
     
     return ret
     
-def writeMeasurmentLog(deviceCharacterization, eChar, ConfigCopy, Instruments, MeasTypeClass):
+def writeMeasurmentLog(deviceCharacterization, eChar, ConfigCopy, Instruments, MeasTypeClass, timeout=2000):
 
     header = getMeasurementLogHeader(eChar, deviceCharacterization, ConfigCopy)
 
@@ -708,16 +703,29 @@ def writeMeasurmentLog(deviceCharacterization, eChar, ConfigCopy, Instruments, M
 
     Finish = False
 
+    told = tm.time_ns()
+    timeout = timeout * 1000 * 1000
+
     with open(CompFile, 'w') as f:
 
         f.writelines(header)
         while not Finish:
             
+            if told + timeout < tm.time_ns():
+                break
+            
             tm.sleep(1)
             
             while not dataQu.empty():
+                
+                told = tm.time_ns()
+
                 timestamp = dt.datetime.now().strftime("%Y-%m-%d_%H:%M:%S:%f")
                 quData = dataQu.get()
+
+                if quData == None:
+                    continue
+
                 line = "%s - %s\n" %(timestamp, quData)
                 f.write(line)
 
@@ -1203,7 +1211,12 @@ def HandleMatrixFile(MatrixFile, ReadWrite=True):
         return True
 
 
-def BitArray(Bits, High, Low):
+def BitArray(Bits, High=True, Low=False):
+    
+    # Creates an array of all possible combinations with a number "Bits"
+    #Bits: number if bits
+    #
+
 
     output = []
 
@@ -1874,3 +1887,25 @@ def equalizeArray(data):
 
     return data
 
+
+def getIntegerToBinaryArray(integer, bits, high=True, low=False):
+
+    try:
+        integer = int(integer)
+    except ValueError:
+        return None
+
+    binary = bin(integer)[2:]
+    ret = []
+
+    for n in range(bits):
+        try:
+            b = binary[-n-1]
+        except IndexError:
+            b = 0
+        if int(b) == 0:
+            ret.append(low)
+        else:
+            ret.append(high)
+            
+    return ret

@@ -11,7 +11,6 @@ import datetime as dt
 import types as tp
 import time as tm
 import queue as qu
-from Exceptions import *
 
 #8 slot SMU mainframe: 
 #8 Medium Power Source Measurement Units (MPSMUs) are isntalled (model #E5281A)
@@ -250,7 +249,7 @@ class Agilent_B1500A():
             elif slot + 1 in self.SCUUChns:
 
                 if self.curSCUU[slot + 1] == 4:
-                    raise B1500A_InputError("SMU in slot %d is not available when performing capacitive measurments.")
+                    raise ValueError("SMU in slot %d is not available when performing capacitive measurments.")
                 elif self.curSCUU[slot + 1] == 2:
                     self.instWrite('SSP %d, 3' %(slot + 1))
                     self.curSCUU[slot + 1] = 3
@@ -260,7 +259,7 @@ class Agilent_B1500A():
 
             elif slot + 2 in self.SCUUChns:
                 if self.curSCUU[slot + 2] == 4:
-                    raise B1500A_InputError("SMU in slot %d is not available when performing capacitive measurments.")
+                    raise ValueError("SMU in slot %d is not available when performing capacitive measurments.")
                 elif self.curSCUU[slot + 2] == 1:
                     self.instWrite('SSP %d, 3' %(slot + 2))
                     self.curSCUU[slot + 2] = 3
@@ -355,7 +354,7 @@ class Agilent_B1500A():
         elif isinstance(SMUs, int):
             chns = self.SMUChns[SMUs-1]
         else:
-            raise B1500A_InputError("SMU's must be a list of integers or integers.")
+            raise ValueError("SMU's must be a list of integers or integers.")
         return chns
  
     def getChnsfromCMU(self, CMUs):
@@ -366,7 +365,7 @@ class Agilent_B1500A():
         elif isinstance(CMUs, int):
             chns = self.CMUChns[CMUs-1]
         else:
-            raise B1500A_InputError("CMU's must be a list of integers or integers.")
+            raise ValueError("CMU's must be a list of integers or integers.")
         return chns
     
     def reset(self):
@@ -485,22 +484,22 @@ class Agilent_B1500A():
     def SMUisAvailable(self, SMUNum):
         if True == self.SMUActive[SMUNum]:
             return True
-        raise B1500A_InputError("SMU %d is not available." %(SMUNum))
+        raise ValueError("SMU %d is not available." %(SMUNum))
         
     def SMUisUsed(self, SMUNum):
         if False == self.SMUUsed[SMUNum]:
             return False
-        raise B1500A_InputError("CMU %d is used." %(SMUNum))
+        raise ValueError("CMU %d is used." %(SMUNum))
 
     def CMUisAvailable(self, CMUNum):
         if True == self.CMUActive[CMUNum]:
             return True
-        raise B1500A_InputError("CMU %d is not available." %(CMUNum))
+        raise ValueError("CMU %d is not available." %(CMUNum))
         
     def CMUisUsed(self, CMUNum):
         if False == self.CMUUsed[CMUNum]:
             return False
-        raise B1500A_InputError("CMU %d is used." %(CMUNum))
+        raise ValueError("CMU %d is used." %(CMUNum))
 
     def getBinaryList(self, IntIn, binSize=8):
         
@@ -569,7 +568,7 @@ class Agilent_B1500A():
         for l in List2D[1:]:
             if not l == None:
                 if not len(l) == len(List2D[0]):
-                    raise B1500A_InputError("Input Values for %s do not have the right dimensions" %(desc))
+                    raise ValueError("Input Values for %s do not have the right dimensions" %(desc))
     
     #check if hold and delay are within allowed ranges
     def CheckDelays(self, hold, delay):
@@ -578,15 +577,15 @@ class Agilent_B1500A():
 
         if hold != None:
             if not isinstance(hold, (int,float)):
-                raise B1500A_InputError("Hold Time not float or int.")
+                raise ValueError("Hold Time not float or int.")
             if hold < 0 or hold > holdMax: 
-                raise B1500A_InputError("Hold Time must be between 0 and %f." %(holdMax))
+                raise ValueError("Hold Time must be between 0 and %f." %(holdMax))
 
         if delay != None:
             if not isinstance(delay, (int,float)):
-                raise B1500A_InputError("Delay Time not float or int.")
+                raise ValueError("Delay Time not float or int.")
             if delay < 0 or delay > holdMax: 
-                raise B1500A_InputError("Delay Time must be between 0 and %f." %(delayMax))
+                raise ValueError("Delay Time must be between 0 and %f." %(delayMax))
 
     #check ranges for 5281A MPSMU if all values in RR are allowed ranges
     def CheckRanges(self, Chns, VorI, Range):
@@ -597,15 +596,15 @@ class Agilent_B1500A():
         if VorI == "Voltage":
             for element in Range:
                 if  element not in VR:
-                    raise B1500A_InputError("Voltage Range for Channel %d is not valid." %(Chns[n]))
+                    raise ValueError("Voltage Range for Channel %d is not valid." %(Chns[n]))
                 n+=1
         elif VorI == "Current":
             for element in Range:
                 if element not in IR:
-                    raise B1500A_InputError("Current Range for Channel %d is not valid." %(Chns[n]))
+                    raise ValueError("Current Range for Channel %d is not valid." %(Chns[n]))
                 n+=1
         else:
-            raise B1500A_InputError("CheckRanges only compares 'Voltage' or 'Current'.")
+            raise ValueError("CheckRanges only compares 'Voltage' or 'Current'.")
 
     #check ranges for 5281A MPSMU if all values in Val are allowed voltages/currents
     def CheckVolCurValues(self, Chns, VorI, Val, RV, RI):
@@ -618,28 +617,28 @@ class Agilent_B1500A():
             if VorI[n]:    
                 if RV[n] == VR[0]:
                     if np.absolute(int(element)) > 42:
-                        raise B1500A_InputError("Voltage for Voltage range %d in Channel %d is above 42V." %(RV[n], Chns[n]))
+                        raise ValueError("Voltage for Voltage range %d in Channel %d is above 42V." %(RV[n], Chns[n]))
                 if RV[n] == VR[1] or RV[n] == VR[8]:
                     if np.absolute(int(element)) > 0.5:
-                        raise B1500A_InputError("Voltage for Voltage range %d in Channel %d is above 0.5V." %(RV[n], Chns[n]))
+                        raise ValueError("Voltage for Voltage range %d in Channel %d is above 0.5V." %(RV[n], Chns[n]))
                 if RV[n] == VR[2] or RV[n] == VR[9]:
                     if np.absolute(int(element)) > 5:
-                        raise B1500A_InputError("Voltage for Voltage range %d in Channel %d is above 5V." %(RV[n], Chns[n]))
+                        raise ValueError("Voltage for Voltage range %d in Channel %d is above 5V." %(RV[n], Chns[n]))
                 if RV[n] == VR[3] or RV[n] == VR[10]:
                     if np.absolute(int(element)) > 2:
-                        raise B1500A_InputError("Voltage for Voltage range %d in Channel %d is above 2V." %(RV[n], Chns[n]))
+                        raise ValueError("Voltage for Voltage range %d in Channel %d is above 2V." %(RV[n], Chns[n]))
                 if RV[n] == VR[4] or RV[n] == VR[11]:
                     if np.absolute(int(element)) > 20:
-                        raise B1500A_InputError("Voltage for Voltage range %d in Channel %d is above 20V." %(RV[n], Chns[n]))
+                        raise ValueError("Voltage for Voltage range %d in Channel %d is above 20V." %(RV[n], Chns[n]))
                 if RV[n] == VR[5] or RV[n] == VR[12]:
                     if np.absolute(int(element)) > 40:
-                        raise B1500A_InputError("Voltage for Voltage range %d in Channel %d is above 40V." %(RV[n], Chns[n]))
+                        raise ValueError("Voltage for Voltage range %d in Channel %d is above 40V." %(RV[n], Chns[n]))
                 if RV[n] == VR[6] or RV[n] == VR[13]:
                     if np.absolute(int(element)) > 100:
-                        raise B1500A_InputError("Voltage for Voltage range %d in Channel %d is above 42V." %(RV[n], Chns[n]))
+                        raise ValueError("Voltage for Voltage range %d in Channel %d is above 42V." %(RV[n], Chns[n]))
                 if RV[n] == VR[7] or RV[n] == VR[14]:
                     if np.absolute(int(element)) > 200:
-                        raise B1500A_InputError("Voltage for Voltage range %d in Channel %d is above 42V." %(RV[n], Chns[n]))
+                        raise ValueError("Voltage for Voltage range %d in Channel %d is above 42V." %(RV[n], Chns[n]))
             n+=1
 
         n=0
@@ -647,63 +646,63 @@ class Agilent_B1500A():
             if VorI[n] == False:
                 if RI[n] == IR[0]:
                     if np.absolute(int(element)) > 0.2:
-                        raise B1500A_InputError("Current for Current range %d in Channel %d is above 200 mA." %(RI[n], Chns[n]))
+                        raise ValueError("Current for Current range %d in Channel %d is above 200 mA." %(RI[n], Chns[n]))
                 if RI[n] == IR[1] or RI[n] == IR[11]:
                     if np.absolute(int(element)) > 1.15e-9:
-                        raise B1500A_InputError("Current for Current range %d in Channel %d is above 1.15 nA." %(RI[n], Chns[n]))
+                        raise ValueError("Current for Current range %d in Channel %d is above 1.15 nA." %(RI[n], Chns[n]))
                 if RI[n] == IR[2] or RI[n] == IR[12]:
                     if np.absolute(int(element)) > 11.5e-9:
-                        raise B1500A_InputError("Current for Current range %d in Channel %d is above 11.5 nA." %(RI[n], Chns[n]))
+                        raise ValueError("Current for Current range %d in Channel %d is above 11.5 nA." %(RI[n], Chns[n]))
                 if RI[n] == IR[3] or RI[n] == IR[13]:
                     if np.absolute(int(element)) > 115e-9:
-                        raise B1500A_InputError("Current for Current range %d in Channel %d is above 115 nA." %(RI[n], Chns[n]))
+                        raise ValueError("Current for Current range %d in Channel %d is above 115 nA." %(RI[n], Chns[n]))
                 if RI[n] == IR[4] or RI[n] == IR[14]:
                     if np.absolute(int(element)) > 1.15e-6:
-                        raise B1500A_InputError("Current for Current range %d in Channel %d is above 1.15 uA." %(RI[n], Chns[n]))
+                        raise ValueError("Current for Current range %d in Channel %d is above 1.15 uA." %(RI[n], Chns[n]))
                 if RI[n] == IR[5] or RI[n] == IR[15]:
                     if np.absolute(int(element)) > 11.5e-6:
-                        raise B1500A_InputError("Current for Current range %d in Channel %d is above 11.5 uA." %(RI[n], Chns[n]))
+                        raise ValueError("Current for Current range %d in Channel %d is above 11.5 uA." %(RI[n], Chns[n]))
                 if RI[n] == IR[6] or RI[n] == IR[16]:
                     if np.absolute(int(element)) > 115e-6:
-                        raise B1500A_InputError("Current for Current range %d in Channel %d is above 115 uA." %(RI[n], Chns[n]))
+                        raise ValueError("Current for Current range %d in Channel %d is above 115 uA." %(RI[n], Chns[n]))
                 if RI[n] == IR[7] or RI[n] == IR[17]:
                     if np.absolute(int(element)) > 1.15e-3:
-                        raise B1500A_InputError("Current for Current range %d in Channel %d is above 1.15 mA." %(RI[n], Chns[n]))
+                        raise ValueError("Current for Current range %d in Channel %d is above 1.15 mA." %(RI[n], Chns[n]))
                 if RI[n] == IR[8] or RI[n] == IR[18]:
                     if np.absolute(int(element)) > 11.5e-3:
-                        raise B1500A_InputError("Current for Current range %d in Channel %d is above 11.5 mA." %(RI[n], Chns[n]))
+                        raise ValueError("Current for Current range %d in Channel %d is above 11.5 mA." %(RI[n], Chns[n]))
                 if RI[n] == IR[9] or RI[n] == IR[19]:
                     if np.absolute(int(element)) > 115e-3:
-                        raise B1500A_InputError("Current for Current range %d in Channel %d is above 115 mA." %(RI[n], Chns[n]))
+                        raise ValueError("Current for Current range %d in Channel %d is above 115 mA." %(RI[n], Chns[n]))
                 if RI[n] == IR[10] or RI[n] == IR[20]:
                     if np.absolute(int(element)) > 200e-3:
-                        raise B1500A_InputError("Current for Current range %d in Channel %d is above 200 mA." %(RI[n], Chns[n]))
+                        raise ValueError("Current for Current range %d in Channel %d is above 200 mA." %(RI[n], Chns[n]))
             n+=1
     
     def CheckCMUValues(self, freq, Vac, mode, Vdc=None):
 
         if not isinstance(freq, (int,float)):
-            raise B1500A_InputError("Frequency for the Capacitace measurement must be float value from 1kHz to 5MHz in Hz.")
+            raise ValueError("Frequency for the Capacitace measurement must be float value from 1kHz to 5MHz in Hz.")
         if 1000 > freq > 5e6:
-            raise B1500A_InputError("Frequency for the Capacitace measurement must be float value from 1kHz to 5MHz in Hz.")
+            raise ValueError("Frequency for the Capacitace measurement must be float value from 1kHz to 5MHz in Hz.")
 
         if not isinstance(Vac, (int,float)):
-            raise B1500A_InputError("Oscillator level of the output AC voltage for the Capacitace measurement must be 0 mV to 250 mV in V.")
+            raise ValueError("Oscillator level of the output AC voltage for the Capacitace measurement must be 0 mV to 250 mV in V.")
         if 0 > Vac > 0.25:
-            raise B1500A_InputError("Oscillator level of the output AC voltage for the Capacitace measurement must be 0 mV to 250 mV in V.")
+            raise ValueError("Oscillator level of the output AC voltage for the Capacitace measurement must be 0 mV to 250 mV in V.")
         if Vdc != None:
             if not isinstance(Vdc, (int,float)):
-                raise B1500A_InputError("DC voltage for Capacitive Measurement must be between -100 to +100V in V.")
+                raise ValueError("DC voltage for Capacitive Measurement must be between -100 to +100V in V.")
             if -100 > Vdc > 100:
-                raise B1500A_InputError("DC voltage for Capacitive Measurement must be between -100 to +100V in V.")
+                raise ValueError("DC voltage for Capacitive Measurement must be between -100 to +100V in V.")
 
             modes = [1,2,10,11,20,21,100,101,102,103,200,201,202,300,301,302,303,400,401,402]
 
         if not isinstance(mode, (int,type(None))):
-            raise B1500A_InputError("CMU Measurement mode must be 1,2,10,11,20,21,100,101,102,103,200,201,202,300,301,302,303,400,401 or 402.")
+            raise ValueError("CMU Measurement mode must be 1,2,10,11,20,21,100,101,102,103,200,201,202,300,301,302,303,400,401 or 402.")
         if mode != None:
             if not mode in modes:
-                raise B1500A_InputError("CMU Measurement mode must be 1,2,10,11,20,21,100,101,102,103,200,201,202,300,301,302,303,400,401 or 402.")
+                raise ValueError("CMU Measurement mode must be 1,2,10,11,20,21,100,101,102,103,200,201,202,300,301,302,303,400,401 or 402.")
 
     def CheckCompliance(self, Chns, VorI, Val, IComp, VComp, RV, RI):
         n=0
@@ -711,69 +710,69 @@ class Agilent_B1500A():
         IR = self.IR
         
         #if np.any(IComp) == 0:
-        #    raise B1500A_InputError("Current Compliance can't be 0")
+        #    raise ValueError("Current Compliance can't be 0")
         #if np.any(VComp) == 0:
-        #    raise B1500A_InputError("Voltage Compliance can't be 0")
+        #    raise ValueError("Voltage Compliance can't be 0")
         
         for element in IComp:
             if VorI[n]:
                 if RV[n] == VR[0]:
                     if np.absolute(Val[n]) <= 42:
                         if np.absolute(int(element)) > 100e-3:
-                            raise B1500A_InputError("Current Compliance for Voltage range %d in Channel %d is not less than or equal to 100e-3 A." %(RV[n], Chns[n]))
+                            raise ValueError("Current Compliance for Voltage range %d in Channel %d is not less than or equal to 100e-3 A." %(RV[n], Chns[n]))
                     else:
-                        raise B1500A_InputError(">42 not supported with a Current Measurement Range of %s " %(self.RVlabel[RV[n]]))
+                        raise ValueError(">42 not supported with a Current Measurement Range of %s " %(self.RVlabel[RV[n]]))
                 if RV[n] == VR[1] or RV[n] == VR[8]:
                     if np.absolute(Val[n]) <= 0.5:
                         if np.absolute(int(element)) > 100e-3:
-                            raise B1500A_InputError("Current Compliance for Voltage range %d in Channel %d is not less than or equal to 100e-3 A." %(RV[n], Chns[n]))
+                            raise ValueError("Current Compliance for Voltage range %d in Channel %d is not less than or equal to 100e-3 A." %(RV[n], Chns[n]))
                     else:
-                        raise B1500A_InputError(">0.5 not supported with a Current Measurement Range of %s " %(self.RVlabel[RV[n]]))
+                        raise ValueError(">0.5 not supported with a Current Measurement Range of %s " %(self.RVlabel[RV[n]]))
                 if RV[n] == VR[2] or RV[n] == VR[9]:
                     if np.absolute(Val[n]) <= 5:
                         if np.absolute(int(element)) > 100e-3:
-                            raise B1500A_InputError("Current Compliance for Voltage range %d in Channel %d is not less than or equal to 100e-3 A." %(RV[n], Chns[n]))
+                            raise ValueError("Current Compliance for Voltage range %d in Channel %d is not less than or equal to 100e-3 A." %(RV[n], Chns[n]))
                     else:
-                        raise B1500A_InputError(">5 not supported with a Current Measurement Range of %s " %(self.RVlabel[RV[n]]))
+                        raise ValueError(">5 not supported with a Current Measurement Range of %s " %(self.RVlabel[RV[n]]))
                 if RV[n] == VR[3] or RV[n] == VR[10]:
                     if np.absolute(Val[n]) <= 2:
                         if np.absolute(int(element)) > 100e-3:
-                            raise B1500A_InputError("Current Compliance for Voltage range %d in Channel %d is not less than or equal to 100e-3 A." %(RV[n], Chns[n]))
+                            raise ValueError("Current Compliance for Voltage range %d in Channel %d is not less than or equal to 100e-3 A." %(RV[n], Chns[n]))
                     else:
-                        raise B1500A_InputError(">2 not supported with a Current Measurement Range of %s " %(self.RVlabel[RV[n]]))
+                        raise ValueError(">2 not supported with a Current Measurement Range of %s " %(self.RVlabel[RV[n]]))
                 if RV[n] == VR[4] or RV[n] == VR[11]:
                     if np.absolute(Val[n]) <= 20:
                         if np.absolute(int(element)) > 100e-3:
-                            raise B1500A_InputError("Current Compliance for Voltage range %d in Channel %d is not less than or equal to 100e-3 A." %(RV[n], Chns[n]))
+                            raise ValueError("Current Compliance for Voltage range %d in Channel %d is not less than or equal to 100e-3 A." %(RV[n], Chns[n]))
                     else:
-                        raise B1500A_InputError(">20 not supported with a Current Measurement Range of %s " %(self.RVlabel[RV[n]]))
+                        raise ValueError(">20 not supported with a Current Measurement Range of %s " %(self.RVlabel[RV[n]]))
                 if RV[n] == VR[5] or RV[n] == VR[12]:
                     if np.absolute(Val[n]) <= 20:
                         if np.absolute(int(element)) > 100e-3:
-                            raise B1500A_InputError("Current Compliance for Voltage range %d in Channel %d is not less than or equal to 100e-3 A." %(RV[n], Chns[n]))
+                            raise ValueError("Current Compliance for Voltage range %d in Channel %d is not less than or equal to 100e-3 A." %(RV[n], Chns[n]))
                     elif np.absolute(Val[n]) <= 40:
                         if np.absolute(int(element)) > 50e-3:
-                            raise B1500A_InputError("Current Compliance for Voltage range %d in Channel %d is not less than or equal to 50e-3 A." %(RV[n], Chns[n]))
+                            raise ValueError("Current Compliance for Voltage range %d in Channel %d is not less than or equal to 50e-3 A." %(RV[n], Chns[n]))
                     else:
-                        raise B1500A_InputError(">20 not supported with a Current Measurement Range of %s." %(self.RVlabel[RV[n]]))
+                        raise ValueError(">20 not supported with a Current Measurement Range of %s." %(self.RVlabel[RV[n]]))
                 if RV[n] == VR[6] or RV[n] == VR[13]:
                     if np.absolute(Val[n]) <= 20:
                         if np.absolute(int(element)) > 100e-3:
-                            raise B1500A_InputError("Current Compliance for Voltage range %d in Channel %d is not less than or equal to 100e-3 A." %(RV[n], Chns[n]))
+                            raise ValueError("Current Compliance for Voltage range %d in Channel %d is not less than or equal to 100e-3 A." %(RV[n], Chns[n]))
                     elif np.absolute(Val[n]) <= 40:
                         if np.absolute(int(element)) > 50e-3:
-                            raise B1500A_InputError("Current Compliance for Voltage range %d in Channel %d is not less than or equal to 50e-3 A." %(RV[n], Chns[n]))
+                            raise ValueError("Current Compliance for Voltage range %d in Channel %d is not less than or equal to 50e-3 A." %(RV[n], Chns[n]))
                     elif np.absolute(Val[n]) <= 100:
                         if np.absolute(int(element)) > 20e-3:
-                            raise B1500A_InputError("Current Compliance for Voltage range %d in Channel %d is not less than or equal to 20e-3 A." %(RV[n], Chns[n]))
+                            raise ValueError("Current Compliance for Voltage range %d in Channel %d is not less than or equal to 20e-3 A." %(RV[n], Chns[n]))
                     else:
-                        raise B1500A_InputError(">100V not supported with a Current Measurement Range of %s." %(self.RVlabel[RV[n]]))
+                        raise ValueError(">100V not supported with a Current Measurement Range of %s." %(self.RVlabel[RV[n]]))
                 if RV[n] == VR[7] or RV[n] == VR[14]:
                     if np.absolute(Val[n]) <= 200:
                         if np.absolute(int(element)) != 2e-3:
-                            raise B1500A_InputError("Current Compliance for Voltage range %d in Channel %d is not 2e-3 A." %(RV[n], Chns[n]))
+                            raise ValueError("Current Compliance for Voltage range %d in Channel %d is not 2e-3 A." %(RV[n], Chns[n]))
                     else:
-                        raise B1500A_InputError("Incorrect Voltage Compliance Used (200V Output range won't work)!")
+                        raise ValueError("Incorrect Voltage Compliance Used (200V Output range won't work)!")
             n+=1
 
         n=0
@@ -784,75 +783,75 @@ class Agilent_B1500A():
                 if RI[n] == IR[0]:
                     if np.absolute(Val[n]) <= 0.2:
                         if np.absolute(int(element)) > 100:
-                            raise B1500A_InputError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 100V." %(RI[n], Chns[n]))
+                            raise ValueError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 100V." %(RI[n], Chns[n]))
                     else:
-                        raise B1500A_InputError(">1A not supported with a Current Measurement Range of %s " %(self.RIlabel[RI[n]]))
+                        raise ValueError(">1A not supported with a Current Measurement Range of %s " %(self.RIlabel[RI[n]]))
                 if RI[n] == IR[1] or RI[n] == IR[11]:
                     if np.absolute(Val[n]) <= 1.15e-9:
                         if np.absolute(int(element)) > 100:
-                            raise B1500A_InputError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 100V." %(RI[n], Chns[n]))
+                            raise ValueError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 100V." %(RI[n], Chns[n]))
                     else:
-                        raise B1500A_InputError(">1.15e-9A not supported with a Current Measurement Range of %s " %(self.RIlabel[RI[n]]))
+                        raise ValueError(">1.15e-9A not supported with a Current Measurement Range of %s " %(self.RIlabel[RI[n]]))
                 if RI[n] == IR[2] or RI[n] == IR[12]:
                     if np.absolute(Val[n]) <= 11.5e-9:
                         if np.absolute(int(element)) > 100:
-                            raise B1500A_InputError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 100V." %(RI[n], Chns[n]))
+                            raise ValueError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 100V." %(RI[n], Chns[n]))
                     else:
-                        raise B1500A_InputError(">11.5e-9A not supported with a Current Measurement Range of %s " %(self.RIlabel[RI[n]]))
+                        raise ValueError(">11.5e-9A not supported with a Current Measurement Range of %s " %(self.RIlabel[RI[n]]))
                 if RI[n] == IR[3] or RI[n] == IR[13]:
                     if np.absolute(Val[n]) <= 115e-9:
                         if np.absolute(int(element)) > 100:
-                            raise B1500A_InputError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 100V." %(RI[n], Chns[n]))
+                            raise ValueError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 100V." %(RI[n], Chns[n]))
                     else:
-                        raise B1500A_InputError(">115e-9A not supported with a Current Measurement Range of %s " %(self.RIlabel[RI[n]]))
+                        raise ValueError(">115e-9A not supported with a Current Measurement Range of %s " %(self.RIlabel[RI[n]]))
                 if RI[n] == IR[4] or RI[n] == IR[14]:
                     if np.absolute(Val[n]) <= 1.15e-6:
                         if np.absolute(int(element)) > 100:
-                            raise B1500A_InputError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 100V." %(RI[n], Chns[n]))
+                            raise ValueError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 100V." %(RI[n], Chns[n]))
                     else:
-                        raise B1500A_InputError(">1.15e-6A not supported with a Current Measurement Range of %s " %(self.RIlabel[RI[n]]))
+                        raise ValueError(">1.15e-6A not supported with a Current Measurement Range of %s " %(self.RIlabel[RI[n]]))
                 if RI[n] == IR[5] or RI[n] == IR[15]:
                     if np.absolute(Val[n]) <= 11.5e-6:
                         if np.absolute(int(element)) > 100:
-                            raise B1500A_InputError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 100V." %(RI[n], Chns[n]))
+                            raise ValueError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 100V." %(RI[n], Chns[n]))
                     else:
-                        raise B1500A_InputError(">11.5e-6A not supported with a Current Measurement Range of %s " %(self.RIlabel[RI[n]]))
+                        raise ValueError(">11.5e-6A not supported with a Current Measurement Range of %s " %(self.RIlabel[RI[n]]))
                 if RI[n] == IR[6] or RI[n] == IR[16]:
                     if np.absolute(Val[n]) <= 115e-6:
                         if np.absolute(int(element)) > 100:
-                            raise B1500A_InputError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 100V." %(RI[n], Chns[n]))
+                            raise ValueError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 100V." %(RI[n], Chns[n]))
                     else:
-                        raise B1500A_InputError(">115e-6A not supported with a Current Measurement Range of %s " %(self.RIlabel[RI[n]]))
+                        raise ValueError(">115e-6A not supported with a Current Measurement Range of %s " %(self.RIlabel[RI[n]]))
                 if RI[n] == IR[7] or RI[n] == IR[17]:
                     if np.absolute(Val[n]) <= 1.15e-3:
                         if np.absolute(int(element)) > 100:
-                            raise B1500A_InputError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 100V." %(RI[n], Chns[n]))
+                            raise ValueError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 100V." %(RI[n], Chns[n]))
                     else:
-                        raise B1500A_InputError(">1.15e-3A not supported with a Current Measurement Range of %s " %(self.RIlabel[RI[n]]))
+                        raise ValueError(">1.15e-3A not supported with a Current Measurement Range of %s " %(self.RIlabel[RI[n]]))
                 if RI[n] == IR[8] or RI[n] == IR[18]:
                     if np.absolute(Val[n]) <= 11.5e-3:
                         if np.absolute(int(element)) > 100:
-                            raise B1500A_InputError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 100V." %(RI[n], Chns[n]))
+                            raise ValueError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 100V." %(RI[n], Chns[n]))
                     else:
-                        raise B1500A_InputError(">11.5e-3A not supported with a Current Measurement Range of %s " %(self.RIlabel[RI[n]]))
+                        raise ValueError(">11.5e-3A not supported with a Current Measurement Range of %s " %(self.RIlabel[RI[n]]))
                 if RI[n] == IR[9] or RI[n] == IR[19]:
                     if np.absolute(Val[n]) <= 20e-3:
                         if np.absolute(int(element)) > 100:
-                            raise B1500A_InputError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 100V." %(RI[n], Chns[n]))
+                            raise ValueError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 100V." %(RI[n], Chns[n]))
                     if np.absolute(Val[n]) <= 50e-3:
                         if np.absolute(int(element)) > 40:
-                            raise B1500A_InputError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 40V." %(RI[n], Chns[n]))
+                            raise ValueError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 40V." %(RI[n], Chns[n]))
                     if np.absolute(Val[n]) <= 115e-3:
                         if np.absolute(int(element)) > 20:
-                            raise B1500A_InputError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 20V." %(RI[n], Chns[n]))
+                            raise ValueError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 20V." %(RI[n], Chns[n]))
                     else:
-                        raise B1500A_InputError(">115e-3A not supported with a Current Measurement Range of %s " %(self.RIlabel[RI[n]]))
+                        raise ValueError(">115e-3A not supported with a Current Measurement Range of %s " %(self.RIlabel[RI[n]]))
                 if RI[n] == IR[10] or RI[n] == IR[20]:
                     if np.absolute(Val[n]) <= 200e-3:
                         if np.absolute(int(element)) != 100000:
-                            raise B1500A_InputError("Voltage Compliance for Current range %d in Channel %d is not 100000V." %(RI[n], Chns[n]))
+                            raise ValueError("Voltage Compliance for Current range %d in Channel %d is not 100000V." %(RI[n], Chns[n]))
                     else:
-                        raise B1500A_InputError("Incorrect Current Compliance Used (Above 100mA Output range won't work)!")
+                        raise ValueError("Incorrect Current Compliance Used (Above 100mA Output range won't work)!")
 
             n=+1
 
@@ -868,17 +867,17 @@ class Agilent_B1500A():
                 raise TypeError("The Filter mode for Channel %d must be 0, 1 or 'None'." %(Chns[n]))
             
             if not (FL[n] == 0 or FL[n] == 1 or FL[n] == None):
-                raise B1500A_InputError("The Filter mode for Channel %d must be 0, 1 or 'None'." %(Chns[n]))
+                raise ValueError("The Filter mode for Channel %d must be 0, 1 or 'None'." %(Chns[n]))
             n+=1
 
     def CheckChannelMode(self, Chns, CMM):
         n = 0
         for chn in Chns:
             if not isinstance(CMM[n], (int,type(None))):
-                raise B1500A_InputError("The Channel mode for Channel %d must be 0, 1, 2, 3 or None." %(Chns[n]))
+                raise ValueError("The Channel mode for Channel %d must be 0, 1, 2, 3 or None." %(Chns[n]))
             if not CMM[n] == None: 
                 if not (CMM[n] < 3 or CMM[n] > 0):
-                    raise B1500A_InputError("The Channel mode for Channel %d must be 0, 1, 2, 3 or None." %(Chns[n]))
+                    raise ValueError("The Channel mode for Channel %d must be 0, 1, 2, 3 or None." %(Chns[n]))
             n+=1
 
     def CheckSeriesResistance(self, Chns, SSR):
@@ -886,49 +885,49 @@ class Agilent_B1500A():
         for n in range(len(Chns)):
             
             if not isinstance(SSR[n], (int, type(None))):
-                raise B1500A_InputError("The Series Resistor connection for Channel %d must be 0, 1 or None." %(Chns[n]))
+                raise ValueError("The Series Resistor connection for Channel %d must be 0, 1 or None." %(Chns[n]))
             if not SSR[n] == None: 
                 if not (SSR[n] < 3 or SSR[n] > 0):
-                    raise B1500A_InputError("The Series Resistor connection for Channel %d must be 0, 1 or None." %(Chns[n]))
+                    raise ValueError("The Series Resistor connection for Channel %d must be 0, 1 or None." %(Chns[n]))
 
     def CheckADCValues(self, chns, ADCs):
         for n in range(len(chns)):
             if not isinstance(ADCs[n], int) and not ADCs[n] == None:
-                raise B1500A_InputError("The ADC converter type of Channel %d must be either 0 (High-Speed) or 1 (High-resolution" %(chns[n]))
+                raise ValueError("The ADC converter type of Channel %d must be either 0 (High-Speed) or 1 (High-resolution" %(chns[n]))
             if not (ADCs[n] == 0 or ADCs[n] == 1 or ADCs[n] == None):
-                raise B1500A_InputError("The ADC converter type of Channel %d must be either 0 (High-Speed) or 1 (High-resolution" %(chns[n]))
+                raise ValueError("The ADC converter type of Channel %d must be either 0 (High-Speed) or 1 (High-resolution" %(chns[n]))
             
     #Adjust ADC Converter setting for High-Speed and High-Resolution
     #See E5260 Manual page 206 and command 'AIT' for more details
     def SetADCConverter(self, ADC, mode, N=None):
         if not isinstance(ADC, int):
-            raise B1500A_InputError("The ADC converter type must be either 0 (High-Speed) or 1 (High-resolution")
+            raise ValueError("The ADC converter type must be either 0 (High-Speed) or 1 (High-resolution")
         if not (ADC == 0 or ADC == 1):
-            raise B1500A_InputError("The ADC converter type must be either 0 (High-Speed) or 1 (High-resolution")
+            raise ValueError("The ADC converter type must be either 0 (High-Speed) or 1 (High-resolution")
         if not isinstance(mode, int):
-            raise B1500A_InputError("ADC operation mode must be 0 (auto) or 1 (manual) or 2 (PLC mode)")
+            raise ValueError("ADC operation mode must be 0 (auto) or 1 (manual) or 2 (PLC mode)")
         if not (mode == 0 or mode == 1 or mode == 2):
-            raise B1500A_InputError("ADC operation mode must be 0 (auto) or 1 (manual) or 2 (PLC mode)")
+            raise ValueError("ADC operation mode must be 0 (auto) or 1 (manual) or 2 (PLC mode)")
         if not isinstance(N, int):
-            raise B1500A_InputError("AV number must be 1 to 1023 or -1 to -100")
+            raise ValueError("AV number must be 1 to 1023 or -1 to -100")
         if ADC == 0 and mode == 0:
             if (N > 1023 or N < 1):
-                raise B1500A_InputError("(HighSpeed ADC/AutoMode) Number of averaging samples must be between 1 to 1023")
+                raise ValueError("(HighSpeed ADC/AutoMode) Number of averaging samples must be between 1 to 1023")
         if ADC == 0 and mode == 1:
             if (N > 1023 or N < 1):
-                raise B1500A_InputError("(HighSpeed ADC/ManualMode) Number of averaging samples must be between 1 to 1023")
+                raise ValueError("(HighSpeed ADC/ManualMode) Number of averaging samples must be between 1 to 1023")
         if ADC == 0 and mode == 2:
             if (N > 100 or N < 1):
-                raise B1500A_InputError("(HighSpeed ADC/PLCmode) Number of averaging samples must be between 1 to 100")
+                raise ValueError("(HighSpeed ADC/PLCmode) Number of averaging samples must be between 1 to 100")
         if ADC == 1 and mode == 0:
             if (N > 127 or N < 1):
-                raise B1500A_InputError("(HighResolution ADC/AutoMode) Number of averaging samples must be between 1 to 127 (default=6)")
+                raise ValueError("(HighResolution ADC/AutoMode) Number of averaging samples must be between 1 to 127 (default=6)")
         if ADC == 1 and mode == 1:
             if (N > 127 or N < 1):
-                raise B1500A_InputError("(HighResolution ADC/ManualMode) Number of averaging samples must be between 1 to 127")
+                raise ValueError("(HighResolution ADC/ManualMode) Number of averaging samples must be between 1 to 127")
         if ADC == 1 and mode == 2:
             if (N > 100 or N < 1):
-                raise B1500A_InputError("(HighResolution ADC/PLCmode) Number of averaging samples must be between 1 to 100")
+                raise ValueError("(HighResolution ADC/PLCmode) Number of averaging samples must be between 1 to 100")
 
         if ADC == 0: 
             self.ADC_HS_Mode = mode
@@ -948,14 +947,14 @@ class Agilent_B1500A():
     def SetADC(self, ADC, SMU):
         
         if not isinstance(ADC, int):
-            raise B1500A_InputError("The ADC converter type must be either 0 (High-Speed) or 1 (High-resolution")
+            raise ValueError("The ADC converter type must be either 0 (High-Speed) or 1 (High-resolution")
         if not (ADC == 0 or ADC == 1):
-            raise B1500A_InputError("The ADC converter type must be either 0 (High-Speed) or 1 (High-resolution")
+            raise ValueError("The ADC converter type must be either 0 (High-Speed) or 1 (High-resolution")
         
         if not isinstance(SMU, int):
-            raise B1500A_InputError("The Channel number must be an integer between 1 and 10.")
+            raise ValueError("The Channel number must be an integer between 1 and 10.")
         if 1 > SMU > 10:
-            raise B1500A_InputError("The Channel number must be an integer between 1 and 10.")
+            raise ValueError("The Channel number must be an integer between 1 and 10.")
 
         chn = self.getChnNumFromSMUnum(SMU)[0]
         if ADC != None:
@@ -976,176 +975,176 @@ class Agilent_B1500A():
         #check if all values in VM and IM are Boolean
         for element in VM:
             if not isinstance(element, (bool)):
-                raise B1500A_InputError("VM must only contain boolean values")
+                raise ValueError("VM must only contain boolean values")
         for element in IM:
             if not isinstance(element, (bool)):
-                raise B1500A_InputError("IM must only contain boolean values")
+                raise ValueError("IM must only contain boolean values")
         for n in range(len(VM)):
             if not VM[n] and not IM[n]:
-                raise B1500A_InputError("At least one VM or IM must be True")
+                raise ValueError("At least one VM or IM must be True")
 
     def CheckPulseParamSMU(self, hold, width, period, delay):
         if isinstance(hold, (float, int)):
             if hold < 0 or hold > 655.35:
-                raise B1500A_InputError("Hold time must be within 0 to 655.35 sec.")
+                raise ValueError("Hold time must be within 0 to 655.35 sec.")
         else:
-                raise B1500A_InputError("Hold time must be a float value from 0 to 655.35 sec.")
+                raise ValueError("Hold time must be a float value from 0 to 655.35 sec.")
 
         if isinstance(width, (float, int)):
             if width < 5e-4 or width > 2:
-                raise B1500A_InputError("Pulse width must be within 0 to 2 sec.")
+                raise ValueError("Pulse width must be within 0 to 2 sec.")
         else:
-            raise B1500A_InputError("Pulse width must be a float value from 0 to 2 sec.")
+            raise ValueError("Pulse width must be a float value from 0 to 2 sec.")
         
         if isinstance(period, (float, int, type(None))):
             if not (period == 0 or period == None or (period > 5e-3 and period < 5)):
-                raise B1500A_InputError("Pulse period must be either 0 (automatic setting) or between 0.5ms to 5s.")
+                raise ValueError("Pulse period must be either 0 (automatic setting) or between 0.5ms to 5s.")
         else:
-            raise B1500A_InputError("Pulse period must be a float value, either 0 (automatic setting) or between 0.5ms to 5s.")
+            raise ValueError("Pulse period must be a float value, either 0 (automatic setting) or between 0.5ms to 5s.")
         
         if width <= 0.1 and period != None:
             if period < (np.add(width,2e-3)):
-               raise B1500A_InputError("Period must be larger than width+2ms (for width <= 100ms)") 
+               raise ValueError("Period must be larger than width+2ms (for width <= 100ms)") 
         elif width > 0.1:
             if period < (np.add(width,10e-3)):
-               raise B1500A_InputError("Period must be larger than width+10ms (for width > 100ms)") 
+               raise ValueError("Period must be larger than width+10ms (for width > 100ms)") 
         if not (delay == None or (delay >=0 and delay<=width)):
-            raise B1500A_InputError("Delay must be larger than 0 and smaller than the pulse width")
+            raise ValueError("Delay must be larger than 0 and smaller than the pulse width")
     
     def CheckCMUSweepParam(self, hold, delay, sdelay, tdelay, mdelay, Mstart, Mstop, Mstep, Mmode):
         if isinstance(hold, (float,int)):
             if hold < 0 or hold > 655.35:
-                raise B1500A_InputError("Hold time must be a within 0 to 655.35 sec.")
+                raise ValueError("Hold time must be a within 0 to 655.35 sec.")
         else:
-            raise B1500A_InputError("Hold time must be a float value from 0 to 655.35 sec.")
+            raise ValueError("Hold time must be a float value from 0 to 655.35 sec.")
        
         if isinstance(delay, (float,int)):
             if delay < 0 or delay > 65.35:
-                raise B1500A_InputError("Delay time must be within 0 to 65.35 sec.")
+                raise ValueError("Delay time must be within 0 to 65.35 sec.")
         else:
-            raise B1500A_InputError("Delay time must be a float value from 0 to 65.35 sec.")
+            raise ValueError("Delay time must be a float value from 0 to 65.35 sec.")
 
         if isinstance(sdelay, (float,int)):
             if sdelay < 0 or sdelay > 1:
-                raise B1500A_InputError("Sdelay time must be within 0 to 1 sec.")
+                raise ValueError("Sdelay time must be within 0 to 1 sec.")
         elif sdelay == None:
             None
         else:
-            raise B1500A_InputError("Sdelay time must be within a float value of 0 to 1 sec.")
+            raise ValueError("Sdelay time must be within a float value of 0 to 1 sec.")
 
         if isinstance(tdelay,(float,int)):
             if tdelay < 0 or tdelay > delay:
-                raise B1500A_InputError("Tdelay time must be within 0 to delay.")
+                raise ValueError("Tdelay time must be within 0 to delay.")
         elif tdelay == None:
             None
         else:
-            raise B1500A_InputError("Tdelay time must be a float value from 0 to delay.")
+            raise ValueError("Tdelay time must be a float value from 0 to delay.")
 
         if isinstance(mdelay, (float,int)):
             if mdelay < 0 or mdelay > 65.535:
-                raise B1500A_InputError("Mdelay time must be within 0 to 65.535 sec.")
+                raise ValueError("Mdelay time must be within 0 to 65.535 sec.")
         elif mdelay == None:
             None
         else:
-            raise B1500A_InputError("Mdelay time must be an integer from 0 to 65.535 sec.")
+            raise ValueError("Mdelay time must be an integer from 0 to 65.535 sec.")
         
         if Mstart > np.absolute(42) or Mstop > np.absolute(42):
-            raise B1500A_InputError("Start and Stop voltages cannot exceed 42V")
+            raise ValueError("Start and Stop voltages cannot exceed 42V")
         
         if isinstance(Mstep, int):
             if Mstep < 1 or Mstep > 1001:
-                raise B1500A_InputError("the Step number must be an integer between 1 and 1001.")
+                raise ValueError("the Step number must be an integer between 1 and 1001.")
         else: 
-            raise B1500A_InputError("the Step number must be an integer between 1 and 1001.")
+            raise ValueError("the Step number must be an integer between 1 and 1001.")
         
         if isinstance(Mmode, int):
             if Mmode > 4 or Mmode < 1:
-                raise B1500A_InputError("The sweep mode of the staircase must be 1 (linear/single), 2 (log/single), 3 (linear/double) or 4 (log/double).")
+                raise ValueError("The sweep mode of the staircase must be 1 (linear/single), 2 (log/single), 3 (linear/double) or 4 (log/double).")
         elif Mmode == None: 
             None
         else:
-            raise B1500A_InputError("The sweep mode of the staircase must be an integer of the following values: 1 (linear/single), 2 (log/single), 3 (linear/double) or 4 (log/double).")
+            raise ValueError("The sweep mode of the staircase must be an integer of the following values: 1 (linear/single), 2 (log/single), 3 (linear/double) or 4 (log/double).")
         
     def CheckSweepParam(self, hold, delay, sdelay, tdelay, mdelay, AA, AApost, SChn, Sstart, Sstop, MChn, Mstart, Mstop, Mstep, Mmode):
         if isinstance(hold, (float,int)):
             if hold < 0 or hold > 655.35:
-                raise B1500A_InputError("Hold time must be a within 0 to 655.35 sec.")
+                raise ValueError("Hold time must be a within 0 to 655.35 sec.")
         else:
-            raise B1500A_InputError("Hold time must be a float value from 0 to 655.35 sec.")
+            raise ValueError("Hold time must be a float value from 0 to 655.35 sec.")
        
         if isinstance(delay, (float,int)):
             if delay < 0 or delay > 65.35:
-                raise B1500A_InputError("Delay time must be within 0 to 65.35 sec.")
+                raise ValueError("Delay time must be within 0 to 65.35 sec.")
         else:
-            raise B1500A_InputError("Delay time must be a float value from 0 to 65.35 sec.")
+            raise ValueError("Delay time must be a float value from 0 to 65.35 sec.")
 
         if isinstance(sdelay, (float,int)):
             if sdelay < 0 or sdelay > 1:
-                raise B1500A_InputError("Sdelay time must be within 0 to 1 sec.")
+                raise ValueError("Sdelay time must be within 0 to 1 sec.")
         elif sdelay == None:
             None
         else:
-            raise B1500A_InputError("Sdelay time must be within a float value of 0 to 1 sec.")
+            raise ValueError("Sdelay time must be within a float value of 0 to 1 sec.")
 
         if isinstance(tdelay,(float,int)):
             if tdelay < 0 or tdelay > delay:
-                raise B1500A_InputError("Tdelay time must be within 0 to delay.")
+                raise ValueError("Tdelay time must be within 0 to delay.")
         elif tdelay == None:
             None
         else:
-            raise B1500A_InputError("Tdelay time must be a float value from 0 to delay.")
+            raise ValueError("Tdelay time must be a float value from 0 to delay.")
 
         if isinstance(mdelay, (float,int)):
             if mdelay < 0 or mdelay > 65.535:
-                raise B1500A_InputError("Mdelay time must be within 0 to 65.535 sec.")
+                raise ValueError("Mdelay time must be within 0 to 65.535 sec.")
         elif mdelay == None:
             None
         else:
-            raise B1500A_InputError("Mdelay time must be an integer from 0 to 65.535 sec.")
+            raise ValueError("Mdelay time must be an integer from 0 to 65.535 sec.")
         
         if isinstance(AA, int):
             if not AA == 1 or not AA == 2 or not AApost==1 or AApost==2: 
-                raise B1500A_InputError("AA and AApost must be 1 or 2.")
+                raise ValueError("AA and AApost must be 1 or 2.")
         elif AA == None:
             None
         else:
-            raise B1500A_InputError("AA and AApost must be an integer of 1 or 2.")
+            raise ValueError("AA and AApost must be an integer of 1 or 2.")
 
         if not SChn == None:
             if (Sstart == None or Sstop == None):
-                raise B1500A_InputError("If a synchronous sweep source is set, Sstart and Sstop must be set as well.")
+                raise ValueError("If a synchronous sweep source is set, Sstart and Sstop must be set as well.")
         
         if isinstance(Mmode, int):
             if Mmode > 4 or Mmode < 1:
-                raise B1500A_InputError("The sweep mode of the staircase must be 1 (linear/single), 2 (log/single), 3 (linear/double) or 4 (log/double).")
+                raise ValueError("The sweep mode of the staircase must be 1 (linear/single), 2 (log/single), 3 (linear/double) or 4 (log/double).")
         elif Mmode == None: 
             None
         else:
-            raise B1500A_InputError("The sweep mode of the staircase must be an integer of the following values: 1 (linear/single), 2 (log/single), 3 (linear/double) or 4 (log/double).")
+            raise ValueError("The sweep mode of the staircase must be an integer of the following values: 1 (linear/single), 2 (log/single), 3 (linear/double) or 4 (log/double).")
         
         if Mstart > np.absolute(42) or Mstop > np.absolute(42):
-            raise B1500A_InputError("Start and Stop voltages cannot exceed 42V")
+            raise ValueError("Start and Stop voltages cannot exceed 42V")
         if not Sstart == None:
             if Sstart > np.absolute(42) or Sstop > np.absolute(42):
-                raise B1500A_InputError("Start and Stop voltages cannot exceed 42V")
+                raise ValueError("Start and Stop voltages cannot exceed 42V")
         if Mmode == 2 or Mmode == 4: 
             if Mstart > 0 and Mstop < 0:
-                raise B1500A_InputError("Start and Stop voltages must be the same polarity in log sweep mode.")
+                raise ValueError("Start and Stop voltages must be the same polarity in log sweep mode.")
         if SChn != None:
             if Sstart > 0 and Sstop < 0:
-                raise B1500A_InputError("Start and Stop voltages must be the same polarity in log sweep mode.")
+                raise ValueError("Start and Stop voltages must be the same polarity in log sweep mode.")
         
         if isinstance(Mstep, int):
             if Mstep < 1 or Mstep > 1001:
-                raise B1500A_InputError("the Step number must be an integer between 1 and 1001.")
+                raise ValueError("the Step number must be an integer between 1 and 1001.")
         else: 
-            raise B1500A_InputError("the Step number must be an integer between 1 and 1001.")
+            raise ValueError("the Step number must be an integer between 1 and 1001.")
        
     def checkComplPolarity(self, Chns,complPolarity):
         for n in range(len(Chns)): 
             if not complPolarity[n] == None: 
                 if not (complPolarity[n] < 3 or complPolarity[n] > 0):
-                    raise B1500A_InputError("The Compliance Polarity of connection for Channel %d must be 0, 1 or None." %(Chns[n]))
+                    raise ValueError("The Compliance Polarity of connection for Channel %d must be 0, 1 or None." %(Chns[n]))
  
     #creates the DV command string
     def compileDV(self, chnum, vrange, voltage ,Icomp=None,comp_polarity=None, irange=None):
@@ -1383,15 +1382,15 @@ class Agilent_B1500A():
                 '''
                 if VorI[n]:
                     if np.absolute(VPpulse) > np.absolute(VComp[n]):
-                        raise B1500A_InputError("Pbase must be lower than Compliance value")
+                        raise ValueError("Pbase must be lower than Compliance value")
                     if np.absolute(VPbase) > np.absolute(VPpulse):
-                        raise B1500A_InputError("Pbase must be lower than Ppulse value")
+                        raise ValueError("Pbase must be lower than Ppulse value")
 
                 if VorI == False:
                     if np.absolute(IPpulse) > np.absolute(IComp[n]):
-                        raise B1500A_InputError("Ppulse must be lower than Compliance value")
+                        raise ValueError("Ppulse must be lower than Compliance value")
                     if np.absolute(IPbase) > np.absolute(IPpulse):
-                        raise B1500A_InputError("Pbase must be lower than Ppulse value")
+                        raise ValueError("Pbase must be lower than Ppulse value")
                 '''
             n+=1
 
@@ -1399,28 +1398,28 @@ class Agilent_B1500A():
                             IPulseStop, PStep, VComp, IComp, VorI, PChn):
         
         if not isinstance(PStep, (int)):
-            raise B1500A_InputError("PStep must only contain integer values")
+            raise ValueError("PStep must only contain integer values")
         if PStep < 1 or PStep > 1001:
-            raise B1500A_InputError("PStep must be between 1 and 1001")
+            raise ValueError("PStep must be between 1 and 1001")
 
         n=0
         for element in Chns:
             if Chns[n] == PChn:
                 if VorI[n]:
                     if np.absolute(VPpulse) > np.absolute(VComp[n]):
-                        raise B1500A_InputError("Pbase must be lower than Compliance value")
+                        raise ValueError("Pbase must be lower than Compliance value")
                     if np.absolute(VPpulse) > np.absolute(VPulseStop):
-                        raise B1500A_InputError("Ppulse must be lower than PulseStop value")    
+                        raise ValueError("Ppulse must be lower than PulseStop value")    
                     if np.absolute(VPbase) > np.absolute(VPpulse):
-                        raise B1500A_InputError("Pbase must be lower than Ppulse value")
+                        raise ValueError("Pbase must be lower than Ppulse value")
 
                 if VorI == False:
                     if np.absolute(IPpulse) > np.absolute(IComp[n]):
-                        raise B1500A_InputError("Ppulse must be lower than Compliance value")
+                        raise ValueError("Ppulse must be lower than Compliance value")
                     if np.absolute(IPpulse) > np.absolute(IPulseStop):
-                        raise B1500A_InputError("Ppulse must be lower than PulseStop value")  
+                        raise ValueError("Ppulse must be lower than PulseStop value")  
                     if np.absolute(IPbase) > np.absolute(IPpulse):
-                        raise B1500A_InputError("Pbase must be lower than Ppulse value")
+                        raise ValueError("Pbase must be lower than Ppulse value")
 
             n+=1
     
@@ -1474,7 +1473,7 @@ class Agilent_B1500A():
         #check if all values in VorI are Boolean
         for element in VorI:
             if not isinstance(element, (bool)):
-                raise B1500A_InputError("VorI must only contain boolean values")
+                raise ValueError("VorI must only contain boolean values")
 
         # Checks base variables
         self.CheckADCValues(SMUs, ADCs)
@@ -1611,7 +1610,7 @@ class Agilent_B1500A():
         #check if all values in VorI are Boolean
         for element in VorI:
             if not isinstance(element, (bool)):
-                raise B1500A_InputError("VorI must only contain boolean values")
+                raise ValueError("VorI must only contain boolean values")
 
         self.CheckRanges(SMUs, "Voltage", RV)
         self.CheckRanges(SMUs, "Current", RI)
@@ -1743,7 +1742,7 @@ class Agilent_B1500A():
         #check if all values in VorI are Boolean
         for element in VorI:
             if not isinstance(element, (bool)):
-                raise B1500A_InputError("VorI (Voltage or Current) must only contain boolean values")
+                raise ValueError("VorI (Voltage or Current) must only contain boolean values")
         
         #if np.any(not PorC):
         #    raise SyntaxError("P or C (Pulse or Constant) must contain one True Value indicating a Pulse channel")
@@ -1779,9 +1778,9 @@ class Agilent_B1500A():
                 self.instWrite("SSR %d, %d\n" %(SSR[n], Chns[n]))
             
             if not self.is_int(PChn):
-                raise B1500A_InputError("PChn must be an integer between 1 and 8 and be present in SMUs.")
+                raise ValueError("PChn must be an integer between 1 and 8 and be present in SMUs.")
             if Psmu > 8 or Psmu < 1 or Psmu not in SMUs: 
-                raise B1500A_InputError("PChn must be an integer between 1 and 8 and be present in SMUs.")
+                raise ValueError("PChn must be an integer between 1 and 8 and be present in SMUs.")
             
             if VorI[n]:
                 self.instWrite(self.compileDV(Chns[n], RV[n], Val[n], IComp[n], complPolarity[n], RI[n]))
@@ -1913,15 +1912,15 @@ class Agilent_B1500A():
         #check if all values in VorI are Boolean
         for element in VorI:
             if not isinstance(element, (bool)):
-                raise B1500A_InputError("VorI must only contain boolean values")
+                raise ValueError("VorI must only contain boolean values")
 
         if not Ssmu == None:
             if Msmu in Ssmu:
-                raise B1500A_InputError("Ssmu (Synchronized sweep Channel) must not be defined as Msmu (primary Sweep Channel).")
+                raise ValueError("Ssmu (Synchronized sweep Channel) must not be defined as Msmu (primary Sweep Channel).")
 
             for SC in Ssmu:
                 if not SC in SMUs:
-                    raise B1500A_InputError("Ssmu (Synchronized sweep Channel) must not be defined as an active Channel in SMUs.")
+                    raise ValueError("Ssmu (Synchronized sweep Channel) must not be defined as an active Channel in SMUs.")
         
         self.CheckADCValues(SMUs, ADCs)
         self.CheckRanges(SMUs, "Voltage", RV)
@@ -2109,7 +2108,7 @@ class Agilent_B1500A():
             if not isinstance(chn, int):
                 raise TypeError("Channel ID must be an integer from 1 to %d." %(self.NumSMUs))
             if chn < 1 or chn > self.NumSMUs:
-                raise B1500A_InputError("Channel ID must be an integer from 1 to %d." %(self.NumSMUs))
+                raise ValueError("Channel ID must be an integer from 1 to %d." %(self.NumSMUs))
     
     def getChnNumFromSMUnum(self,chns):
         if not isinstance(chns, list):
@@ -2190,7 +2189,7 @@ class Agilent_B1500A():
         #check if all values in VorI are Boolean
         for element in VorI:
             if not isinstance(element, (bool)):
-                raise B1500A_InputError("VorI (Voltage or Current) must only contain boolean values")
+                raise ValueError("VorI (Voltage or Current) must only contain boolean values")
         
         #if np.any(not PorC):
         #    raise SyntaxError("P or C (Pulse or Constant) must contain one True Value indicating a Pulse channel")
@@ -2226,9 +2225,9 @@ class Agilent_B1500A():
                 self.instWrite("SSR %d, %d\n" %(SSR[n], Chns[n]))
             
             if not self.is_int(PChn):
-                raise B1500A_InputError("PChn must be an integer between 1 and 8 and be present in Chns.")
+                raise ValueError("PChn must be an integer between 1 and 8 and be present in Chns.")
             if PChn > 8 or PChn < 1 or PChn not in Chns: 
-                raise B1500A_InputError("PChn must be an integer between 1 and 8 and be present in Chns.")
+                raise ValueError("PChn must be an integer between 1 and 8 and be present in Chns.")
 
             if VorI[n]:
                 self.instWrite(self.compileDV(Chns[n], RV[n], Val[n], IComp[n], complPolarity[n], RI[n]))
@@ -2311,18 +2310,18 @@ class Agilent_B1500A():
     def CheckVMon(self, VMon):
 
         if not isinstance(VMon, (bool, type(None))):
-            raise B1500A_InputError("MFCMU data output of the AC voltage and DC voltage monitor values must be either True or False.")
+            raise ValueError("MFCMU data output of the AC voltage and DC voltage monitor values must be either True or False.")
     
     def CheckSSL(self, SSL):
 
         if not isinstance(SSL, (bool, type(None))):
-            raise B1500A_InputError("MFCMU Connection status indicator (LED) of the SCUU must be either True or False")
+            raise ValueError("MFCMU Connection status indicator (LED) of the SCUU must be either True or False")
 
     def CheckSCUU(self, con):
         if not isinstance(con, (int)):
-            raise B1500A_InputError("SCUU connection path must be an integer between 1 and 4.")
+            raise ValueError("SCUU connection path must be an integer between 1 and 4.")
         if 1 > con > 4:
-            raise B1500A_InputError("SCUU connection path must be an integer between 1 and 4.")
+            raise ValueError("SCUU connection path must be an integer between 1 and 4.")
     
     def CheckCMURange(self, mode, Range, freq):
 
@@ -2331,18 +2330,18 @@ class Agilent_B1500A():
         f5M = [50,100,300,1000,3000]
 
         if not isinstance(mode, (bool, type(None))):
-            raise B1500A_InputError("CMU measurement range mode must be of type bool (True: Auto Ranging, False: Fixed range)")
+            raise ValueError("CMU measurement range mode must be of type bool (True: Auto Ranging, False: Fixed range)")
         if mode != None:
             if not mode:
                 if freq <= 200000:
                     if not Range in f200k:
-                        raise B1500A_InputError("CMU measurement range must be 50,100,300,1000,3000,10000,30000,100000,300000 ohm for freq <= 200kHz")
+                        raise ValueError("CMU measurement range must be 50,100,300,1000,3000,10000,30000,100000,300000 ohm for freq <= 200kHz")
                 if freq <= 2000000:
                     if not Range in f2M:
-                        raise B1500A_InputError("CMU measurement range must be 50,100,300,1000,3000,10000,30000 ohm for freq <= 2MHz")
+                        raise ValueError("CMU measurement range must be 50,100,300,1000,3000,10000,30000 ohm for freq <= 2MHz")
                 else:
                     if not Range in f5M:
-                        raise B1500A_InputError("CMU measurement range must be 50,100,300,1000,3000 ohm for freq <= 5MHz")
+                        raise ValueError("CMU measurement range must be 50,100,300,1000,3000 ohm for freq <= 5MHz")
 
 
 
@@ -2399,7 +2398,7 @@ class Agilent_B1500A():
         #check if all values in VorI are Boolean
         for element in VorI:
             if not isinstance(element, (bool)):
-                raise B1500A_InputError("VorI must only contain boolean values")
+                raise ValueError("VorI must only contain boolean values")
 
         # Checks base variables
         self.CheckADCValues(SMUs, ADCs)
@@ -2564,7 +2563,7 @@ class Agilent_B1500A():
         #check if all values in VorI are Boolean
         for element in VorI:
             if not isinstance(element, (bool)):
-                raise B1500A_InputError("VorI must only contain boolean values")
+                raise ValueError("VorI must only contain boolean values")
 
         # Checks base variables
         self.CheckADCValues(SMUs, ADCs)

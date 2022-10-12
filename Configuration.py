@@ -362,6 +362,11 @@ class Configuration:
                     vars(self)[key] = int(value)
                 except ValueError:
                     None
+            if key.find('$$ProberWindow$$_') == 0:
+                try:
+                    vars(self)[key] = int(value)
+                except ValueError:
+                    None
             if key == "InititalMeasurement":
                 vars(self)[key] = str(value)
             if key == "InfoLogSave":

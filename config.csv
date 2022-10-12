@@ -20,7 +20,7 @@ NumXdevices,25
 NumYdevices,1
 DeviceStartX,1
 DeviceStartY,1
-MultipleDev,True
+MultipleDev,False
 Dies,[[-10, -4], [-10, -2], [-10, 0], [-10, 2], [-10, 4], [-8, -6], [-8, -4], [-8, -2], [-8, 0], [-8, 2], [-8, 4], [-8, 6], [-6, -6], [-6, -4], [-6, -2], [-6, 0], [-6, 2], [-6, 4], [-6, 6], [-4, -8], [-4, -6], [-4, -4], [-4, -2], [-4, 0], [-4, 2], [-4, 4], [-4, 6], [-4, 8], [-2, -8], [-2, -6], [-2, -4], [-2, -2], [-2, 0], [-2, 2], [-2, 4], [-2, 6], [-2, 8], [0, -8], [0, -6], [0, -4], [0, -2], [0, 0], [0, 2], [0, 4], [0, 6], [0, 8], [2, -8], [2, -6], [2, -4], [2, -2], [2, 0], [2, 2], [2, 4], [2, 6], [2, 8], [4, -8], [4, -6], [4, -4], [4, -2], [4, 0], [4, 2], [4, 4], [4, 6], [4, 8], [6, -6], [6, -4], [6, -2], [6, 0], [6, 2], [6, 4], [6, 6], [8, -6], [8, -4], [8, -2], [8, 0], [8, 2], [8, 4], [8, 6], [10, -4], [10, -2], [10, 0], [10, 2], [10, 4]]
 SpecFile,
 SpecCode,HfO2_Cl_7nm
@@ -96,3 +96,14 @@ $ADC$_GPIB0::17::INSTR_$HS$_$Mode$,0
 $ADC$_GPIB0::17::INSTR_$HS$_$Mode2$_$N$,1
 computerName,TELNFSPROBE
 Specs,None
+$$ProberWindow$$_ChuckScope,True
+$$ProberWindow$$_Scope_MoveX,200
+$$ProberWindow$$_Scope_MoveY,200
+$$ProberWindow$$_Scope_MoveXIndex,1
+$$ProberWindow$$_Scope_MoveYIndex,1
+$$ProberWindow$$_Scope_Velocity,100
+$$ProberWindow$$_Chuck_MoveX,200
+$$ProberWindow$$_Chuck_MoveY,200
+$$ProberWindow$$_Chuck_MoveXIndex,1
+$$ProberWindow$$_Chuck_MoveYIndex,1
+$$ProberWindow$$_Chuck_Velocity,100

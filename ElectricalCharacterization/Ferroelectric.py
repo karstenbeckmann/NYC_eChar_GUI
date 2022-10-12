@@ -182,8 +182,7 @@ def FEretention(eChar, PulseChn, GroundChn, Vpulse, delay, tslope, twidth, tbase
     header.append(newline[0])
     header.append(newline[1])
 
-    eChar.threads.append(th.Thread(target = FEDataPrepAndExport, args=(eChar, FEdata, header, MeasType)))
-    eChar.threads[-1].start()
+    eChar.startThread(FEDataPrepAndExport, FEdata, header, MeasType)
 
     valPup = dh.Value(eChar, Pup, 'Pup', DoYield=False, Unit='C/m2')
     valPdown = dh.Value(eChar, Pdown, 'Pdown', DoYield=False, Unit='C/m2')

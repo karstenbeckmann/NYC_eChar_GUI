@@ -6,6 +6,7 @@ Date: 6/12/2018
 For more information please use the provided SUNY POLY python e-characterization manual.
 """
 
+import Agilent as ag 
 import matplotlib.pyplot as plt
 import numpy as np
 import csv as csv
@@ -91,6 +92,7 @@ class ECharacterization:
     ResData = qu.Queue()
     SelectorEndurance = qu.Queue()
     SelectorHeader = []
+    currentThreads = []
 
 
     # API Return Value - Error Code
@@ -218,6 +220,9 @@ class ECharacterization:
         
         self.estMultFactorB1530A = 1
         self.SubProcessThread = qu.Queue()
+        
+        self.sendThreads = qu.Queue()
+
         self.deviceCharacterization = None
         
         '''
@@ -243,6 +248,7 @@ class ECharacterization:
         self.EnduranceData = []
         self.AdditionalHeader = []
         self.ExternalHeader = []
+        self.stopMeasurement = False
         
         self.cyc = []
         self.HRS = []
@@ -287,6 +293,75 @@ class ECharacterization:
         self.MeasLogThread = th.Thread(target=std.writeMeasurmentLog, args=(self.deviceCharacterization, self, self.ConfigCopy, self.Instruments, self.MeasTypeClass))
         self.MeasLogThread.start()
 
+
+    def isMeasurementFinished(self):
+
+        finished = False
+        while not self.finished.empty():
+            finished = self.finished.get()
+           
+        self.finished.put(finished)
+        
+        return finished
+
+    def waitForThreads(self):
+
+        self.finished.put(True)
+
+        for thr in self.currentThreads:
+            while thr.isAlive():
+                thr.join()
+                while not self.Stop.empty():
+                    stop = self.Stop.get()
+                if stop:    
+                    break
+
+                
+        while len(self.currentThreads) > 0:
+            try:
+                entry = self.SubProcessThread.get(block=True, timeout=1)
+            except qu.Empty:
+                entry = None
+
+            if entry != None:
+                try:
+                    if entry['Finished'] == True:
+                        break
+                except:
+                    self.SubProcessThread.put(entry)
+            
+            
+            if self.checkStop():    
+                break
+
+
+    def startThread(self, function, *args):
+        
+        self.clearFinished()
+        args = tuple((self, *args))
+        thread = th.Thread(target=function, args=args, daemon=True)
+        self.currentThreads.append(thread)
+        self.sendThreads.put(thread)
+
+    def update(self):
+
+        try:
+            if self.MeasLogThread.is_alive():
+                self.MeasQu.put(None)
+        except AttributeError:
+            None
+
+        while not self.sendThreads.empty():
+            thread = self.sendThreads.get()
+            self.threads.append(thread)
+
+        actThreads = 0
+        for thread in self.threads:
+            if thread.is_alive():
+                actThreads = actThreads + 1
+
+        self.actThreads = actThreads
+
     def getMeasLogQueue(self):
         return self.MeasQu
 
@@ -319,7 +394,8 @@ class ECharacterization:
         header2 = cp.deepcopy(header)
         thread =th.Thread(target = std.writeDataToFile , args=(header2, data2, folder, filename, self.MeasQu, subFolder))
         thread.start()
-        self.threads.append(thread)
+        self.SubProcessThread.put(thread)
+        self.sendThreads.put(thread)
 
     def getPrimaryPulseGenerator(self):
         PG = self.Instruments.getPrimaryTool("PG")["Instrument"]
@@ -346,9 +422,6 @@ class ECharacterization:
                 retModel = mod
                 curRank = inst["Rank"]
         return retModel
-
-    def writeError(self, msg):
-        self.ErrorQueue.put("Echar: %s" %(message))
 
     def getTools(self):
         tools = dict()
@@ -515,13 +588,15 @@ class ECharacterization:
             self.finished.get()
 
     def executeMeasurement(self, folder, name, parameters):
-        try:
-            func = getattr(self.Modules[folder],name)
-            ret = func(self, *parameters)
-            return ret
-        except ToolInputError as e:
-            self.ErrorQueue.put(e)
-            return "stop"
+        
+        self.currentThreads = []
+        self.stopMeasurement = False
+        func = getattr(self.Modules[folder],name)
+        ret = func(self, *parameters)
+
+        self.waitForThreads()
+
+        return ret
 
 ###########################################################################################################################
     
@@ -611,6 +686,14 @@ class ECharacterization:
         stop = False
         while not self.Stop.empty():
             stop = self.Stop.get()
+
+        if self.stopMeasurement:
+            return True
+
+        if stop == True:
+            self.stopMeasurement = True
+            self.finished.put(True)
+        
         return stop
 
     def clearStop(self):

@@ -13,7 +13,6 @@ from ctypes import *
 import StdDefinitions as std
 import engineering_notation as eng
 import math as ma
-from Exceptions import *
 
 import numpy as np
 import pyvisa as vs
@@ -83,7 +82,7 @@ class Agilent_81110A:
 
         if err == 1:
             ret = self.inst.query("SYST:ERR? 1\n")
-            raise B1110A_Error("PG81110 encountered error #%d." %(ret))
+            raise SyntaxError("PG81110 encountered error #%d." %(ret))
         return ret
 
 
@@ -114,7 +113,7 @@ class Agilent_81110A:
 
         if err == 1:
             ret = self.inst.query("ERR? 1\n")
-            raise B1110A_Error("PG81110 encountered error #%d." %(ret))
+            raise SyntaxError("PG81110 encountered error #%d." %(ret))
         return ret
 
     def reset(self):
@@ -137,9 +136,9 @@ class Agilent_81110A:
     def setExtInputImpedance(self, imp):
 
         if not isinstance(imp, int):
-            raise B1110A_InputError("Impedance must be either 50 or 10000 ohm.")
+            raise ValueError("Impedance must be either 50 or 10000 ohm.")
         if not (imp == 50 or imp == 10000): 
-            raise B1110A_InputError("Impedance must be either 50 or 10000 ohm.")
+            raise ValueError("Impedance must be either 50 or 10000 ohm.")
         if imp == 50:
             self.instWrite(":ARM:IMP 50OHM")
         else:
@@ -148,9 +147,9 @@ class Agilent_81110A:
     def setArmFrequency(self, freq):
 
         if not isinstance(freq, (int,float)):
-            raise B1110A_InputError("Trigger Frequency must be between 1mHz and 150MHz.")
+            raise ValueError("Trigger Frequency must be between 1mHz and 150MHz.")
         if 1e-3 <= freq <=150e6:
-            raise B1110A_InputError("Trigger Frequency must be between 1mHz and 150MHz.")
+            raise ValueError("Trigger Frequency must be between 1mHz and 150MHz.")
         
         self.instWrite(":ARM:FREQ %sHZ" %(eng.EngNumber(freq)))
 
@@ -163,18 +162,18 @@ class Agilent_81110A:
     def setArmLevel(self, voltage):
 
         if not isinstance(voltage, (int,float)):
-            raise B1110A_InputError("Trigger Level must be between -10V and 10V.")
+            raise ValueError("Trigger Level must be between -10V and 10V.")
         if -10 > voltage > 10:
-            raise B1110A_InputError("Trigger Level must be between -10V and 10V.")
+            raise ValueError("Trigger Level must be between -10V and 10V.")
         
         self.instWrite(":ARM:LEV %.2fV"%(voltage))
     
     def setArmPeriod(self, period):
 
         if not isinstance(period, (int,float)):
-            raise B1110A_InputError("Arm Period must be between 3.03ns and 999.5s.")
+            raise ValueError("Arm Period must be between 3.03ns and 999.5s.")
         if 3.03e-9 > period > 999.5:
-            raise B1110A_InputError("Arm Period must be between 3.03ns and 999.5s.")
+            raise ValueError("Arm Period must be between 3.03ns and 999.5s.")
         
         self.instWrite(":ARM:PER %sS" %(str(eng.EngNumber(period, precision=0)).upper()))
 
@@ -218,9 +217,9 @@ class Agilent_81110A:
     def getPatternData(self, data, chn=None):
 
         if not isinstance(data, int):
-            raise B1110A_InputError("The Pattern data must be an integer (check manual for more information).")
+            raise ValueError("The Pattern data must be an integer (check manual for more information).")
         if not (chn==1 or chn==2 or (str(chn).lower() == 'both') or chn == None):
-            raise B1110A_InputError("The Channel to get the Pattern must be 1,2 or 'Both'")
+            raise ValueError("The Channel to get the Pattern must be 1,2 or 'Both'")
         ret = None
         if chn == 1:
             ret = self.instQuery(":DIG:PATT:DATA1 %d" %(data))
@@ -235,19 +234,19 @@ class Agilent_81110A:
     def setPseudoRandomBitSequence(self, n=7, length=2, chn=None):
         
         if not isinstance(n, int):
-            raise B1110A_InputError("The basis of the PRBS must be between 7 and 14.")
+            raise ValueError("The basis of the PRBS must be between 7 and 14.")
         if 7 > n > 14:
-            raise B1110A_InputError("The basis of the PRBS must be between 7 and 14.")
+            raise ValueError("The basis of the PRBS must be between 7 and 14.")
         if not isinstance(length, int):
-            raise B1110A_InputError("The length of the PRBS must be between 2 and 16384.")
+            raise ValueError("The length of the PRBS must be between 2 and 16384.")
         if 2 > length > 16384:
-            raise B1110A_InputError("The length of the PRBS must be between 2 and 16384.")
+            raise ValueError("The length of the PRBS must be between 2 and 16384.")
 
         if not (chn==1 or chn==2 or (str(chn).lower() == 'both') or chn == None):
-            raise B1110A_InputError("The Channel to get the Pattern must be 1,2 or 'Both'")
+            raise ValueError("The Channel to get the Pattern must be 1,2 or 'Both'")
         
         if not isinstance(n, int):
-            raise B1110A_InputError("The Pattern data must be an integer (check manual for more information).")
+            raise ValueError("The Pattern data must be an integer (check manual for more information).")
         
         if chn == 1:
             ret = self.instQuery(":DIG:PATT:PRBS1 %d, %d" %(n, length))
@@ -262,19 +261,19 @@ class Agilent_81110A:
     def setClockData(self, n, length, chn=None):
 
         if not isinstance(n, int):
-            raise B1110A_InputError("The divider of the Clock data stream must be between 2 and 16384.")
+            raise ValueError("The divider of the Clock data stream must be between 2 and 16384.")
         if 2 > n > 16384:
-            raise B1110A_InputError("The divider of the Clock data stream must be between 2 and 16384.")
+            raise ValueError("The divider of the Clock data stream must be between 2 and 16384.")
         if not isinstance(length, int):
-            raise B1110A_InputError("The length of the Clock data stream must be between 2 and 16384.")
+            raise ValueError("The length of the Clock data stream must be between 2 and 16384.")
         if 2 > length > 16384:
-            raise B1110A_InputError("The length of the Clock data stream must be between 2 and 16384.")
+            raise ValueError("The length of the Clock data stream must be between 2 and 16384.")
 
         if not (chn==1 or chn==2 or (str(chn).lower() == 'both') or chn == None):
-            raise B1110A_InputError("The Channel to get the Pattern must be 1,2 or 'Both'")
+            raise ValueError("The Channel to get the Pattern must be 1,2 or 'Both'")
         
         if not isinstance(n, int):
-            raise B1110A_InputError("The Pattern data must be an integer (check manual for more information).")
+            raise ValueError("The Pattern data must be an integer (check manual for more information).")
         
         if chn == 1:
             ret = self.instQuery(":DIG:PATT:PRES1 %d, %d" %(n, length))
@@ -308,7 +307,7 @@ class Agilent_81110A:
     def setReturnToZeroDataFormat(self, chn=None):
         
         if not (chn==1 or chn==2 or chn == None):
-            raise B1110A_InputError("The Channel to get the Pattern must be 1,2")
+            raise ValueError("The Channel to get the Pattern must be 1,2")
         if chn == None:
             self.instWrite(":DIG:SIGN:FORM RZ")
         else:
@@ -317,7 +316,7 @@ class Agilent_81110A:
 
     def setNonReturnToZeroDataFormat(self, chn=None):
         if not (chn==1 or chn==2 or chn == None):
-            raise B1110A_InputError("The Channel to get the Pattern must be 1,2")
+            raise ValueError("The Channel to get the Pattern must be 1,2")
         if chn == None:
             self.instWrite(":DIG:SIGN:FORM NRZ")
         else:
@@ -328,7 +327,7 @@ class Agilent_81110A:
 
     def setMemoryCardDirectory(self, direc=None):
         if not isinstance(direc, (str, type(None))):
-            raise B1110A_InputError("The new directory must be a string or None (root)")
+            raise ValueError("The new directory must be a string or None (root)")
         
         if direc != None:
             self.instWrite(":MMEM:CDIR direc")
@@ -337,15 +336,15 @@ class Agilent_81110A:
 
     def copyFile(self, filename, copy):
         if not isinstance(filename, (str,)):
-            raise B1110A_InputError("The filename must be a string.")
+            raise ValueError("The filename must be a string.")
         if not isinstance(copy, (str,)):
-            raise B1110A_InputError("The copy name must be a string.")
+            raise ValueError("The copy name must be a string.")
         
         self.instWrite(":MMEM:COPY %s, %s" %(filename, copy))
         
     def deleteFile(self, filename):
         if not isinstance(filename, (str,)):
-            raise B1110A_InputError("The filename must be a string.")
+            raise ValueError("The filename must be a string.")
 
         self.instWrite(":MMEM:DEL %s" %(filename))
 
@@ -354,31 +353,31 @@ class Agilent_81110A:
 
     def LoadSettingIntoInternalMemory(self, n, filename):
         if not isinstance(filename, (str,)):
-            raise B1110A_InputError("The filename must be a string.")
+            raise ValueError("The filename must be a string.")
         if not isinstance(n, int):
-            raise B1110A_InputError("n must be an integer from 0 to 9")
+            raise ValueError("n must be an integer from 0 to 9")
         if 0 > n < 9:
-            raise B1110A_InputError("n must be an integer from 0 to 9")
+            raise ValueError("n must be an integer from 0 to 9")
         
         self.instWrite(":MMEM:LOAD:STAT %d, %s" %(n, filename))
 
 
     def StoreSettingOntoMemoryCard(self, n, filename):
         if not isinstance(filename, (str,)):
-            raise B1110A_InputError("The filename must be a string.")
+            raise ValueError("The filename must be a string.")
         if not isinstance(n, int):
-            raise B1110A_InputError("n must be an integer from 0 to 9")
+            raise ValueError("n must be an integer from 0 to 9")
         if 0 > n < 9:
-            raise B1110A_InputError("n must be an integer from 0 to 9")
+            raise ValueError("n must be an integer from 0 to 9")
         
         self.instWrite(":MMEM:STOR:STAT %d, %s" %(n, filename))
 
     def turnOnOutput(self, chn=1):
 
         if not isinstance(chn, int):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not (chn == 1 or chn ==2):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         jobDone = False
         n = 0
         while n < 10 and not jobDone: 
@@ -397,9 +396,9 @@ class Agilent_81110A:
     def turnOffOutput(self, chn=1):
 
         if not isinstance(chn, int):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not (chn == 1 or chn ==2):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         jobDone = False
         n = 0
         while n < 10 and not jobDone: 
@@ -415,9 +414,9 @@ class Agilent_81110A:
 
     def turnDifferentialOutputOn(self, chn=1):
         if not isinstance(chn, int):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not (chn == 1 or chn ==2):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         jobDone = False
         n = 0
         while n < 10 and not jobDone: 
@@ -433,9 +432,9 @@ class Agilent_81110A:
     
     def turnDifferentialOutputOff(self, chn=1):
         if not isinstance(chn, int):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not (chn == 1 or chn ==2):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.") 
+            raise ValueError("The channel ID must be eithe 1 or 2.") 
         
         jobDone = False
         n = 0
@@ -453,112 +452,112 @@ class Agilent_81110A:
     def setOutputImpedance(self, impedance, chn=1):
 
         if not isinstance(impedance, int):
-            raise B1110A_InputError("The impedance must be either 50 or 1000")
+            raise ValueError("The impedance must be either 50 or 1000")
         if not (impedance == 50 or impedance==1000):
-            raise B1110A_InputError("The impedance must be either 50 or 1000")
+            raise ValueError("The impedance must be either 50 or 1000")
         if not isinstance(chn, int):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not (chn == 1 or chn ==2):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
 
         self.instWrite(":OUTP%d:IMP %dOHM" %(chn, impedance))
     
     def setExpectedLoadImpedance(self, impedance, chn=1):
 
         if not isinstance(impedance, int):
-            raise B1110A_InputError("The impedance must be either 50 or 1e6")
+            raise ValueError("The impedance must be either 50 or 1e6")
         if not (impedance == 50 or impedance==1e6):
-            raise B1110A_InputError("The impedance must be either 50 or 1e6")
+            raise ValueError("The impedance must be either 50 or 1e6")
         if not isinstance(chn, int):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not (chn == 1 or chn ==2):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
 
         self.instWrite(":OUTP%d:IMP %sOHM" %(chn, eng.EngNumber(impedance, precision=2)))
 
     def invertedOutputPolarity(self, chn=1):
         if not isinstance(chn, int):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not (chn == 1 or chn ==2):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         self.instWrite(":OUTP%d:POL INV"%(chn))
         
     def normalOutputPolarity(self, chn=1):
         if not isinstance(chn, int):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not (chn == 1 or chn ==2):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         self.instWrite(":OUTP%d:POL NORM"%(chn))
     
     def setCurrentOutput(self, current, chn=1):
         if not isinstance(current, (int,float)):
-            raise B1110A_InputError("The current amplitude must be between 0 and 400mA (0 - 400e-3")
+            raise ValueError("The current amplitude must be between 0 and 400mA (0 - 400e-3")
         if 0 > current > 400e-3:
-            raise B1110A_InputError("The current amplitude must be between 0 and 400mA (0 - 400e-3")
+            raise ValueError("The current amplitude must be between 0 and 400mA (0 - 400e-3")
         if not isinstance(chn, int):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not (chn == 1 or chn ==2):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         self.instWrite(":CURR%d %sA"%(chn,str(eng.EngNumber(current)).upper()))
 
     def setCurrentOffset(self, offset, chn=1):
         if not isinstance(offset, (int,float)):
-            raise B1110A_InputError("The current offset must be an integer.")
+            raise ValueError("The current offset must be an integer.")
         if not isinstance(chn, int):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not (chn == 1 or chn ==2):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         self.instWrite(":CURR%d:OFF %sA"%(chn,str(eng.EngNumber(offset)).upper()))
 
     def setCurrentLowLevel(self, current, chn=1):
         if not isinstance(current, (int,float)):
-            raise B1110A_InputError("The current low level must be between -400mA and 396mA (-400e-3 - 396-3")
+            raise ValueError("The current low level must be between -400mA and 396mA (-400e-3 - 396-3")
         if -400e-3 > current > 396e-3:
-            raise B1110A_InputError("The current low level must be between -400mA and 396mA (-400e-3 - 396-3")
+            raise ValueError("The current low level must be between -400mA and 396mA (-400e-3 - 396-3")
         if not isinstance(chn, int):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not (chn == 1 or chn ==2):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         self.instWrite(":CURR%d:LOW %sA"%(chn,str(eng.EngNumber(current)).upper()))
 
     def setCurrentLimit(self, current, chn=1):
         if not isinstance(current, (int,float)):
-            raise B1110A_InputError("The current limit must be a float/integer")
+            raise ValueError("The current limit must be a float/integer")
         if not isinstance(chn, int):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not (chn == 1 or chn ==2):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         return self.instQuery(":CURR%d:LIM %sA"%(chn,str(eng.EngNumber(current)).upper()))
     
     def setCurrentLimitLow(self, current, chn=1):
         if not isinstance(current, (int,float)):
-            raise B1110A_InputError("The current limit low must be a float/integer")
+            raise ValueError("The current limit low must be a float/integer")
         if not isinstance(chn, int):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not (chn == 1 or chn ==2):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         return self.instQuery(":CURR%d:LIM:LOW %sA"%(chn,str(eng.EngNumber(current)).upper()))
     
     def turnCurrentLimitsOn(self, chn=1):
         if not isinstance(chn, int):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not (chn == 1 or chn ==2):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         self.instWrite(":CURR%d:LIM:STAT ON"%(chn))
         
     def turnCurrentLimitsOff(self, chn=1):
         if not isinstance(chn, int):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not (chn == 1 or chn ==2):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         self.instWrite(":CURR%d:LIM:STAT OFF"%(chn))
 
     def setPulseFrequency(self, frequency=None):
         if not isinstance(frequency, (int,float, type(None))):
-            raise B1110A_InputError("The frequency must be between 1e6 and 330e6 Hz.")
+            raise ValueError("The frequency must be between 1e6 and 330e6 Hz.")
         if frequency != None:
             if 1e6 > frequency > 330e6:
-                raise B1110A_InputError("The frequency must be between 1e6 and 330e6 Hz.")
+                raise ValueError("The frequency must be between 1e6 and 330e6 Hz.")
             return self.instWrite(":FREQ %sHz" %(eng.EngNumber("frequency")))
         else:
             return self.instWrite(":FREQ?")
@@ -576,137 +575,137 @@ class Agilent_81110A:
     
     def setRelativePhaseDelay(self, phase, chn=1):
         if not isinstance(phase, int):
-            raise B1110A_InputError("The phase delay must be 0 to 360 degrees")
+            raise ValueError("The phase delay must be 0 to 360 degrees")
         if 0 > phase > 360:
-            raise B1110A_InputError("The phase delay must be 0 to 360 degrees")
+            raise ValueError("The phase delay must be 0 to 360 degrees")
         if not isinstance(chn, int):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not (chn == 1 or chn ==2):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         self.instWrite(":PHAS%d %d DEG"%(chn, phase))
 
     def setDutyCycle(self, dutycycle, chn=1):
         if not isinstance(chn, int):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not (chn == 1 or chn ==2):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not isinstance(dutycycle, (float,int)):
-            raise B1110A_InputError("The dutycycle must be between 0.001 and 99.9%")
+            raise ValueError("The dutycycle must be between 0.001 and 99.9%")
         if 0.001 > dutycycle > 99.9:
-            raise B1110A_InputError("The dutycycle must be between 0.001 and 99.9%")
+            raise ValueError("The dutycycle must be between 0.001 and 99.9%")
         
         self.instWrite(":PULS:DCYC%d %dPCT" %(chn, dutycycle))
 
     def setPulseDelay(self, delay, chn=1):
         if not isinstance(chn, int):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not (chn == 1 or chn ==2):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not isinstance(delay, (float,int)):
-            raise B1110A_InputError("The pulse delay must be between 0 and 999s")
+            raise ValueError("The pulse delay must be between 0 and 999s")
         if 0 > delay > 999:
-            raise B1110A_InputError("The pulse delay must be between 0 and 999s")
+            raise ValueError("The pulse delay must be between 0 and 999s")
         
         self.instWrite(":PULS:DEL%d %sS" %(chn, str(eng.EngNumber(delay, precision=0)).upper()))
     
     def getPulseDelay(self, chn=1):
         if not isinstance(chn, int):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not (chn == 1 or chn ==2):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         self.instQuery(":PULS:DEL%d?" %(chn))
 
     def setConstantDelay(self, chn=1):
         if not isinstance(chn, int):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not (chn == 1 or chn ==2):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         self.instQuery(":PULS:DEL%d:HOLD TIME" %(chn))
 
     def setConstantPhase(self, chn=1):
         if not isinstance(chn, int):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not (chn == 1 or chn ==2):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         self.instQuery(":PULS:DEL%d:HOLD PRAT" %(chn))
 
     def setDelayUnit(self, unit, chn=1):
         if not isinstance(chn, int):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not (chn == 1 or chn ==2):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not (unit=="S" or unit=="PCT" or unit=="DEG" or unit == "RAD"):
-            raise B1110A_InputError("The unit must be either S (seconds), PCT (percentage), DEG (degree), RAD (radiant).")
+            raise ValueError("The unit must be either S (seconds), PCT (percentage), DEG (degree), RAD (radiant).")
 
         self.instQuery(":PULS:DEL%d:UNIT %s" %(chn, unit))
     
     def turnDoublePulseModeOn(self, chn=1):
         if not isinstance(chn, int):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not (chn == 1 or chn ==2):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         
         self.instWrite(":PULS:DOUB%d ON"%(chn))
         
     def turnDoublePulseModeOff(self, chn=1):
         if not isinstance(chn, int):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not (chn == 1 or chn ==2):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         
         self.instWrite(":PULS:DOUB%d OFF"%(chn))
 
     def setDoublePulseModeDelay(self, delay, chn=1):
 
         if not isinstance(chn, int):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not (chn == 1 or chn ==2):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not isinstance(delay, (float,int)):
-            raise B1110A_InputError("The pulse delay must be between 0 and 999s")
+            raise ValueError("The pulse delay must be between 0 and 999s")
         if 3.03e-9 > delay > 999.5:
-            raise B1110A_InputError("The pulse delay must be between 0 and 999s")
+            raise ValueError("The pulse delay must be between 0 and 999s")
         
         self.instWrite("PULS:DOUB%d:DEL %s" %(chn, str(eng.EngNumber(delay, precision=0)).upper()))
         
 
     def setDoubleModeConstantDelay(self, chn=1):
         if not isinstance(chn, int):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not (chn == 1 or chn ==2):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         self.instWrite(":PULS:DOUB%d:DEL:HOLD TIME" %(chn))
 
     def setDoubleModeConstantPhase(self, chn=1):
         if not isinstance(chn, int):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not (chn == 1 or chn ==2):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         self.instWrite(":PULS:DOUB%d:DEL:HOLD PRAT" %(chn))
 
     def setDoubleModeUnit(self, unit, chn=1):
         if not isinstance(chn, int):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not (chn == 1 or chn ==2):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not (unit=="S" or unit=="PCT"):
-            raise B1110A_InputError("The unit must be either S (seconds), PCT (percentage).")
+            raise ValueError("The unit must be either S (seconds), PCT (percentage).")
 
         self.instWrite(":PULS:DOUB%d:DEL:UNIT %s" %(chn, unit))
     
     def setPulseWidthConstant(self, chn=1):
         if not isinstance(chn, int):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not (chn == 1 or chn ==2):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         
         self.instWrite(":PULS:HOLD%d WIDT"%(chn))
 
     def setPulseDutyCycleConstant(self, chn=1):
         if not isinstance(chn, int):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not (chn == 1 or chn ==2):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         
         self.instWrite(":PULS:HOLD%d DCYC"%(chn))
     
@@ -730,24 +729,24 @@ class Agilent_81110A:
                 return int(ret.strip())
 
             if tmstart+timeout < tm.time():
-                raise B1110A_SelfTestError("PG81110: timeout during self-test.")
+                raise SystemError("PG81110: timeout during self-test.")
 
             tm.sleep(0.5)
 
 
     def setPulseTrailingEdgeConstant(self, chn=1):
         if not isinstance(chn, int):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not (chn == 1 or chn ==2):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         
         self.instWrite(":PULS:HOLD%d TDEL"%(chn))
 
     def setPulsePeriod(self, period):
         if not isinstance(period, (int,float)):
-            raise B1110A_InputError("the pulse period must be float/integer from 3.03ns to 999.5s.")
+            raise ValueError("the pulse period must be float/integer from 3.03ns to 999.5s.")
         if 3.03e-9 > period > 999.5:
-            raise B1110A_InputError("the pulse period must be float/integer from 3.03ns to 999.5s.")
+            raise ValueError("the pulse period must be float/integer from 3.03ns to 999.5s.")
         self.instWrite(":PULS:PER %sS" %(str(eng.EngNumber(period)).upper()))
 
     def getPulsePeriod(self):
@@ -757,111 +756,111 @@ class Agilent_81110A:
 
     def setTrailingDelay(self, delay, chn=1):
         if not isinstance(chn, int):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not (chn == 1 or chn ==2):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not isinstance(delay, (float,int)):
-            raise B1110A_InputError("The pulse delay must be between 1.5ns and 999s")
+            raise ValueError("The pulse delay must be between 1.5ns and 999s")
         if 1.5e-9 > delay > 999.5:
-            raise B1110A_InputError("The pulse delay must be between 1.5ns and 999s")
+            raise ValueError("The pulse delay must be between 1.5ns and 999s")
         self.instWrite(":PULS:TDEL%d %sS" %(chn, str(eng.EngNumber(delay)).upper()))
     
     def setConstantTransistionTime(self, chn=1):
         if not isinstance(chn, int):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not (chn == 1 or chn ==2):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         self.instWrite(":PULS:TRAN%d:HOLD TIME" %(chn))
 
     def setConstantTransistionPulseWidthRatio(self, chn=1):
         if not isinstance(chn, int):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not (chn == 1 or chn ==2):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         self.instWrite(":PULS:TRAN%d:HOLD WRAT" %(chn))
 
     def setTransistionTimeUnit(self, unit, chn):
         if not isinstance(chn, int):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not (chn == 1 or chn ==2):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not (unit=="S" or unit=="PCT"):
-            raise B1110A_InputError("The unit must be either S (seconds), PCT (percentage).")
+            raise ValueError("The unit must be either S (seconds), PCT (percentage).")
         self.instWrite(":PULS:TRAN%d:UNIT %s"%(chn, unit))
 
     def setTransistionTimeOfLeadingEdge(self, transTime, chn):
         if not isinstance(transTime, (int,float)):
-            raise B1110A_InputError("The Transistion Time must be 0.8ns or 1.6ns")
+            raise ValueError("The Transistion Time must be 0.8ns or 1.6ns")
         #if not (transTime == 8e-10 or transTime == 16e-10):
-        #    raise B1110A_InputError("The Transistion Time must be 0.8ns or 1.6ns")
+        #    raise ValueError("The Transistion Time must be 0.8ns or 1.6ns")
         if not isinstance(chn, int):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not (chn == 1 or chn ==2):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         self.instWrite(":PULS:TRAN%d %sS" %(chn, str(eng.EngNumber(transTime)).upper()))
 
     def setTransistionTimeOfTrailingEdge(self, transTime, chn):
         if not isinstance(transTime, (int,float)):
-            raise B1110A_InputError("The Transistion Time must be between 0.8ns or 1.6ns")
+            raise ValueError("The Transistion Time must be between 0.8ns or 1.6ns")
         if not (transTime == 8e-10 or transTime == 16e-10):
-            raise B1110A_InputError("The Transistion Time must be between 0.8ns or 1.6ns")
+            raise ValueError("The Transistion Time must be between 0.8ns or 1.6ns")
         if not isinstance(chn, int):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not (chn == 1 or chn ==2):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         self.instWrite(":PULS:TRAN%d:TRA %s" %(chn, str(eng.EngNumber(transTime)).upper()))
 
     def turnAutomaticPulseCouplingOn(self, chn):
         if not isinstance(chn, int):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not (chn == 1 or chn ==2):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         self.instWrite(":PULS:TRAN%d:TRA:AUTO ON" %(chn))
         
     def turnAutomaticPulseCouplingOff(self, chn):
         if not isinstance(chn, int):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not (chn == 1 or chn ==2):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         self.instWrite(":PULS:TRAN%d:TRA:AUTO OFF" %(chn))
     
     def CoupleTrailingAndLeadingEdge(self, chn):
         if not isinstance(chn, int):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not (chn == 1 or chn ==2):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         self.instWrite(":PULS:TRAN%d:TRA:AUTO ONCE" %(chn))
     
     def setTriggerOutputToTTL(self, chn=1):
         if not isinstance(chn, int):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not (chn == 1 or chn ==2):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         self.instWrite(":PULS:TRIG%d:VOLT TTL" %(chn))
 
     def setTriggerOutputToECL(self, chn=1):
         if not isinstance(chn, int):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not (chn == 1 or chn ==2):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         self.instWrite(":PULS:TRIG%d:VOLT ECL" %(chn))
        
     def setPulseWidth(self, width, chn=1):
         if not isinstance(width, (float, int)):
-            raise B1110A_InputError("The pulse width must be between, 1.5ns and 999.5s.")
+            raise ValueError("The pulse width must be between, 1.5ns and 999.5s.")
         if 1.5e-9 > width > 999.5:
-            raise B1110A_InputError("The pulse width must be between, 1.5ns and 999.5s.")
+            raise ValueError("The pulse width must be between, 1.5ns and 999.5s.")
         if not isinstance(chn, int):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not (chn == 1 or chn ==2):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         self.instWrite(":PULS:WIDT%d %sS" %(chn, str(eng.EngNumber(width)).upper()))
 
     def setPLLreference(self, source, frequency):
         if not (str(source.lower()) == "internal" or str(source.lower()) == "external"):
-            raise B1110A_InputError("The reference source must be either 'internal' or 'external'.")
+            raise ValueError("The reference source must be either 'internal' or 'external'.")
         if not (frequency == 5e6  or frequency==10e6):
-            raise B1110A_InputError("The reference frequency must be 5 or 10 MHz (5e6 or 10e6")
+            raise ValueError("The reference frequency must be 5 or 10 MHz (5e6 or 10e6")
 
         if str(source.lower())=="internal":
             s = "INT"
@@ -873,72 +872,72 @@ class Agilent_81110A:
 
     def setVoltageAmplitude(self, voltage, chn=1):
         if not isinstance(chn, int):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not (chn == 1 or chn ==2):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not isinstance(voltage, (float,int)):
-            raise B1110A_InputError("Voltage must be a float/integer from 100mV to 3.8V")
+            raise ValueError("Voltage must be a float/integer from 100mV to 3.8V")
         if 1e-1 > voltage > 3.8:
-            raise B1110A_InputError("Voltage must be a float/integer from 100mV to 3.8V")
+            raise ValueError("Voltage must be a float/integer from 100mV to 3.8V")
         self.instWrite(":VOLT%d %sV" %(chn, str(eng.EngNumber(voltage)).upper()))
     
     def setVoltageOffset(self, offset, chn=1):
         if not isinstance(chn, int):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not (chn == 1 or chn ==2):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not isinstance(offset, (float,int)):
-            raise B1110A_InputError("Voltage offset must be a float/integer from -2 to 3.8V")
+            raise ValueError("Voltage offset must be a float/integer from -2 to 3.8V")
         if -2 > offset > 3.8:
-            raise B1110A_InputError("Voltage offset must be a float/integer from -2 to 3.8V")
+            raise ValueError("Voltage offset must be a float/integer from -2 to 3.8V")
         #self.instWrite(":VOLT%d:OFF %sV" %(chn, str(eng.EngNumber(offset)).upper()))
         self.instWrite(":VOLT%d:OFF %sMV" %(chn, offset*1000))
         
     def setVoltageHigh(self, voltage, chn=1):
         if not isinstance(chn, int):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not (chn == 1 or chn ==2):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not isinstance(voltage, (float,int)):
-            raise B1110A_InputError("Voltage high level must be a float/integer from -1.9 to 3.8V")
+            raise ValueError("Voltage high level must be a float/integer from -1.9 to 3.8V")
         if -1.9 > voltage > 3.8:
-            raise B1110A_InputError("Voltage high level must be a float/integer from -1.9 to 3.8V")
+            raise ValueError("Voltage high level must be a float/integer from -1.9 to 3.8V")
         self.instWrite(":VOLT%d:HIGH %sV" %(chn, str(eng.EngNumber(voltage)).upper()))
 
     def setVoltageLow(self, voltage, chn=1):
         if not isinstance(chn, int):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not (chn == 1 or chn ==2):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not isinstance(voltage, (float,int)):
-            raise B1110A_InputError("Voltage low level must be a float/integer from -2 to 3.8V")
+            raise ValueError("Voltage low level must be a float/integer from -2 to 3.8V")
         if -2 > voltage > 3.8:
-            raise B1110A_InputError("Voltage low level must be a float/integer from -2 to 3.8V")
+            raise ValueError("Voltage low level must be a float/integer from -2 to 3.8V")
         self.instWrite(":VOLT%d:LOW %sV" %(chn, str(eng.EngNumber(voltage)).upper()))
 
     def setVoltageLimitLow(self, voltage, chn=1):
         if not isinstance(chn, int):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not (chn == 1 or chn ==2):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not isinstance(voltage, (float,int)):
-            raise B1110A_InputError("Voltage low limit must be a float/integer from -2 to 3.8V")
+            raise ValueError("Voltage low limit must be a float/integer from -2 to 3.8V")
         if -2 > voltage > 3.8:
-            raise B1110A_InputError("Voltage low limit must be a float/integer from -2 to 3.8V")
+            raise ValueError("Voltage low limit must be a float/integer from -2 to 3.8V")
         self.instWrite(":VOLT%d:LIM:LOW %sV" %(chn, str(eng.EngNumber(voltage)).upper()))
 
     def turnVoltageLimitOn(self, chn=1):
         if not isinstance(chn, int):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not (chn == 1 or chn ==2):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         self.instWrite(":VOLT%d:LIM:STAT ON" %(chn))
         
     def turnVoltageLimitOff(self, chn=1):
         if not isinstance(chn, int):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         if not (chn == 1 or chn ==2):
-            raise B1110A_InputError("The channel ID must be eithe 1 or 2.")
+            raise ValueError("The channel ID must be eithe 1 or 2.")
         self.instWrite(":VOLT%d:LIM:STAT OFF" %(chn))
 
     def getStatusEvent(self):
@@ -949,23 +948,23 @@ class Agilent_81110A:
 
     def setStatusEnableRegister(self, n):
         if not isinstance(n, int):
-            raise B1110A_InputError("Enable register number must be between 0 and 32767.")
+            raise ValueError("Enable register number must be between 0 and 32767.")
         if 0 > n > 32767: 
-            raise B1110A_InputError("Enable register number must be between 0 and 32767.")
+            raise ValueError("Enable register number must be between 0 and 32767.")
         return self.instWrite(":STAT:QUES:ENAB %d" %(n))
 
     def setStatusNegTransistionRegister(self, n):
         if not isinstance(n, int):
-            raise B1110A_InputError("Negative transition register number must be between 0 and 32767.")
+            raise ValueError("Negative transition register number must be between 0 and 32767.")
         if 0 > n > 32767: 
-            raise B1110A_InputError("Negative transition register number must be between 0 and 32767.")
+            raise ValueError("Negative transition register number must be between 0 and 32767.")
         return self.instWrite(":STAT:QUES:NTR %d" %(n))
 
     def setStatusPosTransistionRegister(self, n):
         if not isinstance(n, int):
-            raise B1110A_InputError("Positive transition register number must be between 0 and 32767.")
+            raise ValueError("Positive transition register number must be between 0 and 32767.")
         if 0 > n > 32767: 
-            raise B1110A_InputError("Positive transition register number must be between 0 and 32767.")
+            raise ValueError("Positive transition register number must be between 0 and 32767.")
         return self.instWrite(":STAT:QUES:PTR %d" %(n))
 
     def SwitchOffErrorChecking(self):
@@ -1004,16 +1003,16 @@ class Agilent_81110A:
 
     def setTriggerCount(self, n):
         if not isinstance(n, int):
-            raise B1110A_InputError("the trigger count must be between 1 and 65536")
+            raise ValueError("the trigger count must be between 1 and 65536")
         if 1 > n > 65536:
-            raise B1110A_InputError("the trigger count must be between 1 and 65536")
+            raise ValueError("the trigger count must be between 1 and 65536")
         self.instWrite(":TRIG:COUN %d" %(n))
 
     def setTriggerImpedance(self, impedance):
         if not isinstance(impedance, int):
-            raise B1110A_InputError("Impedance must be either 50 or 10000 ohm.")
+            raise ValueError("Impedance must be either 50 or 10000 ohm.")
         if not (impedance == 50 or impedance == 1000): 
-            raise B1110A_InputError("Impedance must be either 50 or 10000 ohm.")
+            raise ValueError("Impedance must be either 50 or 10000 ohm.")
         if impedance == 50:
             self.instWrite(":TRIG:IMP 50OHM")
         else:
@@ -1022,9 +1021,9 @@ class Agilent_81110A:
     def setTriggerLevel(self, voltage):
 
         if not isinstance(voltage, (int,float)):
-            raise B1110A_InputError("Trigger Level must be between -10V and 10V.")
+            raise ValueError("Trigger Level must be between -10V and 10V.")
         if -10 <= voltage <= 10:
-            raise B1110A_InputError("Trigger Level must be between -10V and 10V.")
+            raise ValueError("Trigger Level must be between -10V and 10V.")
         
         self.instWrite(":TRIG:LEV %.2fV"%(voltage))
 

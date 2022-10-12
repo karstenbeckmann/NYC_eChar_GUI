@@ -40,12 +40,7 @@ def Meas_8x81T1RComp(eChar, test1):
     #for each line in the matrix config we've generated, set the connections
     while MC.setNext():
 
-        stop = False
-        while not eChar.Stop.empty():
-            stop = eChar.Stop.get()
-            tm.sleep(1)
-        
-        if stop:
+        if eChar.checkStop():
             break
         
         #do the measurement we've defined

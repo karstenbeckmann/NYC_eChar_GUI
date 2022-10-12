@@ -10,7 +10,6 @@ import pyvisa as vs
 import datetime as dt 
 import types as tp
 import time as tm
-from Exceptions import *
 
 #8 slot SMU mainframe: 
 #8 Medium Power Source Measurement Units (MPSMUs) are isntalled (model #E5281A)
@@ -164,7 +163,7 @@ class Agilent_E5274A:
         if not err == '0,0,0,0\r\n':
             #self.inst.write("DZ\n")
             self.inst.write("CL\n")
-            raise E5274AError("Error code %s" %(err))
+            raise ValueError("Error code %s" %(err))
 
         self.inst.write(command)
 
@@ -189,7 +188,7 @@ class Agilent_E5274A:
         err = binStb[5]
         if err == 1:
             ret = self.inst.query("ERR? 1\n")
-            raise E5274AError("E5274A encountered error #%d." %(ret))
+            raise SyntaxError("E5274A encountered error #%d." %(ret))
         return ret
 
     def setDirectExecute(self):
@@ -251,12 +250,12 @@ class Agilent_E5274A:
     def SMUisAvailable(self, SMUNum):
         if True == self.SMUActive[SMUNum]:
             return True
-        raise E5274A_InputError("SMU %d is not available." %(SMUNum))
+        raise ValueError("SMU %d is not available." %(SMUNum))
         
     def SMUisUsed(self, SMUNum):
         if False == self.SMUUsed[SMUNum]:
             return False
-        raise E5274A_InputError("SMU %d is used." %(SMUNum))
+        raise ValueError("SMU %d is used." %(SMUNum))
 
     def getBinaryList(self, IntIn, binSize=8):
         
@@ -321,7 +320,7 @@ class Agilent_E5274A:
         for l in List2D[1:]:
             if not l == None:
                 if not len(l) == len(List2D[0]):
-                    raise E5274A_InputError("Input Values for %s do not have the right dimensions" %(desc))
+                    raise ValueError("Input Values for %s do not have the right dimensions" %(desc))
 
 
     #check ranges for 5281A MPSMU if all values in RR are allowed ranges
@@ -333,15 +332,15 @@ class Agilent_E5274A:
         if VorI == "Voltage":
             for element in Range:
                 if  element not in VR:
-                    raise E5274A_InputError("Voltage Range for Channel %d is not valid." %(Chns[n]))
+                    raise ValueError("Voltage Range for Channel %d is not valid." %(Chns[n]))
                 n+=1
         elif VorI == "Current":
             for element in Range:
                 if element not in IR:
-                    raise E5274A_InputError("Current Range for Channel %d is not valid." %(Chns[n]))
+                    raise ValueError("Current Range for Channel %d is not valid." %(Chns[n]))
                 n+=1
         else:
-            raise E5274A_InputError("CheckRanges only compares 'Voltage' or 'Current'.")
+            raise ValueError("CheckRanges only compares 'Voltage' or 'Current'.")
 
 
     #check ranges for 5281A MPSMU if all values in Val are allowed voltages/currents
@@ -354,28 +353,28 @@ class Agilent_E5274A:
             if VorI[n]:    
                 if RV[n] == VR[0]:
                     if np.absolute(int(element)) > 42:
-                        raise E5274A_InputError("Voltage for Voltage range %d in Channel %d is above 42V." %(RV[n], Chns[n]))
+                        raise ValueError("Voltage for Voltage range %d in Channel %d is above 42V." %(RV[n], Chns[n]))
                 if RV[n] == VR[1] or RV[n] == VR[8]:
                     if np.absolute(int(element)) > 0.5:
-                        raise E5274A_InputError("Voltage for Voltage range %d in Channel %d is above 0.5V." %(RV[n], Chns[n]))
+                        raise ValueError("Voltage for Voltage range %d in Channel %d is above 0.5V." %(RV[n], Chns[n]))
                 if RV[n] == VR[2] or RV[n] == VR[9]:
                     if np.absolute(int(element)) > 5:
-                        raise E5274A_InputError("Voltage for Voltage range %d in Channel %d is above 5V." %(RV[n], Chns[n]))
+                        raise ValueError("Voltage for Voltage range %d in Channel %d is above 5V." %(RV[n], Chns[n]))
                 if RV[n] == VR[3] or RV[n] == VR[10]:
                     if np.absolute(int(element)) > 2:
-                        raise E5274A_InputError("Voltage for Voltage range %d in Channel %d is above 2V." %(RV[n], Chns[n]))
+                        raise ValueError("Voltage for Voltage range %d in Channel %d is above 2V." %(RV[n], Chns[n]))
                 if RV[n] == VR[4] or RV[n] == VR[11]:
                     if np.absolute(int(element)) > 20:
-                        raise E5274A_InputError("Voltage for Voltage range %d in Channel %d is above 20V." %(RV[n], Chns[n]))
+                        raise ValueError("Voltage for Voltage range %d in Channel %d is above 20V." %(RV[n], Chns[n]))
                 if RV[n] == VR[5] or RV[n] == VR[12]:
                     if np.absolute(int(element)) > 40:
-                        raise E5274A_InputError("Voltage for Voltage range %d in Channel %d is above 40V." %(RV[n], Chns[n]))
+                        raise ValueError("Voltage for Voltage range %d in Channel %d is above 40V." %(RV[n], Chns[n]))
                 if RV[n] == VR[6] or RV[n] == VR[13]:
                     if np.absolute(int(element)) > 100:
-                        raise E5274A_InputError("Voltage for Voltage range %d in Channel %d is above 42V." %(RV[n], Chns[n]))
+                        raise ValueError("Voltage for Voltage range %d in Channel %d is above 42V." %(RV[n], Chns[n]))
                 if RV[n] == VR[7] or RV[n] == VR[14]:
                     if np.absolute(int(element)) > 200:
-                        raise E5274A_InputError("Voltage for Voltage range %d in Channel %d is above 42V." %(RV[n], Chns[n]))
+                        raise ValueError("Voltage for Voltage range %d in Channel %d is above 42V." %(RV[n], Chns[n]))
             n+=1
 
         n=0
@@ -383,37 +382,37 @@ class Agilent_E5274A:
             if VorI[n] == False:
                 if RI[n] == IR[0]:
                     if np.absolute(int(element)) > 0.2:
-                        raise E5274A_InputError("Current for Current range %d in Channel %d is above 200 mA." %(RI[n], Chns[n]))
+                        raise ValueError("Current for Current range %d in Channel %d is above 200 mA." %(RI[n], Chns[n]))
                 if RI[n] == IR[1] or RI[n] == IR[11]:
                     if np.absolute(int(element)) > 1.15e-9:
-                        raise E5274A_InputError("Current for Current range %d in Channel %d is above 1.15 nA." %(RI[n], Chns[n]))
+                        raise ValueError("Current for Current range %d in Channel %d is above 1.15 nA." %(RI[n], Chns[n]))
                 if RI[n] == IR[2] or RI[n] == IR[12]:
                     if np.absolute(int(element)) > 11.5e-9:
-                        raise E5274A_InputError("Current for Current range %d in Channel %d is above 11.5 nA." %(RI[n], Chns[n]))
+                        raise ValueError("Current for Current range %d in Channel %d is above 11.5 nA." %(RI[n], Chns[n]))
                 if RI[n] == IR[3] or RI[n] == IR[13]:
                     if np.absolute(int(element)) > 115e-9:
-                        raise E5274A_InputError("Current for Current range %d in Channel %d is above 115 nA." %(RI[n], Chns[n]))
+                        raise ValueError("Current for Current range %d in Channel %d is above 115 nA." %(RI[n], Chns[n]))
                 if RI[n] == IR[4] or RI[n] == IR[14]:
                     if np.absolute(int(element)) > 1.15e-6:
-                        raise E5274A_InputError("Current for Current range %d in Channel %d is above 1.15 uA." %(RI[n], Chns[n]))
+                        raise ValueError("Current for Current range %d in Channel %d is above 1.15 uA." %(RI[n], Chns[n]))
                 if RI[n] == IR[5] or RI[n] == IR[15]:
                     if np.absolute(int(element)) > 11.5e-6:
-                        raise E5274A_InputError("Current for Current range %d in Channel %d is above 11.5 uA." %(RI[n], Chns[n]))
+                        raise ValueError("Current for Current range %d in Channel %d is above 11.5 uA." %(RI[n], Chns[n]))
                 if RI[n] == IR[6] or RI[n] == IR[16]:
                     if np.absolute(int(element)) > 115e-6:
-                        raise E5274A_InputError("Current for Current range %d in Channel %d is above 115 uA." %(RI[n], Chns[n]))
+                        raise ValueError("Current for Current range %d in Channel %d is above 115 uA." %(RI[n], Chns[n]))
                 if RI[n] == IR[7] or RI[n] == IR[17]:
                     if np.absolute(int(element)) > 1.15e-3:
-                        raise E5274A_InputError("Current for Current range %d in Channel %d is above 1.15 mA." %(RI[n], Chns[n]))
+                        raise ValueError("Current for Current range %d in Channel %d is above 1.15 mA." %(RI[n], Chns[n]))
                 if RI[n] == IR[8] or RI[n] == IR[18]:
                     if np.absolute(int(element)) > 11.5e-3:
-                        raise E5274A_InputError("Current for Current range %d in Channel %d is above 11.5 mA." %(RI[n], Chns[n]))
+                        raise ValueError("Current for Current range %d in Channel %d is above 11.5 mA." %(RI[n], Chns[n]))
                 if RI[n] == IR[9] or RI[n] == IR[19]:
                     if np.absolute(int(element)) > 115e-3:
-                        raise E5274A_InputError("Current for Current range %d in Channel %d is above 115 mA." %(RI[n], Chns[n]))
+                        raise ValueError("Current for Current range %d in Channel %d is above 115 mA." %(RI[n], Chns[n]))
                 if RI[n] == IR[10] or RI[n] == IR[20]:
                     if np.absolute(int(element)) > 200e-3:
-                        raise E5274A_InputError("Current for Current range %d in Channel %d is above 200 mA." %(RI[n], Chns[n]))
+                        raise ValueError("Current for Current range %d in Channel %d is above 200 mA." %(RI[n], Chns[n]))
             n+=1
         
                 
@@ -424,10 +423,10 @@ class Agilent_E5274A:
 
         #for i in IComp:
         #    if i == 0:
-        #        raise E5274A_InputError("Current Compliance can't be 0")
+        #        raise ValueError("Current Compliance can't be 0")
         #for V in VComp:
         #    if V == 0:
-        #        raise E5274A_InputError("Voltage Compliance can't be 0")
+        #        raise ValueError("Voltage Compliance can't be 0")
         
         for element in IComp:
             if element != None:
@@ -435,60 +434,60 @@ class Agilent_E5274A:
                     if RV[n] == VR[0]:
                         if np.absolute(Val[n]) <= 42:
                             if np.absolute(int(element)) > 100e-3:
-                                raise E5274A_InputError("Current Compliance for Voltage range %d in Channel %d is not less than or equal to 100e-3 A." %(RV[n], Chns[n]))
+                                raise ValueError("Current Compliance for Voltage range %d in Channel %d is not less than or equal to 100e-3 A." %(RV[n], Chns[n]))
                         else:
-                            raise E5274A_InputError("Incorrect Current Compliance Used!")
+                            raise ValueError("Incorrect Current Compliance Used!")
                     if RV[n] == VR[1] or RV[n] == VR[8]:
                         if np.absolute(Val[n]) <= 0.5:
                             if np.absolute(int(element)) > 100e-3:
-                                raise E5274A_InputError("Current Compliance for Voltage range %d in Channel %d is not less than or equal to 100e-3 A." %(RV[n], Chns[n]))
+                                raise ValueError("Current Compliance for Voltage range %d in Channel %d is not less than or equal to 100e-3 A." %(RV[n], Chns[n]))
                         else:
-                            raise E5274A_InputError("Incorrect Current Compliance Used!")
+                            raise ValueError("Incorrect Current Compliance Used!")
                     if RV[n] == VR[2] or RV[n] == VR[9]:
                         if np.absolute(Val[n]) <= 5:
                             if np.absolute(int(element)) > 100e-3:
-                                raise E5274A_InputError("Current Compliance for Voltage range %d in Channel %d is not less than or equal to 100e-3 A." %(RV[n], Chns[n]))
+                                raise ValueError("Current Compliance for Voltage range %d in Channel %d is not less than or equal to 100e-3 A." %(RV[n], Chns[n]))
                         else:
-                            raise E5274A_InputError("Incorrect Current Compliance Used!")
+                            raise ValueError("Incorrect Current Compliance Used!")
                     if RV[n] == VR[3] or RV[n] == VR[10]:
                         if np.absolute(Val[n]) <= 2:
                             if np.absolute(int(element)) > 100e-3:
-                                raise E5274A_InputError("Current Compliance for Voltage range %d in Channel %d is not less than or equal to 100e-3 A." %(RV[n], Chns[n]))
+                                raise ValueError("Current Compliance for Voltage range %d in Channel %d is not less than or equal to 100e-3 A." %(RV[n], Chns[n]))
                         else:
-                            raise E5274A_InputError("Incorrect Current Compliance Used!")
+                            raise ValueError("Incorrect Current Compliance Used!")
                     if RV[n] == VR[4] or RV[n] == VR[11]:
                         if np.absolute(Val[n]) <= 20:
                             if np.absolute(int(element)) > 100e-3:
-                                raise E5274A_InputError("Current Compliance for Voltage range %d in Channel %d is not less than or equal to 100e-3 A." %(RV[n], Chns[n]))
+                                raise ValueError("Current Compliance for Voltage range %d in Channel %d is not less than or equal to 100e-3 A." %(RV[n], Chns[n]))
                         else:
-                            raise E5274A_InputError("Incorrect Current Compliance Used!")
+                            raise ValueError("Incorrect Current Compliance Used!")
                     if RV[n] == VR[5] or RV[n] == VR[12]:
                         if np.absolute(Val[n]) <= 20:
                             if np.absolute(int(element)) > 100e-3:
-                                raise E5274A_InputError("Current Compliance for Voltage range %d in Channel %d is not less than or equal to 100e-3 A." %(RV[n], Chns[n]))
+                                raise ValueError("Current Compliance for Voltage range %d in Channel %d is not less than or equal to 100e-3 A." %(RV[n], Chns[n]))
                         if np.absolute(Val[n]) > 20 and np.absolute(Val[n]) <= 40:
                             if np.absolute(int(element)) > 50e-3:
-                                raise E5274A_InputError("Current Compliance for Voltage range %d in Channel %d is not less than or equal to 50e-3 A." %(RV[n], Chns[n]))
+                                raise ValueError("Current Compliance for Voltage range %d in Channel %d is not less than or equal to 50e-3 A." %(RV[n], Chns[n]))
                         else:
-                            raise E5274A_InputError("Incorrect Current Compliance Used!")
+                            raise ValueError("Incorrect Current Compliance Used!")
                     if RV[n] == VR[6] or RV[n] == VR[13]:
                         if np.absolute(Val[n]) <= 20:
                             if np.absolute(int(element)) > 100e-3:
-                                raise E5274A_InputError("Current Compliance for Voltage range %d in Channel %d is not less than or equal to 100e-3 A." %(RV[n], Chns[n]))
+                                raise ValueError("Current Compliance for Voltage range %d in Channel %d is not less than or equal to 100e-3 A." %(RV[n], Chns[n]))
                         if np.absolute(Val[n]) > 20 and np.absolute(Val[n]) <= 40:
                             if np.absolute(int(element)) > 50e-3:
-                                raise E5274A_InputError("Current Compliance for Voltage range %d in Channel %d is not less than or equal to 50e-3 A." %(RV[n], Chns[n]))
+                                raise ValueError("Current Compliance for Voltage range %d in Channel %d is not less than or equal to 50e-3 A." %(RV[n], Chns[n]))
                         if np.absolute(Val[n]) > 40 and np.absolute(Val[n]) <= 100:
                             if np.absolute(int(element)) > 20e-3:
-                                raise E5274A_InputError("Current Compliance for Voltage range %d in Channel %d is not less than or equal to 20e-3 A." %(RV[n], Chns[n]))
+                                raise ValueError("Current Compliance for Voltage range %d in Channel %d is not less than or equal to 20e-3 A." %(RV[n], Chns[n]))
                         else:
-                            raise E5274A_InputError("Incorrect Voltage Compliance Used!")
+                            raise ValueError("Incorrect Voltage Compliance Used!")
                     if RV[n] == VR[7] or RV[n] == VR[14]:
                         if np.absolute(Val[n]) <= 200:
                             if np.absolute(int(element)) != 2e-3:
-                                raise E5274A_InputError("Current Compliance for Voltage range %d in Channel %d is not 2e-3 A." %(RV[n], Chns[n]))
+                                raise ValueError("Current Compliance for Voltage range %d in Channel %d is not 2e-3 A." %(RV[n], Chns[n]))
                         else:
-                            raise E5274A_InputError("Incorrect Voltage Compliance Used (200V Output range won't work)!")
+                            raise ValueError("Incorrect Voltage Compliance Used (200V Output range won't work)!")
             n+=1
 
         n=0
@@ -499,75 +498,75 @@ class Agilent_E5274A:
                     if RI[0] == IR[0]:
                         if np.absolute(Val[n]) <= 0.2:
                             if np.absolute(int(element)) > 100:
-                                raise E5274A_InputError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 100V." %(RI[n], Chns[n]))
+                                raise ValueError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 100V." %(RI[n], Chns[n]))
                         else:
-                            raise E5274A_InputError("Incorrect Current Compliance Used!")
+                            raise ValueError("Incorrect Current Compliance Used!")
                     if RI == IR[1] or RI == IR[11]:
                         if np.absolute(Val[n]) <= 1.15e-9:
                             if np.absolute(int(element)) > 100:
-                                raise E5274A_InputError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 100V." %(RI[n], Chns[n]))
+                                raise ValueError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 100V." %(RI[n], Chns[n]))
                         else:
-                            raise E5274A_InputError("Incorrect Current Compliance Used!")
+                            raise ValueError("Incorrect Current Compliance Used!")
                     if RI == IR[2] or RI == IR[12]:
                         if np.absolute(Val[n]) <= 11.5e-9:
                             if np.absolute(int(element)) > 100:
-                                raise E5274A_InputError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 100V." %(RI[n], Chns[n]))
+                                raise ValueError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 100V." %(RI[n], Chns[n]))
                         else:
-                            raise E5274A_InputError("Incorrect Current Compliance Used!")
+                            raise ValueError("Incorrect Current Compliance Used!")
                     if RI == IR[3] or RI == IR[13]:
                         if np.absolute(Val[n]) <= 115e-9:
                             if np.absolute(int(element)) > 100:
-                                raise E5274A_InputError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 100V." %(RI[n], Chns[n]))
+                                raise ValueError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 100V." %(RI[n], Chns[n]))
                         else:
-                            raise E5274A_InputError("Incorrect Current Compliance Used!")
+                            raise ValueError("Incorrect Current Compliance Used!")
                     if RI == IR[4] or RI == IR[14]:
                         if np.absolute(Val[n]) <= 1.15e-6:
                             if np.absolute(int(element)) > 100:
-                                raise E5274A_InputError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 100V." %(RI[n], Chns[n]))
+                                raise ValueError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 100V." %(RI[n], Chns[n]))
                         else:
-                            raise E5274A_InputError("Incorrect Current Compliance Used!")
+                            raise ValueError("Incorrect Current Compliance Used!")
                     if RI == IR[5] or RI == IR[15]:
                         if np.absolute(Val[n]) <= 11.5e-6:
                             if np.absolute(int(element)) > 100:
-                                raise E5274A_InputError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 100V." %(RI[n], Chns[n]))
+                                raise ValueError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 100V." %(RI[n], Chns[n]))
                         else:
-                            raise E5274A_InputError("Incorrect Current Compliance Used!")
+                            raise ValueError("Incorrect Current Compliance Used!")
                     if RI == IR[6] or RI == IR[16]:
                         if np.absolute(Val[n]) <= 115e-6:
                             if np.absolute(int(element)) > 100:
-                                raise E5274A_InputError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 100V." %(RI[n], Chns[n]))
+                                raise ValueError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 100V." %(RI[n], Chns[n]))
                         else:
-                            raise E5274A_InputError("Incorrect Current Compliance Used!")
+                            raise ValueError("Incorrect Current Compliance Used!")
                     if RI == IR[7] or RI == IR[17]:
                         if np.absolute(Val[n]) <= 1.15e-3:
                             if np.absolute(int(element)) > 100:
-                                raise E5274A_InputError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 100V." %(RI[n], Chns[n]))
+                                raise ValueError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 100V." %(RI[n], Chns[n]))
                         else:
-                            raise E5274A_InputError("Incorrect Current Compliance Used!")
+                            raise ValueError("Incorrect Current Compliance Used!")
                     if RI == IR[8] or RI == IR[18]:
                         if np.absolute(Val[n]) <= 11.5e-3:
                             if np.absolute(int(element)) > 100:
-                                raise E5274A_InputError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 100V." %(RI[n], Chns[n]))
+                                raise ValueError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 100V." %(RI[n], Chns[n]))
                         else:
-                            raise E5274A_InputError("Incorrect Current Compliance Used!")
+                            raise ValueError("Incorrect Current Compliance Used!")
                     if RI == IR[9] or RI == IR[19]:
                         if np.absolute(Val[n]) <= 20e-3:
                             if np.absolute(int(element)) > 100:
-                                raise E5274A_InputError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 100V." %(RI[n], Chns[n]))
+                                raise ValueError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 100V." %(RI[n], Chns[n]))
                         if np.absolute(Val[n]) <= 50e-3:
                             if np.absolute(int(element)) > 40:
-                                raise E5274A_InputError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 40V." %(RI[n], Chns[n]))
+                                raise ValueError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 40V." %(RI[n], Chns[n]))
                         if np.absolute(Val[n]) <= 115e-3:
                             if np.absolute(int(element)) > 20:
-                                raise E5274A_InputError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 20V." %(RI[n], Chns[n]))
+                                raise ValueError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 20V." %(RI[n], Chns[n]))
                         else:
-                            raise E5274A_InputError("Incorrect Current Compliance Used!")
+                            raise ValueError("Incorrect Current Compliance Used!")
                     if RI == IR[10] or RI == IR[20]:
                         if np.absolute(Val[n]) <= 200e-3:
                             if np.absolute(int(element)) != 100000:
-                                raise E5274A_InputError("Voltage Compliance for Current range %d in Channel %d is not 100000V." %(RI[n], Chns[n]))
+                                raise ValueError("Voltage Compliance for Current range %d in Channel %d is not 100000V." %(RI[n], Chns[n]))
                         else:
-                            raise E5274A_InputError("Incorrect Current Compliance Used (Above 100mA Output range won't work)!")
+                            raise ValueError("Incorrect Current Compliance Used (Above 100mA Output range won't work)!")
 
             n=+1
 
@@ -576,24 +575,24 @@ class Agilent_E5274A:
     def CheckFilter(self, Chns, VorI, FL):
         n = 0
         if not isinstance(FL, type([])):
-            raise E5274A_InputError("The Filter mode must be a list of 0 or 1.")
+            raise TypeError("The Filter mode must be a list of 0 or 1.")
 
         for chn in Chns: 
             if not isinstance(FL[n], (int, type(None))):
-                raise E5274A_InputError("The Filter mode for Channel %d must be 0, 1 or 'None'." %(Chns[n]))
+                raise TypeError("The Filter mode for Channel %d must be 0, 1 or 'None'." %(Chns[n]))
             
             if not (FL[n] == 0 or FL[n] == 1 or FL[n] == None):
-                raise E5274A_InputError("The Filter mode for Channel %d must be 0, 1 or 'None'." %(Chns[n]))
+                raise ValueError("The Filter mode for Channel %d must be 0, 1 or 'None'." %(Chns[n]))
             n+=1
 
     def CheckChannelMode(self, Chns, CMM):
         n = 0
         for chn in Chns:
             if not isinstance(CMM[n], (int,type(None))):
-                raise E5274A_InputError("The Channel mode for Channel %d must be 0, 1, 2, 3 or None." %(Chns[n]))
+                raise ValueError("The Channel mode for Channel %d must be 0, 1, 2, 3 or None." %(Chns[n]))
             if not CMM[n] == None: 
                 if not (CMM[n] < 3 or CMM[n] > 0):
-                    raise E5274A_InputError("The Channel mode for Channel %d must be 0, 1, 2, 3 or None." %(Chns[n]))
+                    raise ValueError("The Channel mode for Channel %d must be 0, 1, 2, 3 or None." %(Chns[n]))
             n+=1
 
     def CheckSeriesResistance(self, Chns, SSR):
@@ -601,49 +600,49 @@ class Agilent_E5274A:
         for n in range(len(Chns)):
             
             if not isinstance(SSR[n], (int, type(None))):
-                raise E5274A_InputError("The Series Resistor connection for Channel %d must be 0, 1 or None." %(Chns[n]))
+                raise ValueError("The Series Resistor connection for Channel %d must be 0, 1 or None." %(Chns[n]))
             if not SSR[n] == None: 
                 if not (SSR[n] < 3 or SSR[n] > 0):
-                    raise E5274A_InputError("The Series Resistor connection for Channel %d must be 0, 1 or None." %(Chns[n]))
+                    raise ValueError("The Series Resistor connection for Channel %d must be 0, 1 or None." %(Chns[n]))
 
     def CheckADCValues(self, chns, ADCs):
         for n in range(len(chns)):
             if not isinstance(ADCs[n], int) and not ADCs[n] == None:
-                raise E5274A_InputError("The ADC converter type of Channel %d must be either 0 (High-Speed) or 1 (High-resolution" %(chns[n]))
+                raise ValueError("The ADC converter type of Channel %d must be either 0 (High-Speed) or 1 (High-resolution" %(chns[n]))
             if not (ADCs[n] == 0 or ADCs[n] == 1 or ADCs[n] == None):
-                raise E5274A_InputError("The ADC converter type of Channel %d must be either 0 (High-Speed) or 1 (High-resolution" %(chns[n]))
+                raise ValueError("The ADC converter type of Channel %d must be either 0 (High-Speed) or 1 (High-resolution" %(chns[n]))
             
     #Adjust ADC Converter setting for High-Speed and High-Resolution
     #See E5260 Manual page 206 and command 'AIT' for more details
     def SetADCConverter(self, ADC, mode, N=None):
         if not isinstance(ADC, int):
-            raise E5274A_InputError("The ADC converter type must be either 0 (High-Speed) or 1 (High-resolution")
+            raise ValueError("The ADC converter type must be either 0 (High-Speed) or 1 (High-resolution")
         if not (ADC == 0 or ADC == 1):
-            raise E5274A_InputError("The ADC converter type must be either 0 (High-Speed) or 1 (High-resolution")
+            raise ValueError("The ADC converter type must be either 0 (High-Speed) or 1 (High-resolution")
         if not isinstance(mode, int):
-            raise E5274A_InputError("ADC operation mode must be 0 (auto) or 1 (manual) or 2 (PLC mode)")
+            raise ValueError("ADC operation mode must be 0 (auto) or 1 (manual) or 2 (PLC mode)")
         if not (mode == 0 or mode == 1 or mode == 2):
-            raise E5274A_InputError("ADC operation mode must be 0 (auto) or 1 (manual) or 2 (PLC mode)")
+            raise ValueError("ADC operation mode must be 0 (auto) or 1 (manual) or 2 (PLC mode)")
         if not isinstance(N, int):
-            raise E5274A_InputError("AV number must be 1 to 1023 or -1 to -100")
+            raise ValueError("AV number must be 1 to 1023 or -1 to -100")
         if ADC == 0 and mode == 0:
             if (N > 1023 or N < 1):
-                raise E5274A_InputError("(HighSpeed ADC/AutoMode) Number of averaging samples must be between 1 to 1023")
+                raise ValueError("(HighSpeed ADC/AutoMode) Number of averaging samples must be between 1 to 1023")
         if ADC == 0 and mode == 1:
             if (N > 1023 or N < 1):
-                raise E5274A_InputError("(HighSpeed ADC/ManualMode) Number of averaging samples must be between 1 to 1023")
+                raise ValueError("(HighSpeed ADC/ManualMode) Number of averaging samples must be between 1 to 1023")
         if ADC == 0 and mode == 2:
             if (N > 100 or N < 1):
-                raise E5274A_InputError("(HighSpeed ADC/PLCmode) Number of averaging samples must be between 1 to 100")
+                raise ValueError("(HighSpeed ADC/PLCmode) Number of averaging samples must be between 1 to 100")
         if ADC == 1 and mode == 0:
             if (N > 127 or N < 1):
-                raise E5274A_InputError("(HighResolution ADC/AutoMode) Number of averaging samples must be between 1 to 127 (default=6)")
+                raise ValueError("(HighResolution ADC/AutoMode) Number of averaging samples must be between 1 to 127 (default=6)")
         if ADC == 1 and mode == 1:
             if (N > 127 or N < 1):
-                raise E5274A_InputError("(HighResolution ADC/ManualMode) Number of averaging samples must be between 1 to 127")
+                raise ValueError("(HighResolution ADC/ManualMode) Number of averaging samples must be between 1 to 127")
         if ADC == 1 and mode == 2:
             if (N > 100 or N < 1):
-                raise E5274A_InputError("(HighResolution ADC/PLCmode) Number of averaging samples must be between 1 to 100")
+                raise ValueError("(HighResolution ADC/PLCmode) Number of averaging samples must be between 1 to 100")
 
         if ADC == 0: 
             self.ADC_HS_Mode = mode
@@ -661,14 +660,14 @@ class Agilent_E5274A:
     def SetADC(self, ADC, Chn):
         
         if not isinstance(ADC, int):
-            raise E5274A_InputError("The ADC converter type must be either 0 (High-Speed) or 1 (High-resolution")
+            raise ValueError("The ADC converter type must be either 0 (High-Speed) or 1 (High-resolution")
         if not (ADC == 0 or ADC == 1):
-            raise E5274A_InputError("The ADC converter type must be either 0 (High-Speed) or 1 (High-resolution")
+            raise ValueError("The ADC converter type must be either 0 (High-Speed) or 1 (High-resolution")
         
         if not isinstance(Chn, int):
-            raise E5274A_InputError("The Channel number must be an integer between 1 and 8.")
+            raise ValueError("The Channel number must be an integer between 1 and 8.")
         if 1 > Chn > 8:
-            raise E5274A_InputError("The Channel number must be an integer between 1 and 8.")
+            raise ValueError("The Channel number must be an integer between 1 and 8.")
         
         if ADC != None:
             self.instWrite("AAD %d, %d\n" %(Chn,ADC))
@@ -687,201 +686,201 @@ class Agilent_E5274A:
         #check if all values in VM and IM are Boolean
         for element in VM:
             if not isinstance(element, (bool)):
-                raise E5274A_InputError("VM must only contain boolean values")
+                raise ValueError("VM must only contain boolean values")
         for element in IM:
             if not isinstance(element, (bool)):
-                raise E5274A_InputError("IM must only contain boolean values")
+                raise ValueError("IM must only contain boolean values")
         for n in range(len(VM)):
             if not VM[n] and not IM[n]:
-                raise E5274A_InputError("At least one VM or IM must be True")
+                raise ValueError("At least one VM or IM must be True")
 
     def CheckPulseParamSMU(self, hold, width, period, delay):
         if isinstance(hold, (float, int)):
             if hold < 0 or hold > 655.35:
-                raise E5274A_InputError("Hold time must be within 0 to 655.35 sec.")
+                raise ValueError("Hold time must be within 0 to 655.35 sec.")
         else:
-                raise E5274A_InputError("Hold time must be a float value from 0 to 655.35 sec.")
+                raise ValueError("Hold time must be a float value from 0 to 655.35 sec.")
 
         if isinstance(width, (float, int)):
             if width < 5e-4 or width >2:
-                raise E5274A_InputError("Pulse width must be within 0 to 2 sec.")
+                raise ValueError("Pulse width must be within 0 to 2 sec.")
         else:
-            raise E5274A_InputError("Pulse width must be a float value from 0 to 2 sec.")
+            raise ValueError("Pulse width must be a float value from 0 to 2 sec.")
         
         if period != None:
             if isinstance(period, (float, int)):
                 if not (period == 0 or period == None or (period > 5e-3 and period < 5)):
-                    raise E5274A_InputError("Pulse period must be either 0 (automatic setting) or between 0.5ms to 5s.")
+                    raise ValueError("Pulse period must be either 0 (automatic setting) or between 0.5ms to 5s.")
             else:
-                raise E5274A_InputError("Pulse period must be a float value, either 0 (automatic setting) or between 0.5ms to 5s.")
+                raise ValueError("Pulse period must be a float value, either 0 (automatic setting) or between 0.5ms to 5s.")
         
             if width <= 0.1:
                 if period < (np.add(width,2e-3)):
-                    raise E5274A_InputError("Period must be larger than width+2ms (for width <= 100ms)") 
+                    raise ValueError("Period must be larger than width+2ms (for width <= 100ms)") 
             elif width > 0.1:
                 if period < (np.add(width,10e-3)):
-                    raise E5274A_InputError("Period must be larger than width+10ms (for width > 100ms)") 
+                    raise ValueError("Period must be larger than width+10ms (for width > 100ms)") 
         
         if period != None and delay != None:
             if isinstance(delay, (float, int)):
                 if not (delay == None or (delay >=0 and delay<=width)):
-                    raise E5274A_InputError("Delay must be larger than 0 and smaller than the pulse width")
+                    raise ValueError("Delay must be larger than 0 and smaller than the pulse width")
     
     def CheckSweepParamV(self, hold, delay, sdelay, tdelay, mdelay, AA, AApost, SChn, Sstart, Sstop, MChn, MVstart, MVstop, MVstep, Mmode):
         if isinstance(hold, (float,int)):
             if hold < 0 or hold > 655.35:
-                raise E5274A_InputError("Hold time must be a within 0 to 655.35 sec.")
+                raise ValueError("Hold time must be a within 0 to 655.35 sec.")
         else:
-            raise E5274A_InputError("Hold time must be a float value from 0 to 655.35 sec.")
+            raise ValueError("Hold time must be a float value from 0 to 655.35 sec.")
        
         if isinstance(delay, (float,int)):
             if delay < 0 or delay > 65.35:
-                raise E5274A_InputError("Delay time must be within 0 to 65.35 sec.")
+                raise ValueError("Delay time must be within 0 to 65.35 sec.")
         else:
-            raise E5274A_InputError("Delay time must be a float value from 0 to 65.35 sec.")
+            raise ValueError("Delay time must be a float value from 0 to 65.35 sec.")
 
         if isinstance(sdelay, (float,int)):
             if sdelay < 0 or sdelay > 1:
-                raise E5274A_InputError("Sdelay time must be within 0 to 1 sec.")
+                raise ValueError("Sdelay time must be within 0 to 1 sec.")
         elif sdelay == None:
             None
         else:
-            raise E5274A_InputError("Sdelay time must be within a float value of 0 to 1 sec.")
+            raise ValueError("Sdelay time must be within a float value of 0 to 1 sec.")
 
         if isinstance(tdelay,(float,int)):
             if tdelay < 0 or tdelay > delay:
-                raise E5274A_InputError("Tdelay time must be within 0 to delay.")
+                raise ValueError("Tdelay time must be within 0 to delay.")
         elif tdelay == None:
             None
         else:
-            raise E5274A_InputError("Tdelay time must be a float value from 0 to delay.")
+            raise ValueError("Tdelay time must be a float value from 0 to delay.")
 
         if isinstance(mdelay, (float,int)):
             if mdelay < 0 or mdelay > 65.535:
-                raise E5274A_InputError("Mdelay time must be within 0 to 65.535 sec.")
+                raise ValueError("Mdelay time must be within 0 to 65.535 sec.")
         elif mdelay == None:
             None
         else:
-            raise E5274A_InputError("Mdelay time must be an integer from 0 to 65.535 sec.")
+            raise ValueError("Mdelay time must be an integer from 0 to 65.535 sec.")
         
         if isinstance(AA, int):
             if not AA == 1 and not AA == 2 and not AA == None: 
-                raise E5274A_InputError("AA must be 1, 2, or None.")
+                raise ValueError("AA must be 1, 2, or None.")
             if not AApost == 1 and not AApost == 2 and not AApost == None:
-                raise E5274A_InputError("AApost must be 1, 2, or None.")
+                raise ValueError("AApost must be 1, 2, or None.")
         elif AA == None:
             None
         else:
-            raise E5274A_InputError("AA and AApost must be an integer of 1 or 2.")
+            raise ValueError("AA and AApost must be an integer of 1 or 2.")
 
         if not SChn == None:
             if (Sstart == None or Sstop == None):
-                raise E5274A_InputError("If a synchronous sweep source is set, Sstart and Sstop must be set as well.")
+                raise ValueError("If a synchronous sweep source is set, Sstart and Sstop must be set as well.")
         if isinstance(Mmode, int):
             if Mmode > 4 or Mmode < 1:
-                raise E5274A_InputError("The sweep mode of the staircase must be 1 (linear/single), 2 (log/single), 3 (linear/double) or 4 (log/double).")
+                raise ValueError("The sweep mode of the staircase must be 1 (linear/single), 2 (log/single), 3 (linear/double) or 4 (log/double).")
         elif Mmode == None: 
             None
         else:
-            raise E5274A_InputError("The sweep mode of the staircase must be an integer of the following values: 1 (linear/single), 2 (log/single), 3 (linear/double) or 4 (log/double).")
+            raise ValueError("The sweep mode of the staircase must be an integer of the following values: 1 (linear/single), 2 (log/single), 3 (linear/double) or 4 (log/double).")
         
         if MVstart > np.absolute(42) or MVstop > np.absolute(42):
-            raise E5274A_InputError("Start and Stop voltages cannot exceed 42V")
+            raise ValueError("Start and Stop voltages cannot exceed 42V")
         if not Sstart == None:
             if Sstart > np.absolute(42) or Sstop > np.absolute(42):
-                raise E5274A_InputError("Start and Stop voltages cannot exceed 42V")
+                raise ValueError("Start and Stop voltages cannot exceed 42V")
         if Mmode == 2 or Mmode == 4: 
             if MVstart > 0 and MVstop < 0:
-                raise E5274A_InputError("Start and Stop voltages must be the same polarity in log sweep mode.")
+                raise ValueError("Start and Stop voltages must be the same polarity in log sweep mode.")
             if Sstart > 0 and Sstop < 0:
-                raise E5274A_InputError("Start and Stop voltages must be the same polarity in log sweep mode.")
+                raise ValueError("Start and Stop voltages must be the same polarity in log sweep mode.")
         
         if isinstance(MVstep, int):
             if MVstep < 1 or MVstep > 1001:
-                raise E5274A_InputError("the Step number must be an integer between 1 and 1001.")
+                raise ValueError("the Step number must be an integer between 1 and 1001.")
         else: 
-            raise E5274A_InputError("the Step number must be an integer between 1 and 1001.")
+            raise ValueError("the Step number must be an integer between 1 and 1001.")
 
     def CheckSweepParamI(self, hold, delay, sdelay, tdelay, mdelay, AA, AApost, SChn, Sstart, Sstop, MChn, MIstart, MIstop, MIstep, Mmode):
         if isinstance(hold, (float,int)):
             if hold < 0 or hold > 655.35:
-                raise E5274A_InputError("Hold time must be a within 0 to 655.35 sec.")
+                raise ValueError("Hold time must be a within 0 to 655.35 sec.")
         else:
-            raise E5274A_InputError("Hold time must be a float value from 0 to 655.35 sec.")
+            raise ValueError("Hold time must be a float value from 0 to 655.35 sec.")
        
         if isinstance(delay, (float,int)):
             if delay < 0 or delay > 65.35:
-                raise E5274A_InputError("Delay time must be within 0 to 65.35 sec.")
+                raise ValueError("Delay time must be within 0 to 65.35 sec.")
         else:
-            raise E5274A_InputError("Delay time must be a float value from 0 to 65.35 sec.")
+            raise ValueError("Delay time must be a float value from 0 to 65.35 sec.")
 
         if isinstance(sdelay, (float,int)):
             if sdelay < 0 or sdelay > 1:
-                raise E5274A_InputError("Sdelay time must be within 0 to 1 sec.")
+                raise ValueError("Sdelay time must be within 0 to 1 sec.")
         elif sdelay == None:
             None
         else:
-            raise E5274A_InputError("Sdelay time must be within a float value of 0 to 1 sec.")
+            raise ValueError("Sdelay time must be within a float value of 0 to 1 sec.")
 
         if isinstance(tdelay,(float,int)):
             if tdelay < 0 or tdelay > delay:
-                raise E5274A_InputError("Tdelay time must be within 0 to delay.")
+                raise ValueError("Tdelay time must be within 0 to delay.")
         elif tdelay == None:
             None
         else:
-            raise E5274A_InputError("Tdelay time must be a float value from 0 to delay.")
+            raise ValueError("Tdelay time must be a float value from 0 to delay.")
 
         if isinstance(mdelay, (float,int)):
             if mdelay < 0 or mdelay > 65.535:
-                raise E5274A_InputError("Mdelay time must be within 0 to 65.535 sec.")
+                raise ValueError("Mdelay time must be within 0 to 65.535 sec.")
         elif mdelay == None:
             None
         else:
-            raise E5274A_InputError("Mdelay time must be an integer from 0 to 65.535 sec.")
+            raise ValueError("Mdelay time must be an integer from 0 to 65.535 sec.")
         
         if isinstance(AA, int):
             if not AA == 1 and not AA == 2 and not AA == None: 
-                raise E5274A_InputError("AA must be 1, 2, or None.")
+                raise ValueError("AA must be 1, 2, or None.")
             if not AApost == 1 and not AApost == 2 and not AApost == None:
-                raise E5274A_InputError("AApost must be 1, 2, or None.")
+                raise ValueError("AApost must be 1, 2, or None.")
         elif AA == None:
             None
         else:
-            raise E5274A_InputError("AA and AApost must be an integer of 1 or 2.")
+            raise ValueError("AA and AApost must be an integer of 1 or 2.")
 
         if not SChn == None:
             if (Sstart == None or Sstop == None):
-                raise E5274A_InputError("If a synchronous sweep source is set, Sstart and Sstop must be set as well.")
+                raise ValueError("If a synchronous sweep source is set, Sstart and Sstop must be set as well.")
         if isinstance(Mmode, int):
             if Mmode > 4 or Mmode < 1:
-                raise E5274A_InputError("The sweep mode of the staircase must be 1 (linear/single), 2 (log/single), 3 (linear/double) or 4 (log/double).")
+                raise ValueError("The sweep mode of the staircase must be 1 (linear/single), 2 (log/single), 3 (linear/double) or 4 (log/double).")
         elif Mmode == None: 
             None
         else:
-            raise E5274A_InputError("The sweep mode of the staircase must be an integer of the following values: 1 (linear/single), 2 (log/single), 3 (linear/double) or 4 (log/double).")
+            raise ValueError("The sweep mode of the staircase must be an integer of the following values: 1 (linear/single), 2 (log/single), 3 (linear/double) or 4 (log/double).")
         
         if MIstart > np.absolute(42) or MIstop > np.absolute(42):
-            raise E5274A_InputError("Start and Stop voltages cannot exceed 42V")
+            raise ValueError("Start and Stop voltages cannot exceed 42V")
         if not Sstart == None:
             if Sstart > np.absolute(42) or Sstop > np.absolute(42):
-                raise E5274A_InputError("Start and Stop voltages cannot exceed 42V")
+                raise ValueError("Start and Stop voltages cannot exceed 42V")
         if Mmode == 2 or Mmode == 4: 
             if MIstart > 0 and MIstop < 0:
-                raise E5274A_InputError("Start and Stop voltages must be the same polarity in log sweep mode.")
+                raise ValueError("Start and Stop voltages must be the same polarity in log sweep mode.")
             if Sstart > 0 and Sstop < 0:
-                raise E5274A_InputError("Start and Stop voltages must be the same polarity in log sweep mode.")
+                raise ValueError("Start and Stop voltages must be the same polarity in log sweep mode.")
         
         if isinstance(MIstep, int):
             if MIstep < 1 or MIstep > 1001:
-                raise E5274A_InputError("the Step number must be an integer between 1 and 1001.")
+                raise ValueError("the Step number must be an integer between 1 and 1001.")
         else: 
-            raise E5274A_InputError("the Step number must be an integer between 1 and 1001.")
+            raise ValueError("the Step number must be an integer between 1 and 1001.")
        
     def checkComplPolarity(self, Chns,complPolarity):
         for n in range(len(Chns)): 
             if not complPolarity[n] == None: 
                 if not (complPolarity[n] < 3 or complPolarity[n] > 0):
-                    raise E5274A_InputError("The Compliance Polarity of connection for Channel %d must be 0, 1 or None." %(Chns[n]))
+                    raise ValueError("The Compliance Polarity of connection for Channel %d must be 0, 1 or None." %(Chns[n]))
  
 
     #creates the DV command string
@@ -1071,15 +1070,15 @@ class Agilent_E5274A:
             if Chns[n] == PChn:
                 if VorI[n]:
                     if np.absolute(Ppulse) > np.absolute(VComp[n]):
-                        raise E5274A_InputError("Pbase must be lower than Compliance value (Voltage)")
+                        raise ValueError("Pbase must be lower than Compliance value (Voltage)")
                     if np.absolute(Pbase) > np.absolute(Ppulse):
-                        raise E5274A_InputError("Pbase must be lower than Ppulse value (Current)")
+                        raise ValueError("Pbase must be lower than Ppulse value (Current)")
 
                 if VorI == False:
                     if np.absolute(Ppulse) > np.absolute(IComp[n]):
-                        raise E5274A_InputError("Ppulse must be lower than Compliance value (Voltage)")
+                        raise ValueError("Ppulse must be lower than Compliance value (Voltage)")
                     if np.absolute(Pbase) > np.absolute(Ppulse):
-                        raise E5274A_InputError("Pbase must be lower than Ppulse value (Current)")
+                        raise ValueError("Pbase must be lower than Ppulse value (Current)")
 
             n+=1
 
@@ -1087,54 +1086,54 @@ class Agilent_E5274A:
                             IPulseStop, PStep, VComp, IComp, VorI, PChn):
         
         if not isinstance(PStep, (int)):
-            raise E5274A_InputError("PStep must only contain integer values")
+            raise ValueError("PStep must only contain integer values")
         if PStep < 1 or PStep > 1001:
-            raise E5274A_InputError("PStep must be between 1 and 1001")
+            raise ValueError("PStep must be between 1 and 1001")
 
         n=0
         for element in Chns:
             if Chns[n] == PChn:
                 if VorI[n]:
                     if np.absolute(VPpulse) > np.absolute(VComp[n]):
-                        raise E5274A_InputError("Pbase must be lower than Compliance value")
+                        raise ValueError("Pbase must be lower than Compliance value")
                     if np.absolute(VPpulse) > np.absolute(VPulseStop):
-                        raise E5274A_InputError("Ppulse must be lower than PulseStop value")    
+                        raise ValueError("Ppulse must be lower than PulseStop value")    
                     if np.absolute(VPbase) > np.absolute(VPpulse):
-                        raise E5274A_InputError("Pbase must be lower than Ppulse value")
+                        raise ValueError("Pbase must be lower than Ppulse value")
 
                 if VorI == False:
                     if np.absolute(IPpulse) > np.absolute(IComp[n]):
-                        raise E5274A_InputError("Ppulse must be lower than Compliance value")
+                        raise ValueError("Ppulse must be lower than Compliance value")
                     if np.absolute(IPpulse) > np.absolute(IPulseStop):
-                        raise E5274A_InputError("Ppulse must be lower than PulseStop value")  
+                        raise ValueError("Ppulse must be lower than PulseStop value")  
                     if np.absolute(IPbase) > np.absolute(IPpulse):
-                        raise E5274A_InputError("Pbase must be lower than Ppulse value")
+                        raise ValueError("Pbase must be lower than Ppulse value")
 
             n+=1
 
     def checkBDMValues(self, BDMInterval, BDMmode):
         n = 0
         if not ( BDMInterval == 0 or BDMInterval == 1 ):
-             raise E5274A_InputError("BDMInterval must be either 0 or 1")
+             raise ValueError("BDMInterval must be either 0 or 1")
         if not ( BDMmode == 0 or BDMmode == 1 or BDMInterval == None):
-             raise E5274A_InputError("BDMmode must be either 0 or 1")
+             raise ValueError("BDMmode must be either 0 or 1")
 
     def CheckBDTValues(self, hold, delay):
         if isinstance(hold, float):
             if hold < 0 or hold > 655.35:
-                raise E5274A_InputError("Hold time must be within 0 to 655.35 sec.")
+                raise ValueError("Hold time must be within 0 to 655.35 sec.")
         else:
-                raise E5274A_InputError("Hold time must be a float value from 0 to 655.35 sec.")
+                raise ValueError("Hold time must be a float value from 0 to 655.35 sec.")
 
         if isinstance(delay, float):
             if hold < 0 or hold > 6.5535:
-                raise E5274A_InputError("Delay time must be within 0 to 6.5535 sec.")
+                raise ValueError("Delay time must be within 0 to 6.5535 sec.")
         else:
-                raise E5274A_InputError("Delay time must be a float value from 0 to 6.5535 sec.")
+                raise ValueError("Delay time must be a float value from 0 to 6.5535 sec.")
 
     def CheckBDVValues(self, BDVstart, BDVstop):
         if not abs(BDVstart - BDVstop) > 10:
-            raise E5274A_InputError("Absolute value of BDVstart - BDVstop must be greater than 10V.")
+            raise ValueError("Absolute value of BDVstart - BDVstop must be greater than 10V.")
 
             
 
@@ -1177,7 +1176,7 @@ class Agilent_E5274A:
         #check if all values in VorI are Boolean
         for element in VorI:
             if not isinstance(element, (bool)):
-                raise E5274A_InputError("VorI must only contain boolean values")
+                raise ValueError("VorI must only contain boolean values")
 
         # Checks base variables
         self.CheckADCValues(Chns, ADC)
@@ -1307,7 +1306,7 @@ class Agilent_E5274A:
         #check if all values in VorI are Boolean
         for element in VorI:
             if not isinstance(element, (bool)):
-                raise E5274A_InputError("VorI must only contain boolean values")
+                raise ValueError("VorI must only contain boolean values")
 
         self.CheckRanges(Chns, "Voltage", RV)
         self.CheckRanges(Chns, "Current", RI)
@@ -1431,7 +1430,7 @@ class Agilent_E5274A:
         #check if all values in VorI are Boolean
         for element in VorI:
             if not isinstance(element, (bool)):
-                raise E5274A_InputError("VorI (Voltage or Current) must only contain boolean values")
+                raise ValueError("VorI (Voltage or Current) must only contain boolean values")
         
         #if np.any(not PorC):
         #    raise SyntaxError("P or C (Pulse or Constant) must contain one True Value indicating a Pulse channel")
@@ -1462,10 +1461,10 @@ class Agilent_E5274A:
             
             n = n+1   
         if not MChn in Chns:
-            raise E5274A_InputError("MChn is not in Chn list!")
+            raise ValueError("MChn is not in Chn list!")
 
         if MChn == PChn:
-            raise E5274A_InputError("PChn must Not be MChn!")
+            raise ValueError("PChn must Not be MChn!")
 
         
         #self.instWrite("DZ\n")
@@ -1482,9 +1481,9 @@ class Agilent_E5274A:
                 self.instWrite("SSR %d, %d\n" %(SSR[n], Chns[n]))
             
             if not self.is_int(PChn):
-                raise E5274A_InputError("PChn must be an integer between 1 and 8 and be present in Chns.")
+                raise ValueError("PChn must be an integer between 1 and 8 and be present in Chns.")
             if PChn > 8 or PChn < 1 or PChn not in Chns: 
-                raise E5274A_InputError("PChn must be an integer between 1 and 8 and be present in Chns.")
+                raise ValueError("PChn must be an integer between 1 and 8 and be present in Chns.")
 
             
             if Chns[n] == PChn:
@@ -1610,14 +1609,14 @@ class Agilent_E5274A:
         #check if all values in VorI are Boolean
         for element in VorI:
             if not isinstance(element, (bool)):
-                raise E5274A_InputError("VorI must only contain boolean values")
+                raise ValueError("VorI must only contain boolean values")
         if not SChn == None:
             if MChn in SChn:
-                raise E5274A_InputError("SChn (Synchronized sweep Channel) must not be defined as MChn (primary Sweep Channel).")
+                raise ValueError("SChn (Synchronized sweep Channel) must not be defined as MChn (primary Sweep Channel).")
 
             for SC in SChn:
                 if not SC in Chns:
-                    raise E5274A_InputError("SChn (Synchronized sweep Channel) must not be defined as an active Channel in Chns.")
+                    raise ValueError("SChn (Synchronized sweep Channel) must not be defined as an active Channel in Chns.")
         
         self.CheckADCValues(Chns, ADC)
         self.CheckRanges(Chns, "Voltage", RV)
@@ -1850,14 +1849,14 @@ class Agilent_E5274A:
         #check if all values in VorI are Boolean
         for element in VorI:
             if not isinstance(element, (bool)):
-                raise E5274A_InputError("VorI must only contain boolean values")
+                raise ValueError("VorI must only contain boolean values")
         if not SChn == None:
             if MChn in SChn:
-                raise E5274A_InputError("SChn (Synchronized sweep Channel) must not be defined as MChn (primary Sweep Channel).")
+                raise ValueError("SChn (Synchronized sweep Channel) must not be defined as MChn (primary Sweep Channel).")
 
             for SC in SChn:
                 if not SC in Chns:
-                    raise E5274A_InputError("SChn (Synchronized sweep Channel) must not be defined as an active Channel in Chns.")
+                    raise ValueError("SChn (Synchronized sweep Channel) must not be defined as an active Channel in Chns.")
         
         self.CheckADCValues(Chns, ADC)
         self.CheckRanges(Chns, "Voltage", RV)
@@ -2080,7 +2079,7 @@ class Agilent_E5274A:
         #check if all values in VorI are Boolean
         for element in VorI:
             if not isinstance(element, (bool)):
-                raise E5274A_InputError("VorI (Voltage or Current) must only contain boolean values")
+                raise ValueError("VorI (Voltage or Current) must only contain boolean values")
         
         #if np.any(not PorC):
         #    raise SyntaxError("P or C (Pulse or Constant) must contain one True Value indicating a Pulse channel")
@@ -2117,9 +2116,9 @@ class Agilent_E5274A:
                 self.instWrite("SSR %d, %d\n" %(SSR[n], Chns[n]))
             
             if not self.is_int(PChn):
-                raise E5274A_InputError("PChn must be an integer between 1 and 8 and be present in Chns.")
+                raise ValueError("PChn must be an integer between 1 and 8 and be present in Chns.")
             if PChn > 8 or PChn < 1 or PChn not in Chns: 
-                raise E5274A_InputError("PChn must be an integer between 1 and 8 and be present in Chns.")
+                raise ValueError("PChn must be an integer between 1 and 8 and be present in Chns.")
 
             if Chns[n] == PChn:
                 if period==None:
@@ -2262,16 +2261,16 @@ class Agilent_E5274A:
         #check if all values in VorI are Boolean
         for element in VorI:
             if not isinstance(element, (bool)):
-                raise E5274A_InputError("VorI must only contain boolean values")
+                raise ValueError("VorI must only contain boolean values")
         if not SynSChn == None:
             if PBChn in SynSChn:
-                raise E5274A_InputError("SynSChn (Synchronized sweep Channel) must not be defined as PBChn (Pulsed Bias Channel).")
+                raise ValueError("SynSChn (Synchronized sweep Channel) must not be defined as PBChn (Pulsed Bias Channel).")
             if SynSChn in SChn:
-                raise E5274A_InputError("SynSChn (Synchronized sweep Channel) must not be defined as MChn (primary Sweep Channel).")
+                raise ValueError("SynSChn (Synchronized sweep Channel) must not be defined as MChn (primary Sweep Channel).")
 
             for SC in SynSChn:
                 if not SC in Chns:
-                    raise E5274A_InputError("SynSChn (Synchronized sweep Channel) must not be defined as an active Channel in Chns.")
+                    raise ValueError("SynSChn (Synchronized sweep Channel) must not be defined as an active Channel in Chns.")
         
         self.CheckADCValues(Chns, ADC)
         self.CheckRanges(Chns, "Voltage", RV)
@@ -2311,14 +2310,14 @@ class Agilent_E5274A:
 
 
             if not self.is_int(SSChn):
-                raise E5274A_InputError("SSChn must be an integer between 1 and 8 and be present in Chns.")
+                raise ValueError("SSChn must be an integer between 1 and 8 and be present in Chns.")
             if SSChn > 8 or SSChn < 1 or SSChn not in Chns: 
-                raise E5274A_InputError("SSChn must be an integer between 1 and 8 and be present in Chns.")
+                raise ValueError("SSChn must be an integer between 1 and 8 and be present in Chns.")
 
             if not self.is_int(PBChn):
-                raise E5274A_InputError("PBChn must be an integer between 1 and 8 and be present in Chns.")
+                raise ValueError("PBChn must be an integer between 1 and 8 and be present in Chns.")
             if PBChn > 8 or PBChn < 1 or PBChn not in Chns: 
-                raise E5274A_InputError("PBChn must be an integer between 1 and 8 and be present in Chns.")
+                raise ValueError("PBChn must be an integer between 1 and 8 and be present in Chns.")
 
             
             if Chns[n] == SSChn:
@@ -2498,7 +2497,7 @@ class Agilent_E5274A:
         #check if all values in VorI are Boolean
         for element in VorI:
             if not isinstance(element, (bool)):
-                raise E5274A_InputError("VorI must only contain boolean values")
+                raise ValueError("VorI must only contain boolean values")
        
         self.CheckADCValues(Chns, ADC)
         self.CheckRanges(Chns, "Voltage", RV)
@@ -2519,7 +2518,7 @@ class Agilent_E5274A:
         for Chn in Chns: 
             if Chn == SourceChn:
                 if VorI[n] == False:
-                    raise E5274A_InputError("Quasi Pulsed Spot Measurement - SourceChn must be a Voltage Source.")
+                    raise ValueError("Quasi Pulsed Spot Measurement - SourceChn must be a Voltage Source.")
                 self.CheckBDVValues(PBase, Val[n])
             n = n+1
         n = 0
@@ -2549,9 +2548,9 @@ class Agilent_E5274A:
 
 
             if not self.is_int(SourceChn): #SourceChn is Source Channel
-                raise E5274A_InputError("SourceChn must be an integer between 1 and 8 and be present in Chns.")
+                raise ValueError("SourceChn must be an integer between 1 and 8 and be present in Chns.")
             if SourceChn > 8 or SourceChn < 1 or SourceChn not in Chns: 
-                raise E5274A_InputError("SourceChn must be an integer between 1 and 8 and be present in Chns.")
+                raise ValueError("SourceChn must be an integer between 1 and 8 and be present in Chns.")
 
             
             if Chns[n] == SourceChn:

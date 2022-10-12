@@ -52,7 +52,7 @@ class BNC_Model765:
             #print("You are using the wrong Berkeley Nucleonics!")
             self.inst.close()
             self.ErrorQueue.put("You are using the wrong Berkeley Nucleonics tool! (%s)" %(ret))
-            raise BNC_Model765Error("You are using the wrong Berkeley Nucleonics tool! (%s)" %(ret))
+            raise SystemError("You are using the wrong Berkeley Nucleonics tool! (%s)" %(ret))
         #print(ret)
         # do if ACTIVE TECHNOLOGIES, AT-PULSE-RIDER PG107 then correct, else the agilent tool you are using is incorrect
         if calibration: 
@@ -157,9 +157,9 @@ class BNC_Model765:
     def setExtInputImpedance(self, imp):
 
         if not isinstance(imp, int):
-            raise BNC_Model765_InputError("Impedance must be either 50 or 10000 ohm.")
+            raise ValueError("Impedance must be either 50 or 10000 ohm.")
         if not (imp == 50 or imp == 10000): 
-            raise BNC_Model765_InputError("Impedance must be either 50 or 10000 ohm.")
+            raise ValueError("Impedance must be either 50 or 10000 ohm.")
         if imp == 50:
             self.instWrite(":ARM:IMP 50OHM")
         else:
@@ -236,10 +236,10 @@ class BNC_Model765:
         minTr = self.getMinTriggerThreshold()
 
         if not isinstance(threshold, (float,int)):
-            raise BNC_Model765_InputError("Threshold voltage must a float value from %e to %e V." %(minTr, maxTr))
+            raise TypeError("Threshold voltage must a float value from %e to %e V." %(minTr, maxTr))
 
         if minTr > threshold > maxTr:
-            raise BNC_Model765_InputError("Threshold voltage must a float value from %e to %e V." %(minTr, maxTr))
+            raise TypeError("Threshold voltage must a float value from %e to %e V." %(minTr, maxTr))
 
         self.instWrite("TRIG:SEQ:THRE %e" %(threshold))
 
@@ -284,10 +284,10 @@ class BNC_Model765:
         maxTrigTim = self.getMaxTriggerTimer()
         minTrigTim = self.getMinTriggerTimer()
         if not isinstance(time, (float,int)):
-            raise BNC_Model765_InputError("Threshold voltage must a float value from 20ns to 50s.")
+            raise TypeError("Threshold voltage must a float value from 20ns to 50s.")
 
         if minTrigTim > time or time > maxTrigTim:
-            raise BNC_Model765_InputError("Threshold voltage must a float value from 20ns to 50s.")
+            raise TypeError("Threshold voltage must a float value from 20ns to 50s.")
 
         self.instWrite("TRIG:SEQ:TIM %e" %(time))
 
@@ -342,10 +342,10 @@ class BNC_Model765:
         minAmp = self.getMinTriggerOutputAmplitude()
 
         if not isinstance(amplitude, (float,int)):
-            raise BNC_Model765_InputError("Threshold Output Amplitude must a float value from %e to %e." %(minAmp, maxAmp))
+            raise TypeError("Threshold Output Amplitude must a float value from %e to %e." %(minAmp, maxAmp))
 
         if minAmp > amplitude or amplitude > maxAmp:
-            raise BNC_Model765_InputError("Threshold Output Amplitude must a float value from %e to %e." %(minAmp, maxAmp))
+            raise TypeError("Threshold Output Amplitude must a float value from %e to %e." %(minAmp, maxAmp))
 
 
         self.instWrite("TRIG:OUTP:AMPL %e" %(amplitude))
@@ -372,10 +372,10 @@ class BNC_Model765:
         minDel = self.getMinTriggerOutputDelay()
 
         if not isinstance(delay, (float,int)):
-            raise BNC_Model765_InputError("Threshold Output Delay must a float value from %e to %e." %(minDel, maxDel))
+            raise TypeError("Threshold Output Delay must a float value from %e to %e." %(minDel, maxDel))
 
         if minDel > delay or delay > maxDel:
-            raise BNC_Model765_InputError("Threshold Output Delay must a float value from %e to %e." %(minDel, maxDel))
+            raise TypeError("Threshold Output Delay must a float value from %e to %e." %(minDel, maxDel))
 
 
         self.instWrite("TRIG:OUTP:DEL %e" %(delay))
@@ -396,9 +396,9 @@ class BNC_Model765:
     def setTriggerOutputSource(self, chn=1):
         
         if not isinstance(chn, int):
-            raise BNC_Model765_InputError("Trigger chn must be an integer from 1 to 4.")
+            raise TypeError("Trigger chn must be an integer from 1 to 4.")
         if 1 > chn or chn > self.NumOfChannels: 
-            raise BNC_Model765_InputError("Trigger chn must be an integer from 1 to 4.")
+            raise ValueError("Trigger chn must be an integer from 1 to 4.")
 
         self.instWrite("TRIG:OUTP:SOUR OUT%d" %(chn))
 
@@ -411,9 +411,9 @@ class BNC_Model765:
     def setDisplayChannel(self, channel):
         
         if not isinstance(channel, int):
-            raise BNC_Model765_InputError("Display Channel must be an integer from 1 to 4.")
+            raise TypeError("Display Channel must be an integer from 1 to 4.")
         if 1 > channel > 4: 
-            raise BNC_Model765_InputError("Display Channel must be an integer from 1 to 4.")
+            raise ValueError("Display Channel must be an integer from 1 to 4.")
 
         self.instWrite("DISP:CHAN OUT%d" %(channel))
     
@@ -495,7 +495,7 @@ class BNC_Model765:
         return ret
     def setOperationEnableRegister(self, bit):
         if not isinstance(bit, int):
-            raise BNC_Model765_InputError("bit must be an integer")
+            raise TypeError("bit must be an integer")
         self.instWrite("SYST:OPER:ENAB %d" %(bit))
         
     def getQuestionableEventRegister(self):
@@ -514,7 +514,7 @@ class BNC_Model765:
         return ret
     def setQuestionableEnableRegister(self, bit):
         if not isinstance(bit, int):
-            raise BNC_Model765_InputError("bit must be an integer")
+            raise TypeError("bit must be an integer")
         self.instWrite("STAT:QUES:ENAB %d" %(bit))
 
     def presetStatusRegister(self):
@@ -529,9 +529,9 @@ class BNC_Model765:
 
     def setEventStatusRegister(self, bit):
         if not isinstance(bit, int):
-            raise BNC_Model765_InputError("bit must be an integer from 0 to 255")
+            raise TypeError("bit must be an integer from 0 to 255")
         if 0 > bit > 255: 
-            raise BNC_Model765_InputError("bit must be an integer from 0 to 255")
+            raise ValueError("bit must be an integer from 0 to 255")
         self.instWrite("*ESE %d" %(bit))
 
     def getStandardEventStatusRegister(self):
@@ -544,9 +544,9 @@ class BNC_Model765:
         return ret
     def setServiceRequestEnableRegister(self, bit):
         if not isinstance(bit, int):
-            raise BNC_Model765_InputError("bit must be an integer")
+            raise TypeError("bit must be an integer")
         if 0 > bit > 255: 
-            raise BNC_Model765_InputError("bit must be an integer from 0 to 255")
+            raise ValueError("bit must be an integer from 0 to 255")
         self.instWrite("*SRE %d" %(bit))
 
     def getStatusByteRegister(self):
@@ -560,9 +560,9 @@ class BNC_Model765:
         return ret
     def setDeviceEventStatusEnableRegister(self,bit):
         if not isinstance(bit, int):
-            raise BNC_Model765_InputError("bit must be an integer")
+            raise TypeError("bit must be an integer")
         if 0 > bit > 255: 
-            raise BNC_Model765_InputError("bit must be an integer from 0 to 255")
+            raise ValueError("bit must be an integer from 0 to 255")
         self.instWrite("DESE %d" %(bit))
 
     def getOperationComplete(self):
@@ -594,22 +594,22 @@ class BNC_Model765:
         perMax = self.getMaxPeriod(chn)
         
         if not isinstance(period, (float,int)):
-            raise BNC_Model765_InputError("period must be float")
+            raise TypeError("period must be float")
         if perMin > period or period > perMax: 
-            raise BNC_Model765_InputError("period must be float from %e to %e." %(perMin, perMax))
+            raise ValueError("period must be float from %e to %e." %(perMin, perMax))
         if not isinstance(chn, int):
-            raise BNC_Model765_InputError("channel must be an integer")
+            raise TypeError("channel must be an integer")
         if 1 > chn or chn > self.NumOfChannels: 
-            raise BNC_Model765_InputError("channel must be an integer from 1 to %d" %(self.NumOfChannels))
+            raise ValueError("channel must be an integer from 1 to %d" %(self.NumOfChannels))
         
         self.instWrite("SOUR%d:PER %e" %(chn,period))
 
     def getMaxPeriod(self, chn=None):
         if chn != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("channel must be an integer")
+                raise TypeError("channel must be an integer")
             if 1 > chn or chn > self.NumOfChannels: 
-                raise BNC_Model765_InputError("channel must be an integer from 1 to 4")
+                raise ValueError("channel must be an integer from 1 to 4")
         if chn == None:
             ret = self.instQuery("PER? MAX")
         else:
@@ -621,9 +621,9 @@ class BNC_Model765:
     def getMinPeriod(self, chn=None):
         if chn != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("channel must be an integer")
+                raise TypeError("channel must be an integer")
             if 1 > chn or chn > self.NumOfChannels: 
-                raise BNC_Model765_InputError("channel must be an integer from 1 to 4")
+                raise ValueError("channel must be an integer from 1 to 4")
         if chn == None:
             ret = self.instQuery("PER? MIN")
         else:
@@ -633,9 +633,9 @@ class BNC_Model765:
     def getMaxWidth(self, chn=None):
         if chn != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("channel must be an integer")
+                raise TypeError("channel must be an integer")
             if 1 > chn or chn > self.NumOfChannels: 
-                raise BNC_Model765_InputError("channel must be an integer from 1 to 4")
+                raise ValueError("channel must be an integer from 1 to 4")
         if chn == None:
             ret = self.instQuery("PER? MAX")
         else:
@@ -645,9 +645,9 @@ class BNC_Model765:
     def getMinWidth(self, chn=None):
         if chn != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("channel must be an integer")
+                raise TypeError("channel must be an integer")
             if 1 > chn or chn > self.NumOfChannels: 
-                raise BNC_Model765_InputError("channel must be an integer from 1 to 4")
+                raise ValueError("channel must be an integer from 1 to 4")
         if chn == None:
             ret = self.instQuery("PER? MIN")
         else:
@@ -660,22 +660,22 @@ class BNC_Model765:
         frqMax = self.getMaxFrequency(chn)
         
         if not isinstance(frequency, (float,int)):
-            raise BNC_Model765_InputError("frequency must be float")
+            raise TypeError("frequency must be float")
         if frqMin > frequency or frequency > frqMax: 
-            raise BNC_Model765_InputError("frequency must be float from %e to %e." %(frqMin, frqMax))
+            raise ValueError("frequency must be float from %e to %e." %(frqMin, frqMax))
         if not isinstance(chn, int):
-            raise BNC_Model765_InputError("channel must be an integer")
+            raise TypeError("channel must be an integer")
         if 1 > chn or chn > self.NumOfChannels: 
-            raise BNC_Model765_InputError("channel must be an integer from 1 to %d" %(self.NumOfChannels))
+            raise ValueError("channel must be an integer from 1 to %d" %(self.NumOfChannels))
         
         self.instWrite("SOUR%d:FREQ %e" %(chn,frequency))
 
     def getMaxFrequency(self, chn=None):
         if chn != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("channel must be an integer")
+                raise TypeError("channel must be an integer")
             if 1 > chn or chn > self.NumOfChannels: 
-                raise BNC_Model765_InputError("channel must be an integer from 1 to 4")
+                raise ValueError("channel must be an integer from 1 to 4")
         if chn == None:
             ret = self.instQuery("FREQ? MAX")
         else:
@@ -685,9 +685,9 @@ class BNC_Model765:
     def getMinFrequency(self, chn=None):
         if chn != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("channel must be an integer")
+                raise TypeError("channel must be an integer")
             if 1 > chn or chn > self.NumOfChannels: 
-                raise BNC_Model765_InputError("channel must be an integer from 1 to 4")
+                raise ValueError("channel must be an integer from 1 to 4")
         if chn == None:
             ret = self.instQuery("FREQ? MIN")
         else:
@@ -700,22 +700,22 @@ class BNC_Model765:
         cycMax = self.getMaxNumOfCycles(chn)
         
         if not isinstance(cycles, (int,float)):
-            raise BNC_Model765_InputError("frequency must be float")
+            raise TypeError("frequency must be float")
         if cycMin > cycles or cycles > cycMax: 
-            raise BNC_Model765_InputError("frequency must be float from %e to %e." %(cycMin, cycMax))
+            raise ValueError("frequency must be float from %e to %e." %(cycMin, cycMax))
         if not isinstance(chn, int):
-            raise BNC_Model765_InputError("channel must be an integer")
+            raise TypeError("channel must be an integer")
         if 1 > chn or chn > self.NumOfChannels: 
-            raise BNC_Model765_InputError("channel must be an integer from 1 to %d" %(self.NumOfChannels))
+            raise ValueError("channel must be an integer from 1 to %d" %(self.NumOfChannels))
         
         self.instWrite("SOUR%d:BURS:NCYC %e" %(chn,cycles))
 
     def getMaxNumOfCycles(self, chn=None):
         if chn != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("channel must be an integer")
+                raise TypeError("channel must be an integer")
             if 1 > chn or chn > self.NumOfChannels: 
-                raise BNC_Model765_InputError("channel must be an integer from 1 to 4")
+                raise ValueError("channel must be an integer from 1 to 4")
         if chn == None:
             ret = self.instQuery("BURS:NCYC? MAX")
             ret = float(ret)
@@ -727,9 +727,9 @@ class BNC_Model765:
     def getMinNumOfCycles(self, chn=None):
         if chn != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("channel must be an integer")
+                raise TypeError("channel must be an integer")
             if 1 > chn or chn > self.NumOfChannels: 
-                raise BNC_Model765_InputError("channel must be an integer from 1 to 4")
+                raise ValueError("channel must be an integer from 1 to 4")
         if chn == None:
             ret = self.instQuery("BURS:NCYC? MIN")
             ret = float(ret)
@@ -744,22 +744,22 @@ class BNC_Model765:
         delMax = self.getMaxInitDelay(chn)
         
         if not isinstance(delay, (int)):
-            raise BNC_Model765_InputError("frequency must be float")
+            raise TypeError("frequency must be float")
         if delMin > delay or delay > delMax: 
-            raise BNC_Model765_InputError("frequency must be float from %e to %e." %(delMin, delMax))
+            raise ValueError("frequency must be float from %e to %e." %(delMin, delMax))
         if not isinstance(chn, int):
-            raise BNC_Model765_InputError("channel must be an integer")
+            raise TypeError("channel must be an integer")
         if 1 > chn or chn > self.NumOfChannels: 
-            raise BNC_Model765_InputError("channel must be an integer from 1 to %d" %(self.NumOfChannels))
+            raise ValueError("channel must be an integer from 1 to %d" %(self.NumOfChannels))
         
         self.instWrite("SOUR%d:INITDEL %e" %(chn,delay))
 
     def getInitDelay(self, chn=None):
         if chn != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("channel must be an integer")
+                raise TypeError("channel must be an integer")
             if 1 > chn or chn > self.NumOfChannels: 
-                raise BNC_Model765_InputError("channel must be an integer from 1 to 4")
+                raise ValueError("channel must be an integer from 1 to 4")
         if chn == None:
             ret = self.instQuery("INITDEL?")
         else:
@@ -769,9 +769,9 @@ class BNC_Model765:
     def getMaxInitDelay(self, chn=None):
         if chn != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("channel must be an integer")
+                raise TypeError("channel must be an integer")
             if 1 > chn or chn > self.NumOfChannels: 
-                raise BNC_Model765_InputError("channel must be an integer from 1 to 4")
+                raise ValueError("channel must be an integer from 1 to 4")
         if chn == None:
             ret = self.instQuery("INITDEL? MAX")
         else:
@@ -781,9 +781,9 @@ class BNC_Model765:
     def getMinInitDelay(self, chn=None):
         if chn != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("channel must be an integer")
+                raise TypeError("channel must be an integer")
             if 1 > chn or chn > self.NumOfChannels: 
-                raise BNC_Model765_InputError("channel must be an integer from 1 to 4")
+                raise ValueError("channel must be an integer from 1 to 4")
         if chn == None:
             ret = self.instQuery("INITDEL? MIN")
         else:
@@ -796,22 +796,22 @@ class BNC_Model765:
         impMax = self.getMaxLoadImpedance(chn)
         
         if not isinstance(impedance, (int)):
-            raise BNC_Model765_InputError("frequency must be float")
+            raise TypeError("frequency must be float")
         if impMin > impedance or impedance > impMax: 
-            raise BNC_Model765_InputError("frequency must be float from %e to %e." %(impMin, impMax))
+            raise ValueError("frequency must be float from %e to %e." %(impMin, impMax))
         if not isinstance(chn, int):
-            raise BNC_Model765_InputError("channel must be an integer")
+            raise TypeError("channel must be an integer")
         if 1 > chn or chn > self.NumOfChannels: 
-            raise BNC_Model765_InputError("channel must be an integer from 1 to %d" %(self.NumOfChannels))
+            raise ValueError("channel must be an integer from 1 to %d" %(self.NumOfChannels))
         
         self.instWrite("SOUR%d:LOAD:IMP %e" %(chn,impedance))
 
     def getLoadImpedance(self, chn=None):
         if chn != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("channel must be an integer")
+                raise TypeError("channel must be an integer")
             if 1 > chn or chn > self.NumOfChannels: 
-                raise BNC_Model765_InputError("channel must be an integer from 1 to 4")
+                raise ValueError("channel must be an integer from 1 to 4")
         if chn == None:
             ret = self.instQuery("LOAD:IMP?")
         else:
@@ -821,9 +821,9 @@ class BNC_Model765:
     def getMaxLoadImpedance(self, chn=None):
         if chn != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("channel must be an integer")
+                raise TypeError("channel must be an integer")
             if 1 > chn or chn > self.NumOfChannels: 
-                raise BNC_Model765_InputError("channel must be an integer from 1 to 4")
+                raise ValueError("channel must be an integer from 1 to 4")
         if chn == None:
             ret = self.instQuery("LOAD:IMP? MAX")
         else:
@@ -833,9 +833,9 @@ class BNC_Model765:
     def getMinLoadImpedance(self, chn=None):
         if chn != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("channel must be an integer")
+                raise TypeError("channel must be an integer")
             if 1 > chn or chn > self.NumOfChannels: 
-                raise BNC_Model765_InputError("channel must be an integer from 1 to 4")
+                raise ValueError("channel must be an integer from 1 to 4")
         if chn == None:
             ret = self.instQuery("LOAD:IMP? MIN")
         else:
@@ -844,26 +844,26 @@ class BNC_Model765:
 
     def turnOnLoadCompensation(self, chn):  
         if not isinstance(chn, int):
-            raise BNC_Model765_InputError("channel must be an integer")
+            raise TypeError("channel must be an integer")
         if 1 > chn or chn > self.NumOfChannels: 
-            raise BNC_Model765_InputError("channel must be an integer from 1 to %d" %(self.NumOfChannels))
+            raise ValueError("channel must be an integer from 1 to %d" %(self.NumOfChannels))
         
         self.instWrite("SOUR%d:LOAD:COMP ON" %(chn))
     
     def turnOffLoadCompensation(self, chn):  
         if not isinstance(chn, int):
-            raise BNC_Model765_InputError("channel must be an integer")
+            raise TypeError("channel must be an integer")
         if 1 > chn or chn > self.NumOfChannels: 
-            raise BNC_Model765_InputError("channel must be an integer from 1 to %d" %(self.NumOfChannels))
+            raise ValueError("channel must be an integer from 1 to %d" %(self.NumOfChannels))
         
         self.instWrite("SOUR%d:LOAD:COMP OFF" %(chn))
 
     def getLoadCompensation(self, chn=None):
         if chn != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("channel must be an integer")
+                raise TypeError("channel must be an integer")
             if 1 > chn or chn > self.NumOfChannels: 
-                raise BNC_Model765_InputError("channel must be an integer from 1 to 4")
+                raise ValueError("channel must be an integer from 1 to 4")
         if chn == None:
             ret = self.instQuery("LOAD:COMP?")
         else:
@@ -872,26 +872,26 @@ class BNC_Model765:
 
     def invertedOutputPolarity(self, chn=1):  
         if not isinstance(chn, int):
-            raise BNC_Model765_InputError("channel must be an integer")
+            raise TypeError("channel must be an integer")
         if 1 > chn or chn > self.NumOfChannels: 
-            raise BNC_Model765_InputError("channel must be an integer from 1 to %d" %(self.NumOfChannels))
+            raise ValueError("channel must be an integer from 1 to %d" %(self.NumOfChannels))
         
         self.instWrite("SOUR%d:INV ON" %(chn))
     
     def normalOutputPolarity(self, chn=1):  
         if not isinstance(chn, int):
-            raise BNC_Model765_InputError("channel must be an integer")
+            raise TypeError("channel must be an integer")
         if 1 > chn or chn > self.NumOfChannels: 
-            raise BNC_Model765_InputError("channel must be an integer from 1 to %d" %(self.NumOfChannels))
+            raise ValueError("channel must be an integer from 1 to %d" %(self.NumOfChannels))
         
         self.instWrite("SOUR%d:INV OFF" %(chn))
 
     def getOutputPolarity(self, chn=None):
         if chn != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("channel must be an integer")
+                raise TypeError("channel must be an integer")
             if 1 > chn or chn > self.NumOfChannels: 
-                raise BNC_Model765_InputError("channel must be an integer from 1 to 4")
+                raise ValueError("channel must be an integer from 1 to 4")
         if chn == None:
             ret = self.instQuery("INV?")
         else:
@@ -904,21 +904,21 @@ class BNC_Model765:
         volMax = self.getMaxVoltageAmplitude(chn)
         
         if not isinstance(voltage, (int)):
-            raise BNC_Model765_InputError("voltage must be float")
+            raise TypeError("voltage must be float")
         if volMin > voltage or voltage > volMax: 
-            raise BNC_Model765_InputError("voltage must be float from %e to %e." %(volMin, volMax))
+            raise ValueError("voltage must be float from %e to %e." %(volMin, volMax))
         if not isinstance(chn, int):
-            raise BNC_Model765_InputError("channel must be an integer")
+            raise TypeError("channel must be an integer")
         if 1 > chn or chn > self.NumOfChannels: 
-            raise BNC_Model765_InputError("channel must be an integer from 1 to %d" %(self.NumOfChannels))
+            raise ValueError("channel must be an integer from 1 to %d" %(self.NumOfChannels))
         
         self.instWrite("SOUR%d:VOLT:LEV:IMM:AMP %e" %(chn,voltage))
 
     def getVoltageAmplitude(self, chn):
         if not isinstance(chn, int):
-            raise BNC_Model765_InputError("channel must be an integer")
+            raise TypeError("channel must be an integer")
         if 1 > chn or chn > self.NumOfChannels: 
-            raise BNC_Model765_InputError("channel must be an integer from 1 to %d" %(self.NumOfChannels))
+            raise ValueError("channel must be an integer from 1 to %d" %(self.NumOfChannels))
         ret = self.instQuery("SOUR%d:VOLT:LEV:IMM:AMPL?" %(chn))
         ret = float(ret)
         return ret
@@ -926,9 +926,9 @@ class BNC_Model765:
     def getMaxVoltageAmplitude(self, chn=None):
         if chn != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("channel must be an integer")
+                raise TypeError("channel must be an integer")
             if 1 > chn or chn > self.NumOfChannels: 
-                raise BNC_Model765_InputError("channel must be an integer from 1 to 4")
+                raise ValueError("channel must be an integer from 1 to 4")
         if chn == None:
             ret = self.instQuery("VOLT:LEV:IMM:AMP? MAX")
         else:
@@ -938,9 +938,9 @@ class BNC_Model765:
     def getMinVoltageAmplitude(self, chn=None):
         if chn != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("channel must be an integer")
+                raise TypeError("channel must be an integer")
             if 1 > chn or chn > self.NumOfChannels: 
-                raise BNC_Model765_InputError("channel must be an integer from 1 to 4")
+                raise ValueError("channel must be an integer from 1 to 4")
         if chn == None:
             ret = self.instQuery("VOLT:LEV:IMM:AMP? MIN")
         else:
@@ -953,21 +953,21 @@ class BNC_Model765:
         volMax = self.getMaxVoltageOffset(chn)
         
         if not isinstance(voltage, (int)):
-            raise BNC_Model765_InputError("voltage must be float")
+            raise TypeError("voltage must be float")
         if volMin > voltage or voltage > volMax: 
-            raise BNC_Model765_InputError("voltage must be float from %e to %e." %(volMin, volMax))
+            raise ValueError("voltage must be float from %e to %e." %(volMin, volMax))
         if not isinstance(chn, int):
-            raise BNC_Model765_InputError("channel must be an integer")
+            raise TypeError("channel must be an integer")
         if 1 > chn or chn > self.NumOfChannels: 
-            raise BNC_Model765_InputError("channel must be an integer from 1 to %d" %(self.NumOfChannels))
+            raise ValueError("channel must be an integer from 1 to %d" %(self.NumOfChannels))
         
         self.instWrite("SOUR%d:VOLT:LEV:IMM:OFFS %e" %(chn,voltage))
 
     def getVoltageOffset(self, chn):
         if not isinstance(chn, int):
-            raise BNC_Model765_InputError("channel must be an integer")
+            raise TypeError("channel must be an integer")
         if 1 > chn or chn > self.NumOfChannels: 
-            raise BNC_Model765_InputError("channel must be an integer from 1 to %d" %(self.NumOfChannels))
+            raise ValueError("channel must be an integer from 1 to %d" %(self.NumOfChannels))
         ret = self.instQuery("SOUR%d:VOLT:LEV:IMM:OFFS?" %(chn))
         ret = float(ret)
         return ret
@@ -975,9 +975,9 @@ class BNC_Model765:
     def getMaxVoltageOffset(self, chn=None):
         if chn != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("channel must be an integer")
+                raise TypeError("channel must be an integer")
             if 1 > chn or chn > self.NumOfChannels: 
-                raise BNC_Model765_InputError("channel must be an integer from 1 to 4")
+                raise ValueError("channel must be an integer from 1 to 4")
         if chn == None:
             ret = self.instQuery("VOLT:LEV:IMM:OFFS? MAX")
         else:
@@ -987,9 +987,9 @@ class BNC_Model765:
     def getMinVoltageOffset(self, chn=None):
         if chn != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("channel must be an integer")
+                raise TypeError("channel must be an integer")
             if 1 > chn or chn > self.NumOfChannels: 
-                raise BNC_Model765_InputError("channel must be an integer from 1 to 4")
+                raise ValueError("channel must be an integer from 1 to 4")
         if chn == None:
             ret = self.instQuery("VOLT:LEV:IMM:OFFS? MIN")
         else:
@@ -1002,21 +1002,21 @@ class BNC_Model765:
         volMax = self.getMaxVoltageHigh(chn)
         
         if not isinstance(voltage, (int, float)):
-            raise BNC_Model765_InputError("voltage must be float")
+            raise TypeError("voltage must be float")
         if volMin > voltage or voltage > volMax: 
-            raise BNC_Model765_InputError("voltage must be float from %e to %e." %(volMin, volMax))
+            raise ValueError("voltage must be float from %e to %e." %(volMin, volMax))
         if not isinstance(chn, int):
-            raise BNC_Model765_InputError("channel must be an integer")
+            raise TypeError("channel must be an integer")
         if 1 > chn or chn > self.NumOfChannels: 
-            raise BNC_Model765_InputError("channel must be an integer from 1 to %d" %(self.NumOfChannels))
+            raise ValueError("channel must be an integer from 1 to %d" %(self.NumOfChannels))
         
         self.instWrite("SOUR%d:VOLT:LEV:IMM:HIGH %e" %(chn,voltage))
 
     def getVoltageHigh(self, chn):
         if not isinstance(chn, int):
-            raise BNC_Model765_InputError("channel must be an integer")
+            raise TypeError("channel must be an integer")
         if 1 > chn or chn > self.NumOfChannels: 
-            raise BNC_Model765_InputError("channel must be an integer from 1 to %d" %(self.NumOfChannels))
+            raise ValueError("channel must be an integer from 1 to %d" %(self.NumOfChannels))
         ret = self.instQuery("SOUR%d:VOLT:LEV:IMM:HIGH?" %(chn))
         ret = float(ret)
         return ret
@@ -1024,9 +1024,9 @@ class BNC_Model765:
     def getMaxVoltageHigh(self, chn=None):
         if chn != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("channel must be an integer")
+                raise TypeError("channel must be an integer")
             if 1 > chn or chn > self.NumOfChannels: 
-                raise BNC_Model765_InputError("channel must be an integer from 1 to 4")
+                raise ValueError("channel must be an integer from 1 to 4")
         if chn == None:
             ret = self.instQuery("VOLT:LEV:IMM:HIGH? MAX")
         else:
@@ -1034,15 +1034,15 @@ class BNC_Model765:
         try:
             ret = float(ret)
         except TypeError as e: 
-            raise BNC_Model765_InputError("BNC765 - return error - getMaxVoltageHigh - %s" %(e))
+            raise TypeError("BNC765 - return error - getMaxVoltageHigh - %s" %(e))
         return float(ret)
 
     def getMinVoltageHigh(self, chn=None):
         if chn != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("channel must be an integer")
+                raise TypeError("channel must be an integer")
             if 1 > chn or chn > self.NumOfChannels: 
-                raise BNC_Model765_InputError("channel must be an integer from 1 to 4")
+                raise ValueError("channel must be an integer from 1 to 4")
         if chn == None:
             ret = self.instQuery("VOLT:LEV:IMM:HIGH? MIN")
         else:
@@ -1050,7 +1050,7 @@ class BNC_Model765:
         try:
             ret = float(ret)
         except TypeError as e: 
-            raise BNC_Model765_InputError("BNC765 - return error - getMinVoltageHigh - %s" %(e))
+            raise TypeError("BNC765 - return error - getMinVoltageHigh - %s" %(e))
         return float(ret)
 
     def setVoltageLow(self, voltage, chn=1): 
@@ -1059,21 +1059,21 @@ class BNC_Model765:
         volMax = self.getMaxVoltageLow(chn)
         
         if not isinstance(voltage, (int, float)):
-            raise BNC_Model765_InputError("voltage must be float")
+            raise TypeError("voltage must be float")
         if volMin > voltage or voltage > volMax: 
-            raise BNC_Model765_InputError("voltage must be float from %e to %e." %(volMin, volMax))
+            raise ValueError("voltage must be float from %e to %e." %(volMin, volMax))
         if not isinstance(chn, int):
-            raise BNC_Model765_InputError("channel must be an integer")
+            raise TypeError("channel must be an integer")
         if 1 > chn or chn > self.NumOfChannels: 
-            raise BNC_Model765_InputError("channel must be an integer from 1 to %d" %(self.NumOfChannels))
+            raise ValueError("channel must be an integer from 1 to %d" %(self.NumOfChannels))
         
         self.instWrite("SOUR%d:VOLT:LEV:IMM:LOW %e" %(chn,voltage))
 
     def getVoltageLow(self, chn=1):
         if not isinstance(chn, int):
-            raise BNC_Model765_InputError("channel must be an integer")
+            raise TypeError("channel must be an integer")
         if 1 > chn or chn > self.NumOfChannels: 
-            raise BNC_Model765_InputError("channel must be an integer from 1 to %d" %(self.NumOfChannels))
+            raise ValueError("channel must be an integer from 1 to %d" %(self.NumOfChannels))
         ret = self.instQuery("SOUR%d:VOLT:LEV:IMM:LOW?" %(chn))
         ret = float(ret)
         return ret
@@ -1081,9 +1081,9 @@ class BNC_Model765:
     def getMaxVoltageLow(self, chn=1):
         if chn != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("channel must be an integer")
+                raise TypeError("channel must be an integer")
             if 1 > chn or chn > self.NumOfChannels: 
-                raise BNC_Model765_InputError("channel must be an integer from 1 to 4")
+                raise ValueError("channel must be an integer from 1 to 4")
         if chn == None:
             ret = self.instQuery("VOLT:LEV:IMM:LOW? MAX")
         else:
@@ -1091,15 +1091,15 @@ class BNC_Model765:
         try:
             ret = float(ret)
         except TypeError as e: 
-            raise BNC_Model765_InputError("BNC765 - return error - getMaxVoltageLow - %s" %(e))
+            raise TypeError("BNC765 - return error - getMaxVoltageLow - %s" %(e))
         return ret
 
     def getMinVoltageLow(self, chn=1):
         if chn != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("channel must be an integer")
+                raise TypeError("channel must be an integer")
             if 1 > chn or chn > self.NumOfChannels: 
-                raise BNC_Model765_InputError("channel must be an integer from 1 to 4")
+                raise ValueError("channel must be an integer from 1 to 4")
         if chn == None:
             ret = self.instQuery("VOLT:LEV:IMM:LOW? MIN")
         else:
@@ -1107,7 +1107,7 @@ class BNC_Model765:
         try:
             ret = float(ret)
         except TypeError as e: 
-            raise BNC_Model765_InputError("BNC765 - return error - getMinVoltageLow - %s" %(e))
+            raise TypeError("BNC765 - return error - getMinVoltageLow - %s" %(e))
         return ret
 
     def setPulseWidth(self, width, chn=1, pulse=1):  
@@ -1117,17 +1117,17 @@ class BNC_Model765:
 
         if pulse != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("pulse must be an integer from 1 to 4")
+                raise TypeError("pulse must be an integer from 1 to 4")
             if 1 > pulse > 4: 
-                raise BNC_Model765_InputError("pulse must be an integer from 1 to 4")
+                raise ValueError("pulse must be an integer from 1 to 4")
         if not isinstance(width, (int, float)):
-            raise BNC_Model765_InputError("width must be float")
+            raise TypeError("width must be float")
         if widthMin > width or width > widthMax: 
-            raise BNC_Model765_InputError("width must be float from %e to %e." %(widthMin, widthMax))
+            raise ValueError("width must be float from %e to %e." %(widthMin, widthMax))
         if not isinstance(chn, int):
-            raise BNC_Model765_InputError("channel must be an integer")
+            raise TypeError("channel must be an integer")
         if 1 > chn or chn > self.NumOfChannels: 
-            raise BNC_Model765_InputError("channel must be an integer from 1 to %d" %(self.NumOfChannels))
+            raise ValueError("channel must be an integer from 1 to %d" %(self.NumOfChannels))
         
         self.instWrite("SOUR%d:PULS%d:WIDTH %e" %(chn,pulse,width))
 
@@ -1136,13 +1136,13 @@ class BNC_Model765:
         
         if pulse != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("pulse must be an integer from 1 to 4")
+                raise TypeError("pulse must be an integer from 1 to 4")
             if 1 > pulse > 4: 
-                raise BNC_Model765_InputError("pulse must be an integer from 1 to 4")
+                raise ValueError("pulse must be an integer from 1 to 4")
         if not isinstance(chn, int):
-            raise BNC_Model765_InputError("channel must be an integer")
+            raise TypeError("channel must be an integer")
         if 1 > chn or chn > self.NumOfChannels: 
-            raise BNC_Model765_InputError("channel must be an integer from 1 to %d" %(self.NumOfChannels))
+            raise ValueError("channel must be an integer from 1 to %d" %(self.NumOfChannels))
         ret = self.instQuery("SOUR%d:PULS%d:WIDTH?" %(chn,pulse))
         ret = float(ret)
         return ret
@@ -1151,14 +1151,14 @@ class BNC_Model765:
         
         if pulse != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("pulse must be an integer from 1 to 4")
+                raise TypeError("pulse must be an integer from 1 to 4")
             if 1 > pulse > 4: 
-                raise BNC_Model765_InputError("pulse must be an integer from 1 to 4")
+                raise ValueError("pulse must be an integer from 1 to 4")
         if chn != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("channel must be an integer")
+                raise TypeError("channel must be an integer")
             if 1 > chn or chn > self.NumOfChannels: 
-                raise BNC_Model765_InputError("channel must be an integer from 1 to 4")
+                raise ValueError("channel must be an integer from 1 to 4")
         if chn == None:
             ret = self.instQuery("PULS%d:WIDTH? MAX" %(pulse))
         else:
@@ -1166,21 +1166,21 @@ class BNC_Model765:
         try:
             ret = float(ret)
         except TypeError as e: 
-            raise BNC_Model765_InputError("BNC765 - return error - getMaxPulseWidth - %s" %(e))
+            raise TypeError("BNC765 - return error - getMaxPulseWidth - %s" %(e))
         return ret
 
     def getMinPulseWidth(self, chn=None, pulse=1):
         
         if pulse != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("pulse must be an integer from 1 to 4")
+                raise TypeError("pulse must be an integer from 1 to 4")
             if 1 > pulse > 4: 
-                raise BNC_Model765_InputError("pulse must be an integer from 1 to 4")
+                raise ValueError("pulse must be an integer from 1 to 4")
         if chn != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("channel must be an integer")
+                raise TypeError("channel must be an integer")
             if 1 > chn or chn > self.NumOfChannels: 
-                raise BNC_Model765_InputError("channel must be an integer from 1 to 4")
+                raise ValueError("channel must be an integer from 1 to 4")
         if chn == None:
             ret = self.instQuery("PULS%d:WIDT? MIN" %(pulse))
         else:
@@ -1188,7 +1188,7 @@ class BNC_Model765:
         try:
             ret = float(ret)
         except TypeError as e: 
-            raise BNC_Model765_InputError("BNC765 - return error - getMinPulseWidth - %s" %(e))
+            raise TypeError("BNC765 - return error - getMinPulseWidth - %s" %(e))
         return ret
 
     
@@ -1197,17 +1197,17 @@ class BNC_Model765:
         delMax = self.getMaxDelay(chn)
         if pulse != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("pulse must be an integer from 1 to 4")
+                raise TypeError("pulse must be an integer from 1 to 4")
             if 1 > pulse or pulse > 4: 
-                raise BNC_Model765_InputError("pulse must be an integer from 1 to 4")
+                raise ValueError("pulse must be an integer from 1 to 4")
         if not isinstance(delay, (int,float)):
-            raise BNC_Model765_InputError("frequency must be float")
+            raise TypeError("frequency must be float")
         if delMin > delay or delay > delMax: 
-            raise BNC_Model765_InputError("frequency must be float from %e to %e." %(delMin, delMax))
+            raise ValueError("frequency must be float from %e to %e." %(delMin, delMax))
         if not isinstance(chn, int):
-            raise BNC_Model765_InputError("channel must be an integer")
+            raise TypeError("channel must be an integer")
         if 1 > chn or chn > self.NumOfChannels: 
-            raise BNC_Model765_InputError("channel must be an integer from 1 to %d" %(self.NumOfChannels))
+            raise ValueError("channel must be an integer from 1 to %d" %(self.NumOfChannels))
         
         self.instWrite("SOUR%d:PULS%d:DEL %e" %(chn,pulse,delay))
 
@@ -1215,14 +1215,14 @@ class BNC_Model765:
         
         if pulse != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("pulse must be an integer from 1 to 4")
+                raise TypeError("pulse must be an integer from 1 to 4")
             if 1 > pulse > 4: 
-                raise BNC_Model765_InputError("pulse must be an integer from 1 to 4")
+                raise ValueError("pulse must be an integer from 1 to 4")
         if chn != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("channel must be an integer")
+                raise TypeError("channel must be an integer")
             if 1 > chn or chn > self.NumOfChannels: 
-                raise BNC_Model765_InputError("channel must be an integer from 1 to 4")
+                raise ValueError("channel must be an integer from 1 to 4")
         if chn == None:
             ret = self.instQuery("PULS%d:DEL?" %(pulse))
         else:
@@ -1233,14 +1233,14 @@ class BNC_Model765:
         
         if pulse != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("pulse must be an integer from 1 to 4")
+                raise TypeError("pulse must be an integer from 1 to 4")
             if 1 > pulse > 4: 
-                raise BNC_Model765_InputError("pulse must be an integer from 1 to 4")
+                raise ValueError("pulse must be an integer from 1 to 4")
         if chn != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("channel must be an integer")
+                raise TypeError("channel must be an integer")
             if 1 > chn or chn > self.NumOfChannels: 
-                raise BNC_Model765_InputError("channel must be an integer from 1 to 4")
+                raise ValueError("channel must be an integer from 1 to 4")
         if chn == None:
             ret = self.instQuery("PULS%d:DEL? MAX" %(pulse))
             ret = float(ret)
@@ -1253,14 +1253,14 @@ class BNC_Model765:
         
         if pulse != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("pulse must be an integer from 1 to 4")
+                raise TypeError("pulse must be an integer from 1 to 4")
             if 1 > pulse > 4: 
-                raise BNC_Model765_InputError("pulse must be an integer from 1 to 4")
+                raise ValueError("pulse must be an integer from 1 to 4")
         if chn != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("channel must be an integer")
+                raise TypeError("channel must be an integer")
             if 1 > chn or chn > self.NumOfChannels: 
-                raise BNC_Model765_InputError("channel must be an integer from 1 to 4")
+                raise ValueError("channel must be an integer from 1 to 4")
         if chn == None:
             ret = self.instQuery("PULS%d:DEL? MIN" %(pulse))
             ret = float(ret)
@@ -1276,31 +1276,31 @@ class BNC_Model765:
         
         if pulse != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("pulse must be an integer from 1 to 4")
+                raise TypeError("pulse must be an integer from 1 to 4")
             if 1 > pulse > 4: 
-                raise BNC_Model765_InputError("pulse must be an integer from 1 to 4")
+                raise ValueError("pulse must be an integer from 1 to 4")
         if not isinstance(dutyCycle, (int)):
-            raise BNC_Model765_InputError("frequency must be float")
+            raise TypeError("frequency must be float")
         if cycMin > dutyCycle or dutyCycle > cycMax: 
-            raise BNC_Model765_InputError("frequency must be float from %e to %e." %(cycMin, cycMax))
+            raise ValueError("frequency must be float from %e to %e." %(cycMin, cycMax))
         if not isinstance(chn, int):
-            raise BNC_Model765_InputError("channel must be an integer")
+            raise TypeError("channel must be an integer")
         if 1 > chn or chn > self.NumOfChannels: 
-            raise BNC_Model765_InputError("channel must be an integer from 1 to %d" %(self.NumOfChannels))
+            raise ValueError("channel must be an integer from 1 to %d" %(self.NumOfChannels))
         
         self.instWrite("SOUR%d:PULS%d:DEL %e" %(chn, pulse, dutyCycle))
 
     def getDutyCycle(self, chn=None, pulse=1):
         if pulse != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("pulse must be an integer from 1 to 4")
+                raise TypeError("pulse must be an integer from 1 to 4")
             if 1 > pulse > 4: 
-                raise BNC_Model765_InputError("pulse must be an integer from 1 to 4")
+                raise ValueError("pulse must be an integer from 1 to 4")
         if chn != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("channel must be an integer")
+                raise TypeError("channel must be an integer")
             if 1 > chn or chn > self.NumOfChannels: 
-                raise BNC_Model765_InputError("channel must be an integer from 1 to 4")
+                raise ValueError("channel must be an integer from 1 to 4")
         if chn == None:
             ret = self.instQuery("PULS%d:DEL?" %(pulse))
         else:
@@ -1310,14 +1310,14 @@ class BNC_Model765:
     def getMaxDutyCycle(self, chn=None, pulse=1):
         if pulse != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("pulse must be an integer from 1 to 4")
+                raise TypeError("pulse must be an integer from 1 to 4")
             if 1 > pulse > 4: 
-                raise BNC_Model765_InputError("pulse must be an integer from 1 to 4")
+                raise ValueError("pulse must be an integer from 1 to 4")
         if chn != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("channel must be an integer")
+                raise TypeError("channel must be an integer")
             if 1 > chn or chn > self.NumOfChannels: 
-                raise BNC_Model765_InputError("channel must be an integer from 1 to 4")
+                raise ValueError("channel must be an integer from 1 to 4")
         if chn == None:
             ret = self.instQuery("PULS%d:DCYC? MAX" %(pulse))
         else:
@@ -1327,14 +1327,14 @@ class BNC_Model765:
     def getMinDutyCycle(self, chn=None, pulse=1):
         if pulse != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("pulse must be an integer from 1 to 4")
+                raise TypeError("pulse must be an integer from 1 to 4")
             if 1 > pulse > 4: 
-                raise BNC_Model765_InputError("pulse must be an integer from 1 to 4")
+                raise ValueError("pulse must be an integer from 1 to 4")
         if chn != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("channel must be an integer")
+                raise TypeError("channel must be an integer")
             if 1 > chn or chn > self.NumOfChannels: 
-                raise BNC_Model765_InputError("channel must be an integer from 1 to 4")
+                raise ValueError("channel must be an integer from 1 to 4")
         if chn == None:
             ret = self.instQuery("PULS%d:DCYC? MIN" %(pulse))
         else:
@@ -1348,31 +1348,31 @@ class BNC_Model765:
         
         if pulse != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("pulse must be an integer from 1 to 4")
+                raise TypeError("pulse must be an integer from 1 to 4")
             if 1 > pulse > 4: 
-                raise BNC_Model765_InputError("pulse must be an integer from 1 to 4")
+                raise ValueError("pulse must be an integer from 1 to 4")
         if not isinstance(phase, (int)):
-            raise BNC_Model765_InputError("Pulse phase must be float")
+            raise TypeError("Pulse phase must be float")
         if phaMin > phase or phase > phaMax: 
-            raise BNC_Model765_InputError("Pulse phase must be float from %e to %e." %(phaMin, phaMax))
+            raise ValueError("Pulse phase must be float from %e to %e." %(phaMin, phaMax))
         if not isinstance(chn, int):
-            raise BNC_Model765_InputError("channel must be an integer")
+            raise TypeError("channel must be an integer")
         if 1 > chn or chn > self.NumOfChannels: 
-            raise BNC_Model765_InputError("channel must be an integer from 1 to %d" %(self.NumOfChannels))
+            raise ValueError("channel must be an integer from 1 to %d" %(self.NumOfChannels))
         
         self.instWrite("SOUR%d:PULS%d:PHAS %e" %(chn, pulse, phase))
 
     def getDutyPulsePhase(self, chn=None, pulse=1):
         if pulse != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("pulse must be an integer from 1 to 4")
+                raise TypeError("pulse must be an integer from 1 to 4")
             if 1 > pulse > 4: 
-                raise BNC_Model765_InputError("pulse must be an integer from 1 to 4")
+                raise ValueError("pulse must be an integer from 1 to 4")
         if chn != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("channel must be an integer from 1 to %d" %(self.NumOfChannels))
+                raise TypeError("channel must be an integer from 1 to %d" %(self.NumOfChannels))
             if 1 > chn or chn > self.NumOfChannels: 
-                raise BNC_Model765_InputError("channel must be an integer from 1 to %d" %(self.NumOfChannels))
+                raise ValueError("channel must be an integer from 1 to %d" %(self.NumOfChannels))
         if chn == None:
             ret = self.instQuery("PULS%d:PHAS?" %(pulse))
         else:
@@ -1382,14 +1382,14 @@ class BNC_Model765:
     def getMaxPulsePhase(self, chn=None, pulse=1):
         if pulse != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("pulse must be an integer from 1 to 4")
+                raise TypeError("pulse must be an integer from 1 to 4")
             if 1 > pulse > 4: 
-                raise BNC_Model765_InputError("pulse must be an integer from 1 to 4")
+                raise ValueError("pulse must be an integer from 1 to 4")
         if chn != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("channel must be an integer from 1 to %d" %(self.NumOfChannels))
+                raise TypeError("channel must be an integer from 1 to %d" %(self.NumOfChannels))
             if 1 > chn or chn > self.NumOfChannels: 
-                raise BNC_Model765_InputError("channel must be an integer from 1 to %d" %(self.NumOfChannels))
+                raise ValueError("channel must be an integer from 1 to %d" %(self.NumOfChannels))
         if chn == None:
             ret = self.instQuery("PULS%d:PHAS? MAX" %(pulse))
         else:
@@ -1399,14 +1399,14 @@ class BNC_Model765:
     def getMinPulsePhase(self, chn=None, pulse=1):
         if pulse != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("pulse must be an integer from 1 to 4")
+                raise TypeError("pulse must be an integer from 1 to 4")
             if 1 > pulse > 4: 
-                raise BNC_Model765_InputError("pulse must be an integer from 1 to 4")
+                raise ValueError("pulse must be an integer from 1 to 4")
         if chn != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("channel must be an integer from 1 to 4")
+                raise TypeError("channel must be an integer from 1 to 4")
             if 1 > chn or chn > self.NumOfChannels: 
-                raise BNC_Model765_InputError("channel must be an integer from 1 to 4")
+                raise ValueError("channel must be an integer from 1 to 4")
         if chn == None:
             ret = self.instQuery("PULS%d:PHAS? MIN" %(pulse))
         else:
@@ -1416,91 +1416,91 @@ class BNC_Model765:
     def setPulseModeSingle(self, chn=1):
         if chn != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("channel must be an integer")
+                raise TypeError("channel must be an integer")
             if 1 > chn or chn > self.NumOfChannels: 
-                raise BNC_Model765_InputError("channel must be an integer from 1 to 4")
+                raise ValueError("channel must be an integer from 1 to 4")
         self.instWrite("OUTP%d:PULS:MODE SIN" %(chn))
 
     def setPulseModeDouble(self, chn=1):
         if chn != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("channel must be an integer")
+                raise TypeError("channel must be an integer")
             if 1 > chn or chn > self.NumOfChannels: 
-                raise BNC_Model765_InputError("channel must be an integer from 1 to 4")
+                raise ValueError("channel must be an integer from 1 to 4")
         self.instWrite("OUTP%d:PULS:MODE DOU" %(chn))
     
     def setPulseModeTriple(self, chn=1):
         if chn != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("channel must be an integer")
+                raise TypeError("channel must be an integer")
             if 1 > chn or chn > self.NumOfChannels: 
-                raise BNC_Model765_InputError("channel must be an integer from 1 to 4")
+                raise ValueError("channel must be an integer from 1 to 4")
         self.instWrite("OUTP%d:PULS:MODE TRI" %(chn))
     
     def setPulseModeQuad(self, chn=1):
         if chn != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("channel must be an integer")
+                raise TypeError("channel must be an integer")
             if 1 > chn or chn > self.NumOfChannels: 
-                raise BNC_Model765_InputError("channel must be an integer from 1 to 4")
+                raise ValueError("channel must be an integer from 1 to 4")
         self.instWrite("OUTP%d:PULS:MODE QUAD" %(chn))
 
     def setPulseModeExternalWidth(self, chn):
         if chn != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("channel must be an integer")
+                raise TypeError("channel must be an integer")
             if 1 > chn or chn > self.NumOfChannels: 
-                raise BNC_Model765_InputError("channel must be an integer from 1 to 4")
+                raise ValueError("channel must be an integer from 1 to 4")
         self.instWrite("OUTP%d:PULS:MODE EXTWID" %(chn))
 
     def getPulseMode(self, chn=1):        
         if chn != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("channel must be an integer")
+                raise TypeError("channel must be an integer")
             if 1 > chn or chn > self.NumOfChannels: 
-                raise BNC_Model765_InputError("channel must be an integer from 1 to 4")
+                raise ValueError("channel must be an integer from 1 to 4")
         ret = self.instQuery("OUTP%d:PULS:MODE?" %(chn))
         return ret
     #### same as enableOutput
     def turnOnOutput(self, chn=1):
         if chn != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("channel must be an integer")
+                raise TypeError("channel must be an integer")
             if 1 > chn or chn > self.NumOfChannels: 
-                raise BNC_Model765_InputError("channel must be an integer from 1 to 4")
+                raise ValueError("channel must be an integer from 1 to 4")
         self.instWrite("OUTP%d:STAT ON" %(chn))
     
     #### same as disableOutput
     def turnOffOutput(self, chn=1):
         if chn != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("channel must be an integer")
+                raise TypeError("channel must be an integer")
             if 1 > chn or chn > self.NumOfChannels: 
-                raise BNC_Model765_InputError("channel must be an integer from 1 to 4")
+                raise ValueError("channel must be an integer from 1 to 4")
         self.instWrite("OUTP%d:STAT OFF" %(chn))
 
     def enableOutput(self, chn=1):
         if chn != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("channel must be an integer")
+                raise TypeError("channel must be an integer")
             if 1 > chn or chn > self.NumOfChannels: 
-                raise BNC_Model765_InputError("channel must be an integer from 1 to 4")
+                raise ValueError("channel must be an integer from 1 to 4")
         self.instWrite("OUTP%d:STAT ON" %(chn))
 
     def disableOutput(self, chn=1):
         if chn != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("channel must be an integer")
+                raise TypeError("channel must be an integer")
             if 1 > chn or chn > self.NumOfChannels: 
-                raise BNC_Model765_InputError("channel must be an integer from 1 to 4")
+                raise ValueError("channel must be an integer from 1 to 4")
         self.instWrite("OUTP%d:STAT OFF" %(chn))
 
     def getOutputState(self, chn=1):
         if chn != None:
             if not isinstance(chn, int):
-                raise BNC_Model765_InputError("channel must be an integer")
+                raise TypeError("channel must be an integer")
             if 1 > chn or chn > self.NumOfChannels: 
-                raise BNC_Model765_InputError("channel must be an integer from 1 to 4")
+                raise ValueError("channel must be an integer from 1 to 4")
         ret = self.instQuery("OUTP%d:STAT?" %(chn))
         return ret
 

@@ -1652,15 +1652,15 @@ class Agilent_B1530A:
 
     def SysError(self, error):
         self.__write(error)
-        raise B1530A_InputError("B1530A - %s: %s" %(self.__GPIB, error))
+        raise SystemError("B1530A - %s: %s" %(self.__GPIB, error))
 
     def ValError(self, error):
         self.__write(error)
-        raise B1530A_InputError("%s: %s" %(self.__GPIB, error))
+        raise ValueError("B1530A - %s: %s" %(self.__GPIB, error))
     
     def TypError(self, error):
         self.__write(error)
-        raise B1530A_InputError("B1530A - %s: %s" %(self.__GPIB, error))
+        raise TypeError("B1530A - %s: %s" %(self.__GPIB, error))
 
     def __openSession(self):
         gpib = create_string_buffer(512)
@@ -1693,6 +1693,7 @@ class Agilent_B1530A:
         
         raise SystemError(e)
         '''
+
 
     def openSession(self):
         gpib = c_char_p()

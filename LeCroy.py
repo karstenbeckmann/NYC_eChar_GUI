@@ -11,7 +11,6 @@ import datetime as dt
 import types as tp
 import StdDefinitions as std
 import time as tm
-from Exception import *
 
 
 #LeCroy WavePro 740Zi Oscilloscope: 
@@ -160,9 +159,9 @@ class LeCroy_WP740Zi():
 
     def writeAcquisitionChn(self, channel, command, value=None):
         if not isinstance(channel, int):
-            raise LeCroy_Osc_InputError("Osc: Channel number must be an integer between 1 and 4. ")
+            raise TypeError("Osc: Channel number must be an integer between 1 and 4. ")
         if 1 > channel > 4:
-            raise LeCroy_Osc_InputError("Osc: Channel number must be an integer between 1 and 4. ")
+            raise TypeError("Osc: Channel number must be an integer between 1 and 4. ")
         if value != None: 
             if isinstance(value, str):
                 command = '%s = "%s"' %(command, value)
@@ -192,9 +191,9 @@ class LeCroy_WP740Zi():
             arguments = "%s)" %(arguments)
 
         if not isinstance(channel, int):
-            raise LeCroy_Osc_InputError("Osc: Channel number must be an integer between 1 and 4. ")
+            raise TypeError("Osc: Channel number must be an integer between 1 and 4. ")
         if 1 > channel > 4:
-            raise LeCroy_Osc_InputError("Osc: Channel number must be an integer between 1 and 4. ")
+            raise TypeError("Osc: Channel number must be an integer between 1 and 4. ")
 
         Idle = self.checkIdleState(self.timeout, self.maxIdleInteration)
         if not Idle:
@@ -389,7 +388,7 @@ class LeCroy_WP740Zi():
         err = binStb[5]
         if err == 1:
             ret = self.inst.query("ERR? 1\n")
-            raise LeCroy_Osc_Error("Osciolloscope 740Zi encountered error #%d." %(ret))
+            raise SyntaxError("Osciolloscope 740Zi encountered error #%d." %(ret))
 
     def instRead_GPIB(self):
         ret = self.inst.read()
@@ -407,7 +406,7 @@ class LeCroy_WP740Zi():
         err = binStb[5]
         if err == 1:
             ret = self.inst.query("ERR? 1\n")
-            raise LeCroy_Osc_Error("Osciolloscope 740Zi encountered error #%d." %(ret))
+            raise SyntaxError("Osciolloscope 740Zi encountered error #%d." %(ret))
         return ret
 
     def performCalibration(self):
@@ -445,11 +444,21 @@ class LeCroy_WP740Zi():
     def checkChannel(self, channel):
 
         if not isinstance(channel, int):
-            raise LeCroy_Osc_InputError("Oscillocope Channel must be an Integer from 1 to 4. (%s)" %(channel))
+            self.ValError("Oscillocope Channel must be an Integer from 1 to 4. (%s)" %(channel))
 
         if 1 > channel > 4:
-            raise LeCroy_Osc_InputError("Oscillocope Channel must be an Integer from 1 to 4. (%s)" %(channel))
+            self.ValError("Oscillocope Channel must be an Integer from 1 to 4. (%s)" %(channel))
     
+    def SysError(self, error):
+        raise SystemError("WGFMU System Error: %s" %(error))
+
+    def ValError(self, error):
+        raise ValueError("WGFMU Value Error: %s" %(error))
+    
+    def TypError(self, error):
+        raise TypeError("WGFMU Type Error: %s" %(error))
+
+
 
 
 
@@ -879,8 +888,19 @@ class LeCroy_WR640Zi():
     def checkChannel(self, channel):
 
         if not isinstance(channel, int):
-            raise LeCroy_Osc_InputError("Oscillocope Channel must be an Integer from 1 to 4. (%s)" %(channel))
+            self.ValError("Oscillocope Channel must be an Integer from 1 to 4. (%s)" %(channel))
 
         if 1 > channel > 4:
-            raise LeCroy_Osc_InputError("Oscillocope Channel must be an Integer from 1 to 4. (%s)" %(channel))
+            self.ValError("Oscillocope Channel must be an Integer from 1 to 4. (%s)" %(channel))
     
+    def SysError(self, error):
+        raise SystemError("WGFMU System Error: %s" %(error))
+
+    def ValError(self, error):
+        raise ValueError("WGFMU Value Error: %s" %(error))
+    
+    def TypError(self, error):
+        raise TypeError("WGFMU Type Error: %s" %(error))
+
+
+

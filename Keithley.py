@@ -10,7 +10,6 @@ import pyvisa as vs
 import datetime as dt 
 import types as tp
 import time as tm
-from Exceptions import *
 
 #2 Slot Keithley 707A Switching Matric: 
 #This programm is configured for a 2 Slot using 7174  setup with 24 output connections and 8 input connections
@@ -96,49 +95,49 @@ class Keithley_707A:
         row = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
         if not ConList == None:
             if not type(ConList) == list:
-                raise Keithley_707A_InputError("The Connection List must be of type List.")
+                raise ValueError("The Connection List must be of type List.")
             if len(ConList) < 1:
-                raise Keithley_707A_InputError("The Connection List must be of type List and have at least 1 entry.")
+                raise ValueError("The Connection List must be of type List and have at least 1 entry.")
             for con in ConList: 
                 if not type(con) == list:
-                    raise Keithley_707A_InputError("The Connections in Connection List must be of type List (2 entries.")
+                    raise ValueError("The Connections in Connection List must be of type List (2 entries.")
                 if not len(con) == 2:
-                    raise Keithley_707A_InputError("The Connection entries can only contain the row and column list (size 2)")
+                    raise ValueError("The Connection entries can only contain the row and column list (size 2)")
                 if not con[0] in row:
-                    raise Keithley_707A_InputError("The row entry of con must only contain the letters A to H.")
+                    raise ValueError("The row entry of con must only contain the letters A to H.")
                 if con[1] < 1 or con[1] > 24:
-                    raise Keithley_707A_InputError("The column entry of the conection must be between 1 and 24.")
+                    raise ValueError("The column entry of the conection must be between 1 and 24.")
                 
              
     def CheckMatrix(self, Matrix):
         if not Matrix == None:
             if not type(Matrix) == list:
-                raise Keithley_707A_InputError("The Connection Matrix must be of type List.")
+                raise ValueError("The Connection Matrix must be of type List.")
             if len(Matrix) > 8 or len(Matrix) < 1:
-                raise Keithley_707A_InputError("The maximum row size of the connection Matrix is 8 but must have at least one entry.")
+                raise ValueError("The maximum row size of the connection Matrix is 8 but must have at least one entry.")
             for cons in Matrix: 
                 if not type(cons) == list:
-                    raise Keithley_707A_InputError("The Connection Matrix must be a 2D List.")
+                    raise ValueError("The Connection Matrix must be a 2D List.")
                 if len(cons) > 24 or len(cons) < 1:
-                    raise Keithley_707A_InputError("The number of columns is 24 for this installation but at least one column must befined.")
+                    raise ValueError("The number of columns is 24 for this installation but at least one column must befined.")
                 for con in cons: 
                     if not isinstance(con, bool):
-                        raise Keithley_707A_InputError("The connection matrix entries can only contain boolean values.")
+                        raise ValueError("The connection matrix entries can only contain boolean values.")
 
     def CheckMakeBreak(self, MakeBreak, BreakMake):
         row = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
         if not isinstance(MakeBreak, list) or not isinstance(BreakMake, list): 
-            raise Keithley_707A_InputError("MakeBreak and BreakMake must be of the type list.")
+            raise ValueError("MakeBreak and BreakMake must be of the type list.")
         if len(MakeBreak)+len(MakeBreak) > 8:
-            raise Keithley_707A_InputError("MakeBreak and BreakMake cannot contain more than 8 entries.")
+            raise ValueError("MakeBreak and BreakMake cannot contain more than 8 entries.")
         for entry in MakeBreak:
             if not entry in row:
-                raise Keithley_707A_InputError("MakeBreak must only contain a list of rows from 'A' to 'H'.")
+                raise ValueError("MakeBreak must only contain a list of rows from 'A' to 'H'.")
             if entry in MakeBreak:
-                raise Keithley_707A_InputError("MakeBreak and BreakMake must contain mutually exlusive rows.")
+                raise ValueError("MakeBreak and BreakMake must contain mutually exlusive rows.")
         for entry in BreakMake:
             if not entry in row:
-                raise Keithley_707A_InputError("BreakMake must only contain a list of rows from 'A' to 'H'.")
+                raise ValueError("BreakMake must only contain a list of rows from 'A' to 'H'.")
 
     def setMakeBreak(self, MakeBreak):
         row = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
@@ -167,9 +166,9 @@ class Keithley_707A:
     #1 to 100 the memory location
     def CopySetup(self, IN, OUT):
         if not isinstance(IN,int):
-            raise Keithley_707A_InputError("Input must be an integer!")
+            raise ValueError("Input must be an integer!")
         if not isinstance(OUT,int):
-            raise Keithley_707A_InputError("Input must be an integer!")
+            raise ValueError("Input must be an integer!")
         wri = "Z%d,%dX" %(IN,OUT)
         self.instWrite(wri)
 
@@ -188,18 +187,18 @@ class Keithley_707A:
     #n may be a memory position between 1 and 100
     def editMemorySetup(self,n):
         if not isinstance(n, int):
-            raise Keithley_707A_InputError("the parameter must be an integer from 0 to 100.")
+            raise ValueError("the parameter must be an integer from 0 to 100.")
         if n > 100 or n < 0: 
-            raise Keithley_707A_InputError("the parameter must be an integer from 0 to 100.")
+            raise ValueError("the parameter must be an integer from 0 to 100.")
         self.instWrite("E%dX" %(n))
 
     #Set the output format (standard is 0, full detail)
     #see the 707A manual for more detail on 4-24
     def SetOutputFormat(self, n):
         if not isinstance(n, int):
-            raise Keithley_707A_InputError("The parameter must be an integer from 0 to 7.")
+            raise ValueError("The parameter must be an integer from 0 to 7.")
         if n > 9 or n < 0: 
-            raise Keithley_707A_InputError("The settling time must be an integer from 0 to 7.")
+            raise ValueError("The settling time must be an integer from 0 to 7.")
         self.instWrite("G%dX" %(n))
 
     #Sets the Matrix Ready output
@@ -207,7 +206,7 @@ class Keithley_707A:
     #False: Posistive False
     def MatrixReady(self, param):
         if not isinstance(param, bool):
-            raise Keithley_707A_InputError("The parameter must be a boolean value.")
+            raise ValueError("The parameter must be a boolean value.")
         if param: 
             self.instWrite("B1X")
         else:
@@ -218,9 +217,9 @@ class Keithley_707A:
     #1 for Rising edge flank
     def SetExternalTriggerFlank(self, n):
         if not isinstance(n, int):
-            raise Keithley_707A_InputError("n must be an integer of 0 or 1.")
+            raise ValueError("n must be an integer of 0 or 1.")
         if n > 1 or n < 0: 
-            raise Keithley_707A_InputError("n must be an integer of 0 or 1.")
+            raise ValueError("n must be an integer of 0 or 1.")
         self.instWrite("A%dX" %(n))
 
 
@@ -234,9 +233,9 @@ class Keithley_707A:
     #setTime can be between 0 and 65000ms (65s)
     def setSettlingTime(self, setTime):
         if not isinstance(setTime, int):
-            raise Keithley_707A_InputError("The settling time must be an integer from 0 to 65000 (in ms).")
+            raise ValueError("The settling time must be an integer from 0 to 65000 (in ms).")
         if setTime > 9 or setTime < 0: 
-            raise Keithley_707A_InputError("The settling time must be an integer from 0 to 65000 (in ms).")
+            raise ValueError("The settling time must be an integer from 0 to 65000 (in ms).")
         self.instWrite("S%dX" %(setTime))
     
     #Restore to factory settings, delete all memory setups and relay setup
@@ -246,9 +245,9 @@ class Keithley_707A:
     #Deletes one Setup from the memory
     def deleteSetup(self, setup):
         if not isinstance(setup, int):
-            raise Keithley_707A_InputError("The setup number must be an integer 1 to 100.")
+            raise ValueError("The setup number must be an integer 1 to 100.")
         if setup > 100 or setup < 1: 
-            raise Keithley_707A_InputError("The setup number must be an integer 1 to 100.")
+            raise ValueError("The setup number must be an integer 1 to 100.")
         self.instWrite("Q%dX" %(setup))
 
     #Clears Crosspoints
@@ -256,9 +255,9 @@ class Keithley_707A:
     #n = 1-100, deletes the stored relay setup
     def ClearCrosspoint(self, n):
         if not isinstance(n, int):
-            raise Keithley_707A_InputError("The setup number must be an integer 0 to 100.")
+            raise ValueError("The setup number must be an integer 0 to 100.")
         if n > 100 or n < 0: 
-            raise Keithley_707A_InputError("The setup number must be an integer 0 to 100.")
+            raise ValueError("The setup number must be an integer 0 to 100.")
         self.instWrite("P%dX" %(n))
 
     #Sets the Digital Output:
@@ -267,9 +266,9 @@ class Keithley_707A:
     #the integer n represents the bit weight starting at 17 with 1 and ending at 24 with 128
     def SetDigitalOutput(self, n):
         if not isinstance(n, int):
-            raise Keithley_707A_InputError("The number for the digital outputs must be an integer 0 to 255.")
+            raise ValueError("The number for the digital outputs must be an integer 0 to 255.")
         if n > 255 or n < 0: 
-            raise Keithley_707A_InputError("The number for the digital outputs must be an integer 0 to 255.")
+            raise ValueError("The number for the digital outputs must be an integer 0 to 255.")
         self.instWrite("O%dX" %(n))
 
     #set the trigger type: 
@@ -280,9 +279,9 @@ class Keithley_707A:
     #Trigger 8 or 9: Trigger on Front MANUAL key
     def setTrigger(self, trigger):
         if not isinstance(trigger, int):
-            raise Keithley_707A_InputError("the trigger type must be an integer from 0 to 9.")
+            raise ValueError("the trigger type must be an integer from 0 to 9.")
         if trigger > 9 or trigger < 0: 
-            raise Keithley_707A_InputError("the trigger type must be an integer from 0 to 9.")
+            raise ValueError("the trigger type must be an integer from 0 to 9.")
         
         self.instWrite("F0T%dX" %(trigger))
         self.instWrite("F1X")
@@ -291,9 +290,9 @@ class Keithley_707A:
     #n must be a setup position between 1 and 100
     def InsertBlankSetup(self,n):
         if not isinstance(n, int):
-            raise Keithley_707A_InputError("the parameter must be an integer from 1 to 100.")
+            raise ValueError("the parameter must be an integer from 1 to 100.")
         if n > 100 or n < 0: 
-            raise Keithley_707A_InputError("the parameter must be an integer from 1 to 100.")
+            raise ValueError("the parameter must be an integer from 1 to 100.")
         self.instWrite("I%dX" %(n))
 
     #Set EOI and Hold-off
@@ -305,9 +304,9 @@ class Keithley_707A:
     #5: No EOI, hold-off on X until Matrix Ready
     def SetEOI_HoldOff(self, n):
         if not isinstance(n, int):
-            raise Keithley_707A_InputError("the parameter must be an integer from 0 to 5.")
+            raise ValueError("the parameter must be an integer from 0 to 5.")
         if n > 5 or n < 0: 
-            raise Keithley_707A_InputError("the parameter must be an integer from 0 to 5.")
+            raise ValueError("the parameter must be an integer from 0 to 5.")
         self.instWrite("K%dX"%(n))
 
     def execute(self):
@@ -325,24 +324,24 @@ class Keithley_707A:
     #Parameter 8: Send RELAY TEST input
     def getStatus(self,parameter, subparameter=None):
         if not isinstance(parameter,int) or (not isinstance(subparameter,int) and not subparameter == None):
-            raise Keithley_707A_InputError("Input parameters must be an integer!")
+            raise ValueError("Input parameters must be an integer!")
         if parameter > 0 or parameter < 8:
             wri = "U%dX" %(parameter)
             if parameter == 2:
                 if subparameter == None:
-                    raise Keithley_707A_InputError("Please specify the relay (0) or stored setups (1-100).")
+                    raise ValueError("Please specify the relay (0) or stored setups (1-100).")
                 if subparameter > 100 or subparameter < 0:
-                    raise Keithley_707A_InputError("Please specify the relay (0) or stored setups (1-100).")
+                    raise ValueError("Please specify the relay (0) or stored setups (1-100).")
                 wri = "U2,%dX" %(subparameter)
             if parameter == 5:
                 if subparameter == None:
-                    raise Keithley_707A_InputError("Please specify the card unit 0 or 1.")
+                    raise ValueError("Please specify the card unit 0 or 1.")
                 if subparameter > 1 or subparameter < 0:
-                    raise Keithley_707A_InputError("Please specify the card unit 0 or 1.")
+                    raise ValueError("Please specify the card unit 0 or 1.")
 
                 wri = "U5,%dX" %(subparameter)
         else:
-            raise Keithley_707A_InputError("Input parameter must be an integer between 0 and 8.")
+            raise ValueError("Input parameter must be an integer between 0 and 8.")
 
         ret = self.instQuery(wri)
         return ret
@@ -356,20 +355,20 @@ class Keithley_707A:
     #32 Error
     def SRQByte(self, n):
         if not isinstance(n, int):
-            raise Keithley_707A_InputError("n must be an integer.")
+            raise ValueError("n must be an integer.")
         if not n in [0,2,4,8,16,32]:
-            raise Keithley_707A_InputError("n must be 0, 1, 2, 4, 8, 16, 32.")
+            raise ValueError("n must be 0, 1, 2, 4, 8, 16, 32.")
     
     #Opens a Crosspoint (either relay or memory in dependence on what the endpointer defined)
     #row: A to H
     #Column: 1 - 24
     def OpenCrosspoint(self, row, column, execute=True):
         if not isinstance(row, str) or not isinstance(column, int):
-            raise Keithley_707A_InputError("Row must be a string from A to H and Column must an integer form 1 to 24. (Row: %s, Column:%s)" %(row, column))
+            raise ValueError("Row must be a string from A to H and Column must an integer form 1 to 24. (Row: %s, Column:%s)" %(row, column))
         if column > 24 and column < 1: 
-            raise Keithley_707A_InputError("Row must be a string from A to H and Column must an integer form 1 to 24. (Row: %s, Column:%s)" %(row, column))
+            raise ValueError("Row must be a string from A to H and Column must an integer form 1 to 24. (Row: %s, Column:%s)" %(row, column))
         if len(row) > 1 or not row in self.row:
-            raise Keithley_707A_InputError("Row must be a string from A to H and Column must an integer form 1 to 24. (Row: %s, Column:%s)" %(row, column))
+            raise ValueError("Row must be a string from A to H and Column must an integer form 1 to 24. (Row: %s, Column:%s)" %(row, column))
         if execute:
             self.instWrite("N%s%dX" %(row, column))
         else:
@@ -377,11 +376,11 @@ class Keithley_707A:
     
     def CloseCrosspoint(self, row, column, execute=True):
         if not isinstance(row, str) or not isinstance(column, int):
-            raise Keithley_707A_InputError("Row must be a string from A to H and Column must an integer form 1 to 24. (Row: %s, Column:%s)" %(row, column))
+            raise ValueError("Row must be a string from A to H and Column must an integer form 1 to 24. (Row: %s, Column:%s)" %(row, column))
         if column > 24 and column < 1: 
-            raise Keithley_707A_InputError("Row must be a string from A to H and Column must an integer form 1 to 24. (Row: %s, Column:%s)" %(row, column))
+            raise ValueError("Row must be a string from A to H and Column must an integer form 1 to 24. (Row: %s, Column:%s)" %(row, column))
         if len(row) > 1 or not row in self.row:
-            raise Keithley_707A_InputError("Row must be a string from A to H and Column must an integer form 1 to 24. (Row: %s, Column:%s)" %(row, column))
+            raise ValueError("Row must be a string from A to H and Column must an integer form 1 to 24. (Row: %s, Column:%s)" %(row, column))
         if execute:
             self.instWrite("C%s%dX" %(row, column))
         else:
@@ -398,7 +397,7 @@ class Keithley_707A:
                         MakeBreak=[], BreakMake=[], 
                         SetupPosition=0):
         if ConList == None and Matrix==None: 
-            raise Keithley_707A_InputError("Either 'ConList' or 'Matrix' must be defined")
+            raise ValueError("Either 'ConList' or 'Matrix' must be defined")
         self.CheckConList(ConList)
         self.CheckMatrix(Matrix)
 

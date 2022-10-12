@@ -1265,10 +1265,10 @@ def RetentionTest(eChar, PulseChn, GroundChn, Vread, delay, tread,  tbase, t_tot
             tm.sleep(slTime)
         else:
             while t - (tm.time() - tstart) > 0:
-                while not eChar.Stop.empty():
-                    stop = eChar.Stop.get()
-                if stop:    
-                    return {'Stop': True}
+
+                if eChar.checkStop():
+                    return {"Stop":True}
+
                 slTime = t - (tm.time() - tstart)
                 if 0 < slTime < 0.1:
                     tm.sleep(slTime)
@@ -1277,7 +1277,7 @@ def RetentionTest(eChar, PulseChn, GroundChn, Vread, delay, tread,  tbase, t_tot
                 else:
                     tm.sleep(0.1)
                 
-        if stop:
+        if eChar.checkStop():
             break
 
         tim = tm.time() - tstart
@@ -1383,18 +1383,14 @@ def performEndurance(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tf
     if IVIteration ==0: 
         IVcount =0
 
-    eChar.threads.append(th.Thread(target = saveDataEndurance, args=(eChar, WriteHeader,DoYield, eChar.MaxRowsPerFile, eChar.MaxDataPerPlot)))
-    eChar.threads[-1].start()
+    eChar.startThread(saveDataEndurance, WriteHeader,DoYield, eChar.MaxRowsPerFile, eChar.MaxDataPerPlot)
 
     stop =  False
     #Run repetitions until number of ran cycles reaches programmed count
     
     while CurCount < Count - IVcount:
 
-        while not eChar.Stop.empty():
-            stop = eChar.Stop.get()
-        if stop:
-            eChar.finished.put(True)
+        if eChar.checkStop():
             break
 
         #IV characterization + Endurance
@@ -1425,9 +1421,7 @@ def performEndurance(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tf
                 eChar.EnduranceHeader = eChar.wgfmu.getHeader()
                 initialRead = False
             
-            while not eChar.Stop.empty():
-                stop = eChar.Stop.get()
-            if stop:    
+            if eChar.checkStop():
                 break
             #Pulsing]
             if (Count - CurCount) < (IVIteration - IVcount):
@@ -1442,9 +1436,7 @@ def performEndurance(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tf
                     frac, whole = ma.modf(sol)
                     for n in range(int(whole)):
                         
-                        while not eChar.Stop.empty():
-                            stop = eChar.Stop.get()
-                        if stop:    
+                        if eChar.checkStop():
                             break
 
                         createEndurancePulse(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tfallS, twidthS, triseR, tfallR, twidthR, 
@@ -1508,9 +1500,7 @@ def performEndurance(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tf
                     frac, whole = ma.modf(sol)
                     for n in range(int(whole)):
                         
-                        while not eChar.Stop.empty():
-                            stop = eChar.Stop.get()
-                        if stop:    
+                        if eChar.checkStop():
                             break
 
                         createEndurancePulse(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tfallS, twidthS, triseR, tfallR, twidthR, 
@@ -1570,9 +1560,7 @@ def performEndurance(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tf
                 
                 for n in range(int(whole)):
                     
-                    while not eChar.Stop.empty():
-                        stop = eChar.Stop.get()
-                    if stop:    
+                    if eChar.checkStop():
                         break
 
                     createEndurancePulse(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tfallS, twidthS, triseR, tfallR, twidthR, 
@@ -1642,17 +1630,6 @@ def performEndurance(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tf
                                 tbase, MeasPoints=MeasPoints, count=IVcount, read=True, initialRead=initialRead, tread=tread, Vread=Vread, 
                                 SMUs=SMUs, Vdc=Vdc, DCcompl=DCcompl,WriteHeader=False, Primary=False))
             CurCount += IVcount
-
-    print("finished put True")
-    eChar.finished.put(True)
-
-    for thr in eChar.threads:
-        while thr.isAlive():
-            thr.join()
-            while not eChar.Stop.empty():
-                stop = eChar.Stop.get()
-            if stop:    
-                break
 
     eChar.LogData.put("Endurance: Finished Measurement.")
 
@@ -1724,9 +1701,8 @@ def saveDataEndurance(eChar, WriteHeader, DoYield, MaxRowsPerFile, MaxDataPerPlo
 
     finished = False
     while not finished or not eChar.rawData.empty():
-                
-        while not eChar.finished.empty():
-            finished = eChar.finished.get()
+        
+        finished = eChar.isMeasurementFinished()
         
         #print("finished: ", finished, eChar.rawData.empty())
         tm.sleep(0.5)
@@ -2325,10 +2301,7 @@ def AnalogRetention(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent, V
             PercDelCompl[-1].append(Pdev)
 
             # set operation
-            while not eChar.Stop.empty():
-                stop = eChar.Stop.get()
-            if stop:    
-                eChar.finished.put(True)
+            if eChar.checkStop():    
                 break
 
             k = 0
@@ -2448,10 +2421,7 @@ def AnalogRetention(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent, V
             r = 1
             while r <= MaxPulses:
                 
-                while not eChar.Stop.empty():
-                    stop = eChar.Stop.get()
-                if stop:    
-                    eChar.finished.put(True)
+                if eChar.checkStop():    
                     break
 
                 if R > Rgoal: 
@@ -2586,10 +2556,7 @@ def AnalogRetention(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent, V
             tmstart = tm.time()
             for ret in range(NumOfPul):
                 
-                while not eChar.Stop.empty():
-                    stop = eChar.Stop.get()
-                if stop:    
-                    eChar.finished.put(True)
+                if eChar.checkStop():    
                     break
 
                 tloop = tm.time()
@@ -2833,10 +2800,7 @@ def AnalogRetention(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent, V
             PercDelCompl[-1].append(Pdev)
 
             # set operation
-            while not eChar.Stop.empty():
-                stop = eChar.Stop.get()
-            if stop:    
-                eChar.finished.put(True)
+            if eChar.checkStop():    
                 break
 
             k = 0
@@ -2942,10 +2906,7 @@ def AnalogRetention(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent, V
             r = 1
             while r <= MaxPulses:
                 
-                while not eChar.Stop.empty():
-                    stop = eChar.Stop.get()
-                if stop:    
-                    eChar.finished.put(True)
+                if eChar.checkStop():    
                     break
 
                 if R > Rgoal: 
@@ -3067,10 +3028,7 @@ def AnalogRetention(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent, V
             tmstart = tm.time()
             for ret in range(NumOfPul):
                 
-                while not eChar.Stop.empty():
-                    stop = eChar.Stop.get()
-                if stop:    
-                    eChar.finished.put(True)
+                if eChar.checkStop():    
                     break
 
                 tloop = tm.time()
@@ -3511,10 +3469,7 @@ def IncrementalSwitching(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurre
             while r <= MaxPulsesPerStepReset and float(R) <= MaxResistance:
                 print("r", r)
     
-                while not eChar.Stop.empty():
-                    stop = eChar.Stop.get()
-                if stop:    
-                    eChar.finished.put(True)
+                if eChar.checkStop():    
                     break
 
                 ####### Reset
@@ -3666,10 +3621,7 @@ def IncrementalSwitching(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurre
             Swrote = False
             while s <= MaxPulsesPerStepSet:
 
-                while not eChar.Stop.empty():
-                    stop = eChar.Stop.get()
-                if stop:    
-                    eChar.finished.put(True)
+                if eChar.checkStop():    
                     break
 
                 ####### Set
@@ -3801,8 +3753,8 @@ def IncrementalSwitching(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurre
             eChar.curCycle = eChar.curCycle + 1
 
             RunRep = RunRep + 1
-            if stop:    
-                eChar.finished.put(True)
+           
+            if eChar.checkStop():    
                 break
         
         PulseGen.turnOffOutput(chn=PGPulseChn)
@@ -3982,10 +3934,7 @@ def IncrementalSwitching(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurre
             while r <= MaxPulsesPerStepReset and float(R) <= MaxResistance:
                 print("r", r)
     
-                while not eChar.Stop.empty():
-                    stop = eChar.Stop.get()
-                if stop:    
-                    eChar.finished.put(True)
+                if eChar.checkStop():
                     break
 
                 ####### Reset
@@ -4122,10 +4071,7 @@ def IncrementalSwitching(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurre
             Swrote = False
             while s <= MaxPulsesPerStepSet:
 
-                while not eChar.Stop.empty():
-                    stop = eChar.Stop.get()
-                if stop:    
-                    eChar.finished.put(True)
+                if eChar.checkStop():
                     break
 
                 ####### Set
@@ -4242,8 +4188,7 @@ def IncrementalSwitching(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurre
             eChar.curCycle = eChar.curCycle + 1
 
             RunRep = RunRep + 1
-            if stop:    
-                eChar.finished.put(True)
+            if eChar.checkStop():
                 break
         
         PulseGen.disableOutput(PGPulseChn)
@@ -4413,18 +4358,14 @@ def EndurancePartialRead(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS
     if IVIteration ==0: 
         IVcount =0
 
-    eChar.threads.append(th.Thread(target = saveDataEndurance, args=(eChar, WriteHeader,DoYield, eChar.MaxRowsPerFile, eChar.MaxDataPerPlot)))
-    eChar.threads[-1].start()
+    eChar.startThread(saveDataEndurance, WriteHeader, DoYield, eChar.MaxRowsPerFile, eChar.MaxDataPerPlot)
 
     stop =  False
     #Run repetitions until number of ran cycles reaches programmed count
     
     while CurCount < Count - IVcount:
 
-        while not eChar.Stop.empty():
-            stop = eChar.Stop.get()
-        if stop:
-            eChar.finished.put(True)
+        if eChar.checkStop():
             break
 
         #IV characterization + Endurance
@@ -4455,9 +4396,7 @@ def EndurancePartialRead(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS
                 eChar.EnduranceHeader = eChar.wgfmu.getHeader()
                 initialRead = False
             
-            while not eChar.Stop.empty():
-                stop = eChar.Stop.get()
-            if stop:    
+            if eChar.checkStop():
                 break
             #Pulsing]
             if (Count - CurCount) < (IVIteration - IVcount):
@@ -4472,9 +4411,7 @@ def EndurancePartialRead(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS
                     frac, whole = ma.modf(sol)
                     for n in range(int(whole)):
                         
-                        while not eChar.Stop.empty():
-                            stop = eChar.Stop.get()
-                        if stop:    
+                        if eChar.checkStop():
                             break
 
                         createEndurancePulse(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tfallS, twidthS, triseR, tfallR, twidthR, 
@@ -4538,9 +4475,7 @@ def EndurancePartialRead(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS
                     frac, whole = ma.modf(sol)
                     for n in range(int(whole)):
                         
-                        while not eChar.Stop.empty():
-                            stop = eChar.Stop.get()
-                        if stop:    
+                        if eChar.checkStop():
                             break
 
                         createEndurancePulse(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tfallS, twidthS, triseR, tfallR, twidthR, 
@@ -4600,9 +4535,7 @@ def EndurancePartialRead(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS
                 
                 for n in range(int(whole)):
                     
-                    while not eChar.Stop.empty():
-                        stop = eChar.Stop.get()
-                    if stop:    
+                    if eChar.checkStop():
                         break
 
                     createEndurancePulse(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tfallS, twidthS, triseR, tfallR, twidthR, 
@@ -4673,34 +4606,7 @@ def EndurancePartialRead(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS
                                 SMUs=SMUs, Vdc=Vdc, DCcompl=DCcompl,WriteHeader=False, Primary=False))
             CurCount += IVcount
 
-    eChar.finished.put(True)
-
-    for thr in eChar.threads:
-        while thr.isAlive():
-            thr.join()
-            while not eChar.Stop.empty():
-                stop = eChar.Stop.get()
-            if stop:    
-                break
-
     eChar.LogData.put("Endurance: Finished Measurement.")
-
-    while True:
-        try:
-            entry = eChar.SubProcessThread.get(block=True, timeout=1)
-        except qu.Empty:
-            entry = None
-        if entry != None:
-            try:
-                if entry['Finished'] == True:
-                    break
-            except:
-                eChar.SubProcessThread.put(entry)
-        
-        while not eChar.Stop.empty():
-            stop = eChar.Stop.get()
-        if stop:    
-            break
 
     if WriteHeader:
         eChar.Combinedheader.extend(eChar.EnduranceHeader)
@@ -4752,8 +4658,7 @@ def AnalogEndurance(eChar, PulseChn, GroundChn, SMUs, Vg, NumLevels, Vgstep, Vse
         VgLevels.append(j)
     print("Vg all: ", VgLevels)
 
-    eChar.threads.append(th.Thread(target = saveDataEndurance, args=(eChar, WriteHeader,DoYield, eChar.MaxRowsPerFile, eChar.MaxDataPerPlot)))
-    eChar.threads[-1].start()
+    eChar.startThread(saveDataEndurance, eChar, WriteHeader,DoYield, eChar.MaxRowsPerFile, eChar.MaxDataPerPlot)
 
     stop =  False
     #Run repetitions until number of ran cycles reaches programmed count
@@ -4770,10 +4675,7 @@ def AnalogEndurance(eChar, PulseChn, GroundChn, SMUs, Vg, NumLevels, Vgstep, Vse
 
     while CurCount < TotCount:
 
-        while not eChar.Stop.empty():
-            stop = eChar.Stop.get()
-        if stop:
-            eChar.finished.put(True)
+        if eChar.checkStop():
             break
         
         print("VG: ", VgLevels[lvlaa])
@@ -4797,9 +4699,7 @@ def AnalogEndurance(eChar, PulseChn, GroundChn, SMUs, Vg, NumLevels, Vgstep, Vse
             
             for n in range(int(whole)):
                 
-                while not eChar.Stop.empty():
-                    stop = eChar.Stop.get()
-                if stop:    
+                if eChar.checkStop():
                     break
 
                 createEndurancePulse(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tfallS, twidthS, triseR, tfallR, twidthR, 
@@ -4856,34 +4756,7 @@ def AnalogEndurance(eChar, PulseChn, GroundChn, SMUs, Vg, NumLevels, Vgstep, Vse
             initialRead = False
         lvlaa += 1
 
-    eChar.finished.put(True)
-
-    for thr in eChar.threads:
-        while thr.isAlive():
-            thr.join()
-            while not eChar.Stop.empty():
-                stop = eChar.Stop.get()
-            if stop:    
-                break
-
     eChar.LogData.put("Endurance: Finished Measurement.")
-
-    while True:
-        try:
-            entry = eChar.SubProcessThread.get(block=True, timeout=1)
-        except qu.Empty:
-            entry = None
-        if entry != None:
-            try:
-                if entry['Finished'] == True:
-                    break
-            except:
-                eChar.SubProcessThread.put(entry)
-        
-        while not eChar.Stop.empty():
-            stop = eChar.Stop.get()
-        if stop:    
-            break
 
     if WriteHeader:
         eChar.Combinedheader.extend(eChar.EnduranceHeader)
@@ -4937,8 +4810,7 @@ def AnalogEnduranceVreset(eChar, PulseChn, GroundChn, Vreset, NumLevels, Vresets
         VresetLevels.append(j)
     print("Vreset all: ", VresetLevels)
 
-    eChar.threads.append(th.Thread(target = saveDataEndurance, args=(eChar, WriteHeader,DoYield, eChar.MaxRowsPerFile, eChar.MaxDataPerPlot)))
-    eChar.threads[-1].start()
+    eChar.startThread(saveDataEndurance, eChar, WriteHeader,DoYield, eChar.MaxRowsPerFile, eChar.MaxDataPerPlot)
 
     stop =  False
     #Run repetitions until number of ran cycles reaches programmed count
@@ -4955,10 +4827,7 @@ def AnalogEnduranceVreset(eChar, PulseChn, GroundChn, Vreset, NumLevels, Vresets
 
     while CurCount < TotCount:
 
-        while not eChar.Stop.empty():
-            stop = eChar.Stop.get()
-        if stop:
-            eChar.finished.put(True)
+        if eChar.checkStop():
             break
         '''
         print("VresetLevels[lvlaa]: ", VresetLevels[lvlaa])
@@ -6017,34 +5886,7 @@ def LongIntermittentReadEndurance(eChar, PulseChn, GroundChn, SMUs, Vg, NumReads
             initialRead = False
         lvlaa += 1
 
-    eChar.finished.put(True)
-
-    for thr in eChar.threads:
-        while thr.isAlive():
-            thr.join()
-            while not eChar.Stop.empty():
-                stop = eChar.Stop.get()
-            if stop:    
-                break
-
     eChar.LogData.put("Endurance: Finished Measurement.")
-
-    while True:
-        try:
-            entry = eChar.SubProcessThread.get(block=True, timeout=1)
-        except qu.Empty:
-            entry = None
-        if entry != None:
-            try:
-                if entry['Finished'] == True:
-                    break
-            except:
-                eChar.SubProcessThread.put(entry)
-        
-        while not eChar.Stop.empty():
-            stop = eChar.Stop.get()
-        if stop:    
-            break
 
     if WriteHeader:
         eChar.Combinedheader.extend(eChar.EnduranceHeader)

@@ -38,9 +38,11 @@ import Qt_stdObjects as stdObj
 import Qt_MeasTab as Qt_MT
 import Qt_Config as Qt_CF
 import Qt_ResultWindow as Qt_RW
+import Qt_ProberWindow as Qt_PW
 import Qt_Tables as Qt_TB
 import Qt_B1500A as Qt_B1500A
 import Qt_E5274A as Qt_E5274A
+
 
 class MainUI(QtWidgets.QMainWindow):
 
@@ -54,7 +56,6 @@ class MainUI(QtWidgets.QMainWindow):
     __Canvas_1_data = qu.Queue()
     __CanvasPhoto = None
     __window = None
-    __TKthread = None
     __InterfaceThread = None
     __close = False
     __NumOfDevices = 0
@@ -103,7 +104,7 @@ class MainUI(QtWidgets.QMainWindow):
     dieFolder = "DieFiles"
 
 
-    def __init__(self, app, size=None, title="Figure 1", Configuration=None, ElectricalCharacterization=None, Instruments=None ,threads=None, updateTime=0.5, icon="etc/windowIcon_SUNYPoly.gif"):
+    def __init__(self, app, size=None, title="Figure 1", Configuration=None, ElectricalCharacterization=None, Instruments=None ,threads=None, updateTime=0.5, icon="windowIcon_SUNYPoly.gif", iconPath='etc'):
 
         super().__init__()
         self.app = app
@@ -111,7 +112,8 @@ class MainUI(QtWidgets.QMainWindow):
             size = ""
         
         self.DateFolder = ""
-        self.loader = "etc/Pacman-1s-200px.gif"
+        self.iconPath = os.path.join(os.getcwd(),'etc')
+        self.loader = os.path.join(self.iconPath, "Pacman-1s-200px.gif")
 
         self.eChar = ElectricalCharacterization
         self.Configuration = Configuration
@@ -123,6 +125,7 @@ class MainUI(QtWidgets.QMainWindow):
         self.interval = 10 #update inverval in milliseconds
 
         self.homeDirectory = os.getcwd()
+        self.timeout = 200 #timeout for subthreads inverval in milliseconds
 
         ID = 1
 
@@ -170,6 +173,8 @@ class MainUI(QtWidgets.QMainWindow):
             self.QSpacing = 2
             
         self.QFont.setStyleName("Helvetica")
+        defColor = self.palette().color(QtGui.QPalette.Background)
+        self.defColor = [defColor.red(), defColor.green(), defColor.blue()]
         self.setFont(self.QFont)
         #self.Qpalette.setColor(QtGui.QPalette.Text, self.LightBlue)
         #self.Qpalette.setColor(QtGui.QPalette.WindowText, self.Blue)
@@ -185,10 +190,12 @@ class MainUI(QtWidgets.QMainWindow):
         self.resize(self.__width, self.__height)
         self.__widthTab = int(0.96*self.__width)
         
+        icon = os.path.join(self.iconPath, icon)
         self.icon = QtGui.QIcon(icon)
 
         try: 
             self.setWindowIcon(self.icon)
+            super().setWindowIcon(self.icon)
         except:
             self.__ErrorQu.put("Icon not found in window %s" %(title))
 
@@ -279,12 +286,19 @@ class MainUI(QtWidgets.QMainWindow):
         self.ResultWindow.show()
         self.setResultWindowPosition()
         self.ResultWindow.hide()
+        
+        self.ProberWindowWidth = self.__widthTab/2
+        self.ProberWindowHeight = self.__height/2
+        self.ProberWindow = Qt_PW.ProberWindow(self, self.QFont, self.QMargin, self.QSpacing, self.ProberWindowWidth, self.ProberWindowHeight, self.icon)
+        self.ProberWindow.show()
+        self.setProberWindowPosition()
+        #self.ProberWindow.hide()
 
         self.tabs.addTab(self.MatrixTable, "Matrix")
         
         self.tabs.addTab(self.SpecTable, "Specs")
 
-        self.ResultHandling = RH.ResultHandling(self, self.ResultWindow)
+        self.ResultHandling = RH.ResultHandling(self, self.ResultWindow, self.timeout)
         self.ResultHandling.start()
 
         self.timer = QtCore.QTimer(self)
@@ -299,6 +313,38 @@ class MainUI(QtWidgets.QMainWindow):
 
         self.ResultWindow.savePosition()
 
+    def setProberWindowPosition(self):
+
+        configName = "ProberWindow"
+        window = self.ProberWindow
+        posX = self.Configuration.getValue("%sX" %(configName))
+        posY = self.Configuration.getValue("%sY" %(configName))
+        screen = self.Configuration.getValue("%sMon" %(configName))
+        
+        sc = QtWidgets.QDesktopWidget().screenCount()
+        if screen == None or screen >= sc:
+            if sc > 1: 
+                screen = 1
+            else: 
+                screen = 0
+        monSize = QtWidgets.QDesktopWidget().availableGeometry(screen).size()
+        if posX == None:
+            if sc > 1:
+                posX = 0
+            else:
+                posX =  self.windowHandle().width()
+            if posX+self.__width > monSize.width():
+                posX = monSize.width()-self.__width
+        if posY == None:
+            if sc > 1:
+                posY = 0
+            else:
+                posY = 0
+        
+        window.move(posX, posY)
+        scList = QtGui.QGuiApplication.screens()
+        window.windowHandle().setScreen(scList[screen])
+        
     def setResultWindowPosition(self):
 
         configName = "ResultWindow"
@@ -345,7 +391,12 @@ class MainUI(QtWidgets.QMainWindow):
     
         self.move(0, 0)
         scList = QtGui.QGuiApplication.screens()
-        self.windowHandle().setScreen(scList[screen])
+        try: 
+            self.windowHandle().setScreen(scList[screen])
+        except IndexError as e:
+            screen = 0
+            self.windowHandle().setScreen(scList[screen])
+            self.__ErrorQu.put("Set Screen not Available for Display, windows will be displayed on Screen 1")
 
     def WriteError(self, value):
         self.__ErrorQu.put(value)
@@ -435,13 +486,13 @@ class MainUI(QtWidgets.QMainWindow):
                 data.append(row)
 
         return data
-
+    '''
     def getThreats(self):
         th = []
         th.append(self.__TKthread)
         th.append(self.__InterfaceThread)
         return th
-
+    '''
     def closeEvent(self, event):
         event.ignore()
         self.on_closing()
@@ -456,6 +507,7 @@ class MainUI(QtWidgets.QMainWindow):
             self.CloseLabel.setMinimumSize(self.sizeHint())
             self.CloseLabel.show()
             self.CloseMovie.start()
+            
             self.instClose = th.Thread(target=self.Instruments.close)
             self.instClose.start()
             self.__close = True
@@ -789,7 +841,7 @@ class MainUI(QtWidgets.QMainWindow):
 
         try:
             if not self.ResultHandling.isAlive():
-                self.ResultHandling = RH.ResultHandling(self, self.ResultWindow)
+                self.ResultHandling = RH.ResultHandling(self, self.ResultWindow, self.timeout)
                 self.ResultHandling.start()
                 
         except AttributeError as e:
@@ -801,10 +853,32 @@ class MainUI(QtWidgets.QMainWindow):
         self.B1500Tab.update()
         self.E5274ATab.update()
         self.ResultWindow.update()
+        self.ProberWindow.update()
+        self.eChar.update()
+
         
         self.timer.start()
 
-    def getColorPalette(self, color=None, typ=None):
+    def getQColor(self, color):
+
+        color = color.lower()
+        
+        '''
+        Alternative color scheme:
+        colors['white'] = QtGui.QColor(255,255,255,255)
+        colors['blue'] = QtGui.QColor("#1e376c")
+        colors['lightblue'] = QtGui.QColor("#16b6c0")
+        colors['grey'] = QtGui.QColor(132,134,135)
+        colors['red'] = QtGui.QColor("#e75049")
+        colors['yellow'] = QtGui.QColor("#f0b000")
+        colors['orange'] = QtGui.QColor("#ec8a3e")
+        colors['pink'] = QtGui.QColor(236,9,141)
+        colors['purple'] = QtGui.QColor(120,29,126)
+        colors['green'] = QtGui.QColor(84,185,72)
+        colors['black'] = QtGui.QColor(0,0,0,f0)
+        colors['default'] = QtGui.QColor(self.defColor[0], self.defColor[1], self.defColor[2])
+        '''
+
 
         colors = dict()
         colors['white'] = QtGui.QColor(255,255,255,255)
@@ -817,39 +891,63 @@ class MainUI(QtWidgets.QMainWindow):
         colors['purple'] = QtGui.QColor(120,29,126)
         colors['green'] = QtGui.QColor(84,185,72)
         colors['black'] = QtGui.QColor(0,0,0,0)
-
-        color = color.lower()
+        colors['default'] = QtGui.QColor(self.defColor[0], self.defColor[1], self.defColor[2])
 
         try:
             c = colors[color]
+        except KeyError:
+            c = colors['default']
 
-        except:
-            return QtGui.QGuiApplication.palette()
+        return c
+
+    def changeWidgetColor(self, widget, color, typ):
+
+        c = self.getQColor(color)
+        
+        red = c.red()
+        green = c.green()
+        blue = c.blue()
+        alpha = c.alpha()
+        
+        if typ == "background":
+            widget.setStyleSheet("background-color: rgb(%s,%s,%s,%s);" %(red, green, blue, alpha)) 
+            return True
+
+        return False
+
+
+    def getColorPalette(self, color=None, typ=None):
+
+        color = color.lower()
+        typ = typ.lower()
+        
+        c = self.getQColor(color)
+
 
         pal = QtGui.QPalette()
-        if typ.lower() == 'buttontext':
+        if typ == 'buttontext':
             pal.setColor(QtGui.QPalette.ButtonText, c)
-        elif typ.lower() == 'window':
+        elif typ == 'window':
             pal.setColor(QtGui.QPalette.Window, c)
-        elif typ.lower() == 'windowtext':
+        elif typ == 'windowtext':
             pal.setColor(QtGui.QPalette.WindowText, c)
-        elif typ.lower() == 'foreground':
+        elif typ == 'foreground':
             pal.setColor(QtGui.QPalette.Foreground, c)
-        elif typ.lower() == 'base':
+        elif typ == 'base':
             pal.setColor(QtGui.QPalette.Base, c)
-        elif typ.lower() == 'alternatebase':
+        elif typ == 'alternatebase':
             pal.setColor(QtGui.QPalette.AlternateBase, c)
-        elif typ.lower() == 'tooltipbase':
+        elif typ == 'tooltipbase':
             pal.setColor(QtGui.QPalette.ToolTipBase, c)
-        elif typ.lower() == 'tooltiptext':
+        elif typ == 'tooltiptext':
             pal.setColor(QtGui.QPalette.ToolTipText, c)
-        elif typ.lower() == 'placeholdertext':
+        elif typ == 'placeholdertext':
             pal.setColor(QtGui.QPalette.placeholdertext, c)
-        elif typ.lower() == 'text':
+        elif typ == 'text':
             pal.setColor(QtGui.QPalette.Text, c)
-        elif typ.lower() == 'button':
+        elif typ == 'button':
             pal.setColor(QtGui.QPalette.Button, c)
-        elif typ.lower() == 'background':
+        elif typ == 'background':
             pal.setColor(QtGui.QPalette.Background, c)
         else:
             pal = QtGui.QGuiApplication.palette()

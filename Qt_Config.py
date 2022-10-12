@@ -638,11 +638,11 @@ class LineEdit(QtWidgets.QLineEdit):
         if 'command' in kwargs:
             self.addCommand = kwargs['command']
 
-        if 'ValidateNumbers' in kwargs:
+        if 'validateNumbers' in kwargs:
 
-            regEx = QtCore.QRegularExpression(kwargs['ValidateNumbers'])
+            regEx = QtCore.QRegularExpression(kwargs['validateNumbers'])
             validator = QtGui.QRegularExpressionValidator(regEx, self)
-            self.TempEnt.setValidator(validator)
+            self.setValidator(validator)
         
         if 'state' in kwargs:
             if kwargs['state'] == 'disabled':

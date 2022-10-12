@@ -53,9 +53,7 @@ def SelectorPulseTest(eChar, PulseChn, GroundChn, Vhigh, Vlow, delay, trise, tfa
     eChar.Selstart = qu.Queue()
     eChar.Selstop = qu.Queue()
 
-    eChar.finished.put(False)
-    eChar.threads.append(th.Thread(target = selectorOutput, args=(eChar, WriteHeader,DoYield,MaxRowsPerFile)))
-    eChar.threads[-1].start()
+    eChar.startThread(selectorOutput, WriteHeader,DoYield,MaxRowsPerFile)
 
     if PulseChn < GroundChn:
         chns = {'tv': 0, 'v': 1, 'ti': 2, 'i': 3}
@@ -65,11 +63,7 @@ def SelectorPulseTest(eChar, PulseChn, GroundChn, Vhigh, Vlow, delay, trise, tfa
 
     for n in range(Repetitions):
 
-        stop = False
-        while not eChar.Stop.empty():
-            stop = eChar.Stop.get()
-        if stop:    
-            eChar.finished.put(True)
+        if eChar.checkStop():
             break
 
         eChar.Selstart.put(eChar.curCycle)
@@ -91,10 +85,7 @@ def SelectorPulseTest(eChar, PulseChn, GroundChn, Vhigh, Vlow, delay, trise, tfa
 
         if ReadCycles > 0:
         
-            while not eChar.Stop.empty():
-                stop = eChar.Stop.get()
-            if stop:    
-                eChar.finished.put(True)
+            if eChar.checkStop():
                 break
             
             eChar.Selstart.put(eChar.curCycle)
@@ -308,7 +299,7 @@ def SelectorPulseIV(eChar, PulseChn, GroundChn, Vhigh, VlowMeas, delay, trise, t
     Typ = "SelectorPulseIV"
     header1 = cp.deepcopy(header)
     header1.extend(newline)
-    eChar.writeDataToFile(header1, Data, Typ=Typ, startCyc=eChar.curCycle, endCyc=eChar.curCycle+Cycles-1)
+    eChar.writeDataToFile(header1, Data, Typ=Typ, cycStart=eChar.curCycle, cycEnd=eChar.curCycle+Cycles-1)
 
     Data = []
     newline = [None]*3
@@ -331,7 +322,7 @@ def SelectorPulseIV(eChar, PulseChn, GroundChn, Vhigh, VlowMeas, delay, trise, t
 
     Typ = "SelectorPulseIVParam"
     header.extend(newline)
-    eChar.writeDataToFile(header, Data, Typ=Typ, startCyc=eChar.curCycle, endCyc=eChar.curCycle+Cycles-1)
+    eChar.writeDataToFile(header, Data, Typ=Typ, cycStart=eChar.curCycle, cycEnd=eChar.curCycle+Cycles-1)
 
 
     Trac = [Vdata,Idata]
@@ -570,7 +561,7 @@ def selectorOutput(eChar, WriteHeader, DoYield, MaxRowsPerFile=1e6):
                 header.append('Unit, #, ohm, ohm, A, A')
                 header.append('Dimension, %d,%d,%d,%d' %(len(OutResOn[0]), len(OutResOn[1]), len(OutResOn[2]), len(OutResOn[3])))
                 
-                eChar.writeDataToFile(header, OutResOnStr, Typ="SelectorResistanceOnly", startCyc=StartCycResOn, endCyc=EndCyc)
+                eChar.writeDataToFile(header, OutResOnStr, Typ="SelectorResistanceOnly", cycStart=StartCycResOn, cycEnd=EndCyc)
                 
                 StartCycResOn = EndCyc
 
@@ -591,7 +582,7 @@ def selectorOutput(eChar, WriteHeader, DoYield, MaxRowsPerFile=1e6):
                 header.append('Dimension, %d,%d,%d,%d,%d,%d,%d' %(len(OutComp[0]), len(OutComp[1]), len(OutComp[2]), len(OutComp[3]), len(OutComp[4]), len(OutComp[5]), len(OutComp[6])))
                 
                 filename = "%s" %(eChar.getFilename('SelectorRes+Vth', StartCycComp, EndCyc))
-                eChar.writeDataToFile(header, OutCompStr, Typ="SelectorRes+Vth'", startCyc=StartCycComp, endCyc=EndCyc)
+                eChar.writeDataToFile(header, OutCompStr, Typ="SelectorRes+Vth'", cycStart=StartCycComp, cycEnd=EndCyc)
                 StartCycComp = EndCyc
 
                 OutComp = []
@@ -659,12 +650,8 @@ def SelectorIV(eChar, SweepSMU, Vstop, steps, VlowMeas, Compl, DCSMU, DCCompl, R
     
     for r in range(Rep):
 
-        while not eChar.Stop.empty():
-            stop = eChar.Stop.get()
-
-        if stop:    
-            eChar.finished.put(True)
-            return None
+        if eChar.checkStop():
+            break
             
         out = eChar.B1500A.StaircaseSweepMeasurement(Chns, VorI, SweepSMU, Vstart, Vstop, steps, hold, delay, Val, VComp, IComp, Mmode=mode)
         
@@ -773,7 +760,7 @@ def SelectorIV(eChar, SweepSMU, Vstop, steps, VlowMeas, Compl, DCSMU, DCCompl, R
             
             data.append(line)
 
-        eChar.writeDataToFile(header, data, Typ=Typ, startCyc=r+1)
+        eChar.writeDataToFile(header, data, Typ=Typ, cycStart=r+1)
                 
         values = []
         values.append(eChar.dhValue(Rlow1, "Rlow1", Unit='ohm'))

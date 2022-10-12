@@ -200,9 +200,9 @@ class sideButtons(QtWidgets.QWidget):
         self.__StatButton = stdObj.PushButton("S\nt\na\nt\ni\ns\nt\ni\nc\ns", self, minimumWidth=1, command=self.StatisticsButton)
         self.layout.addWidget(self.__StatButton)
         
-        self.__ProbeButton = stdObj.PushButton("P\nr\no\nb\ne\n \nS\nt\na\nt\ni\no\nn\n", self, minimumWidth=1, command=self.ProbeStationButton)
+        self.__ProbeButton = stdObj.PushButton("P\nr\no\nb\ne\nr", self, minimumWidth=1, command=self.ProbeStationButton)
         self.layout.addWidget(self.__ProbeButton)
-        self.__ProbeButton.hide()
+        #self.__ProbeButton.hide()
         
     def ResultButton(self):
         if self.MainGI.ResultWindow.isVisible():
@@ -214,4 +214,7 @@ class sideButtons(QtWidgets.QWidget):
         None
 
     def ProbeStationButton(self):
-        None
+        if self.MainGI.ProberWindow.isVisible():
+            self.MainGI.ProberWindow.hide()
+        else:
+            self.MainGI.ProberWindow.show()

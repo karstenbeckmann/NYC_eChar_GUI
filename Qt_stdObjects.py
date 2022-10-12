@@ -61,7 +61,6 @@ class RangeFrame(QtWidgets.QWidget):
         self.layout.setContentsMargins(0,0,0,0)
         self.layout.setSpacing(0)
 
-
 class ADCFrame(QtWidgets.QWidget):
 
     def __init__(self, parent, MainGI, Tool):
@@ -156,9 +155,6 @@ class ADCsmu(QtWidgets.QWidget):
             self.ADCtype.currentIndexChanged.disconnect()
             self.ADCtype.setCurrentIndex(self.typ)
             self.ADCtype.currentIndexChanged.connect(self.updateType)
-
-
-
 
 
 class ADCtype(QtWidgets.QWidget):
@@ -330,16 +326,17 @@ class ADCtypComboBox(QtWidgets.QComboBox):
 
 class stdFrame(QtWidgets.QWidget):
 
-    def __init__(self, parent, MainGI, width=None, height=None, threads=None):
+    def __init__(self, parent, MainGI, width=None, height=None, threads=None, **kwargs):
 
+        
+        super().__init__(parent)
+        
         self.MainGI = MainGI
         self.eChar = self.MainGI.getEChar()
         self.Instruments = self.MainGI.getInstruments()
         self.threads = threads
         self.Configuration = self.MainGI.getConfiguration()
         self.ExecThread = None
-        
-        super().__init__(parent)
 
         if isinstance(width, int):
             self.width = width
@@ -356,6 +353,8 @@ class stdFrame(QtWidgets.QWidget):
     def update(self):
         return None
 
+    def __getattr__(self, item):
+        return getattr(self.parent(), item)
 
 class stdScrollFrame(QtWidgets.QScrollArea):
 
@@ -395,14 +394,28 @@ class stdScrollFrame(QtWidgets.QScrollArea):
     def update(self):
         return None
 
+    def __getattr__(self, item):
+        return getattr(self.parent(), item)
+        
 class stdFrameGrid(stdFrame):
 
-    def __init__(self, parent, MainGI, columns, rows, width, height, **kwargs):
+    def __init__(self, parent, MainGI, columns, rows, width, height, cell=False, **kwargs):
         
-        super().__init__(parent, MainGI, width, height,  **kwargs)
         
-        self.ColumnWidth=int(width/columns)
-        self.RowHeight=int(height/rows)
+        if not cell:
+            self.ColumnWidth=int(width/columns)
+            self.RowHeight=int(height/rows)
+            self.width = width
+            self.height= height
+        else:
+            self.ColumnWidth=width
+            self.RowHeight=height
+            self.width = self.ColumnWidth * columns
+            self.height = self.RowHeight * rows
+
+        super().__init__(parent, MainGI, self.width, self.height, **kwargs)
+
+        self.defColor = MainGI.defColor
 
         self.layout = QtWidgets.QGridLayout(self)
         
@@ -411,6 +424,9 @@ class stdFrameGrid(stdFrame):
         
         for n in range(rows):
             self.layout.setRowMinimumHeight(n+1, self.RowHeight)
+
+    def __getattr__(self, item):
+        return getattr(self.parent(), item)
     
     def getLayout(self):
         return self.layout
@@ -591,6 +607,7 @@ class PushButton(QtWidgets.QPushButton):
         
         if "sizePolicy" in kwargs:
             self.setSizePolicy(kwargs['sizePolicy'][0], kwargs['sizePolicy'][1])
+
 
 class folderButton(QtWidgets.QPushButton):
 
@@ -921,8 +938,10 @@ class Entry(QtWidgets.QLineEdit):
 
         self.valueName = valueName
         self.Configuration = self.MainGI.Configuration
+        self.Instruments = self.MainGI.Instruments
 
-
+        initValue = self.Configuration.getValue(self.valueName)
+        
         if not "width" in kwargs:
             kwargs['width'] = int(1)
 
@@ -936,6 +955,15 @@ class Entry(QtWidgets.QLineEdit):
         if "sizePolicy" in kwargs:
             self.setSizePolicy(kwargs['sizePolicy'][0], kwargs['sizePolicy'][1])
             
+        if "type" in kwargs:
+            self.Type = kwargs['type']
+        else:
+            self.Type = type(initValue)
+
+            
+        if "default" in kwargs:
+            self.default = kwargs['default']
+            
         self.setMinimumWidth(kwargs['width'])
 
         if validateNumbers != None:
@@ -946,15 +974,18 @@ class Entry(QtWidgets.QLineEdit):
         else:
             self.validateNumbers = None
 
-        initValue = self.Configuration.getValue(self.valueName)
-        self.Type = type(initValue)
+        try:
+            initValue = self.Type(initValue)
+        except TypeError:
+            initValue = self.default
+        
 
         self.setVariable(initValue)
 
         self.MainGI.addWidgetVariables(self, self.valueName)
         
     def getVariable(self):
-        return self.__tkVariable.get()
+        return self.text()
 
     def setVariable(self, value):
         
@@ -976,9 +1007,11 @@ class Entry(QtWidgets.QLineEdit):
         ConfigValue = self.Configuration.getValue(self.valueName)
 
         CurContent = self.text()
-
-        SucChange = self.Configuration.setValue(self.valueName, self.Type(CurContent))
-        
+        try:
+            SucChange = self.Configuration.setValue(self.valueName, self.Type(CurContent))
+        except ValueError:
+            SucChange = False
+            
         if SucChange:
             if self.AddCommand != None:
                 self.AddCommand()
@@ -1260,6 +1293,10 @@ class Table(QtWidgets.QTableWidget):
 
         if self.content != None:
             self.writeTable(self.content)
+
+            
+    def __getattr__(self, item):
+        return getattr(self.parent(), item)
 
     def writeRow(self, row, content):
         n = 0

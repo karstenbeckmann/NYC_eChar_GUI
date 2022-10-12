@@ -25,7 +25,7 @@ import pickle as pk
 
 class ResultHandling():
 
-    def __init__(self, MainGI, ResultWindow):
+    def __init__(self, MainGI, ResultWindow, timeout=200):
         
         self.ResultWindow = ResultWindow
     
@@ -67,6 +67,7 @@ class ResultHandling():
         self.CurMeasDieY = None
         self.CurMeasDevX = None
         self.CurMeasDevY = None
+        self.timeout = timeout
         
         self.__close = qu.Queue()
         self.thread = None
@@ -608,16 +609,31 @@ class ResultHandling():
 
     def close(self):
         self.__close.put(True)
+    
+    def alive(self):
+        self.__close.put(False)
 
     def start(self):
         
-        self.thread = th.Thread(target=self.update)
+        self.thread = th.Thread(target=self.update, args=(self.timeout,))
         self.thread.start()
 
-    def update(self):
+    def update(self, timeout=200):
+
+        told = tm.time_ns()
+
         while True:
+
             if not self.__close.empty():
-                break
+                data = self.__close.get()
+
+                if data:
+                    break
+                else:
+                    told = tm.time_ns()
+            else:
+                if told + timeout < tm.time_ns():
+                    break
 
             self.retrieveData()   
         

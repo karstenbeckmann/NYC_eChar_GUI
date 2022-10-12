@@ -110,8 +110,15 @@ updateTime = 0.2
 threads = qu.Queue()
 
 
-ui = Qt_Main.MainUI(app, size,"Wafer Map",Configuration, eChar, Instruments, threads)
+ui = Qt_Main.MainUI(app, size,"Wafer Map", Configuration, eChar, Instruments, threads)
 ui.show()
 
-sys.exit(app.exec_())
+Instruments = ui.Instruments
+
+try:
+    sys.exit(app.exec_())
+except KeyboardInterrupt as e:
+    Instruments.commandQueue.put({"Stop":True})
+    print("Keyboard Interrupt - %s" %(e))
+
 
