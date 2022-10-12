@@ -1,0 +1,7 @@
+# Write the failing conditions in here, each line represents one condition
+# The following nomenclature must be used:
+# Name, lower Limit, upper Limit
+Vset, 0.2, 2
+Vreset, -2, -0.5
+HRS, 5000, x
+LRS, 2000, 10000

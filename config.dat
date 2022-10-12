@@ -1,0 +1,21 @@
+GPIBB1500, GPIB0::18::INSTR
+GPIBProbeStation, GPIB0::22::INSTR
+GPIBMatrix, GPIB0::14::INSTR
+Mainfolder, C:/Users/KB511298/Documents/E-Test_Python
+SubFolder, TestReRAM
+DeviceName, skynet1R
+WaferID, 1820BRSN001.001
+FailingConditions, C:/Users/KB511298/Documents/PythonScripts/AutomatedProbingFailingConditions.txt
+DieSizeX, 12
+DieSizeY, 15
+WaferSize, 300
+WaferMapVariable, resistance
+CenterLocationX, 0
+CenterLocationY, 0
+DieFile, 
+DieMap, 2
+Xseperation, -200
+Yseperation, 200
+NumXdevices, 2
+NumYdevices, 1
+

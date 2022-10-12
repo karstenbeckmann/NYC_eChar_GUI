@@ -1,0 +1,18 @@
+# This Failure Criteria File defines measurement results by there name (case sensitive)
+# Use the following two arrangements in a comma seperated format (csv): 
+# 1. Name, SpecCode, Target, Spec and Yield High, Spec and Yield Low
+# 2. Name, SpecCode, Target, Spec High, Spec Low, Yield High, Yield Low
+Vform, HfO2_Cl_7nm, 2, 3.7, 2
+#ImaxForm, HfO2_Cl_7nm, 5e-4, 5e-3, 5e-6
+#HRS, HfO2_Cl_7nm, 8000, 500000, 4000
+LRS, HfO2_Cl_7nm, 5500, 8000, 4000
+Vset, HfO2_Cl_7nm, 0.9, 1.5, 0.4
+Vreset, HfO2_Cl_7nm, -0.7, -0.4, -1.5
+#
+#
+Vform, HfO2_Org_5.8nm, 1.6, 2.3, 1
+ImaxForm, HfO2_Org_5.8nm, 400e-6, 5e-3, 5e-5
+HRS, HfO2_Org_5.8nm, 10000, 500000, 5000 
+LRS, HfO2_Org_5.8nm, 5000, 8000, 800
+Vset, HfO2_Org_5.8nm, 0.8, 1, 0.4
+Vreset, HfO2_Org_5.8nm, -1.2, -1, -1.8

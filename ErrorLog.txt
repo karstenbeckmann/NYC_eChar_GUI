@@ -1,0 +1,19 @@
+Error loading Measurement file 512x512Forming.
+list index out of range
+list index out of range
+string indices must be integers
+ConfigurationFile: Die File does not exist.
+ConfigurationFile: Die File does not exist.
+ConfigurationFile: Die File does not exist.
+WGFMU WGFMUUseGUI state could not be loaded
+Spec File: -- does not exist.
+Variable '$ADC$_None_$HS$_$Mode$' does not exist in Configuration.
+Variable '$ADC$_$HS$_$N$' does not exist in Configuration.
+Variable '$ADC$_None_$HR$_$Mode$' does not exist in Configuration.
+Variable '$ADC$_$HR$_$N$' does not exist in Configuration.
+Variable '$ADC$_None_$HS$_$Mode$' does not exist in Configuration.
+Variable '$ADC$_$HS$_$N$' does not exist in Configuration.
+Variable '$ADC$_None_$HR$_$Mode$' does not exist in Configuration.
+Variable '$ADC$_$HR$_$N$' does not exist in Configuration.
+None is not a Keysight Mainframe (i.e. B1500A)
+None is not a Keysight Mainframe (i.e. B1500A)

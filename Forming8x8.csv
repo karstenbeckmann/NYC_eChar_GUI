@@ -1,0 +1,78 @@
+# This file is generates the sequences to use switching matrixes
+# Currently, up to eight Inputs are available and can be addressed with "A" to "H"
+# A line starting with "!" determines the setup of outputs. Either normal or Bits is possible:
+# i.e.: "!1-6.BM: Normal; 7-24: Bit"
+#       "!Normal:1.BM,2,3,4,5,6; Bit: 7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24"
+# All following inputs must follow the above layout, if an output is not defined it will be ignored:
+# Each line must define the number of normal inputs plus the high and low input for the bit input at the end
+# For the example above, 8 inputs must be defined, 6 normal and high/low
+# A line starting with "$" changes the inputs to "BM" or "MB" meaning Break-Make or Make-Break:
+# i.e. "$ BM, BM, MB, BM" 
+# a maximum of 8 inputs can be defined, all non defined inputs are automatically Break-Make
+# If this nomenclausure is not used, Break-Make is used, Please read up on BM and MB before using it.#
+$BM, BM, BM, BM, BM, BM, BM, BM
+!1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24: Normal;
+A,A,A,A,A,A,A,A,A,A,A,A,B,A,A,A,A,A,A,A,C,A,A,A
+A,A,A,A,A,A,A,A,A,A,A,A,A,B,A,A,A,A,A,A,C,A,A,A
+A,A,A,A,A,A,A,A,A,A,A,A,A,A,B,A,A,A,A,A,C,A,A,A
+A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,B,A,A,A,A,C,A,A,A
+A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,B,A,A,A,C,A,A,A
+A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,B,A,A,C,A,A,A
+A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,B,A,C,A,A,A
+A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,B,C,A,A,A
+A,A,A,A,A,A,A,A,A,A,A,A,B,A,A,A,A,A,A,A,A,C,A,A
+A,A,A,A,A,A,A,A,A,A,A,A,A,B,A,A,A,A,A,A,A,C,A,A
+A,A,A,A,A,A,A,A,A,A,A,A,A,A,B,A,A,A,A,A,A,C,A,A
+A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,B,A,A,A,A,A,C,A,A
+A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,B,A,A,A,A,C,A,A
+A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,B,A,A,A,C,A,A
+A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,B,A,A,C,A,A
+A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,B,A,C,A,A
+A,A,A,A,A,A,A,A,A,A,A,A,B,A,A,A,A,A,A,A,A,A,C,A
+A,A,A,A,A,A,A,A,A,A,A,A,A,B,A,A,A,A,A,A,A,A,C,A
+A,A,A,A,A,A,A,A,A,A,A,A,A,A,B,A,A,A,A,A,A,A,C,A
+A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,B,A,A,A,A,A,A,C,A
+A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,B,A,A,A,A,A,C,A
+A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,B,A,A,A,A,C,A
+A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,B,A,A,A,C,A
+A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,B,A,A,C,A
+A,A,A,A,A,A,A,A,A,A,A,A,B,A,A,A,A,A,A,A,A,A,A,C
+A,A,A,A,A,A,A,A,A,A,A,A,A,B,A,A,A,A,A,A,A,A,A,C
+A,A,A,A,A,A,A,A,A,A,A,A,A,A,B,A,A,A,A,A,A,A,A,C
+A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,B,A,A,A,A,A,A,A,C
+A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,B,A,A,A,A,A,A,C
+A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,B,A,A,A,A,A,C
+A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,B,A,A,A,A,C
+A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,B,A,A,A,C
+C,A,A,A,A,A,A,A,A,A,A,A,B,A,A,A,A,A,A,A,A,A,A,A
+C,A,A,A,A,A,A,A,A,A,A,A,A,B,A,A,A,A,A,A,A,A,A,A
+C,A,A,A,A,A,A,A,A,A,A,A,A,A,B,A,A,A,A,A,A,A,A,A
+C,A,A,A,A,A,A,A,A,A,A,A,A,A,A,B,A,A,A,A,A,A,A,A
+C,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,B,A,A,A,A,A,A,A
+C,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,B,A,A,A,A,A,A
+C,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,B,A,A,A,A,A
+C,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,B,A,A,A,A
+A,C,A,A,A,A,A,A,A,A,A,A,B,A,A,A,A,A,A,A,A,A,A,A
+A,C,A,A,A,A,A,A,A,A,A,A,A,B,A,A,A,A,A,A,A,A,A,A
+A,C,A,A,A,A,A,A,A,A,A,A,A,A,B,A,A,A,A,A,A,A,A,A
+A,C,A,A,A,A,A,A,A,A,A,A,A,A,A,B,A,A,A,A,A,A,A,A
+A,C,A,A,A,A,A,A,A,A,A,A,A,A,A,A,B,A,A,A,A,A,A,A
+A,C,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,B,A,A,A,A,A,A
+A,C,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,B,A,A,A,A,A
+A,C,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,B,A,A,A,A
+A,A,C,A,A,A,A,A,A,A,A,A,B,A,A,A,A,A,A,A,A,A,A,A
+A,A,C,A,A,A,A,A,A,A,A,A,A,B,A,A,A,A,A,A,A,A,A,A
+A,A,C,A,A,A,A,A,A,A,A,A,A,A,B,A,A,A,A,A,A,A,A,A
+A,A,C,A,A,A,A,A,A,A,A,A,A,A,A,B,A,A,A,A,A,A,A,A
+A,A,C,A,A,A,A,A,A,A,A,A,A,A,A,A,B,A,A,A,A,A,A,A
+A,A,C,A,A,A,A,A,A,A,A,A,A,A,A,A,A,B,A,A,A,A,A,A
+A,A,C,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,B,A,A,A,A,A
+A,A,C,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,B,A,A,A,A
+A,A,A,C,A,A,A,A,A,A,A,A,B,A,A,A,A,A,A,A,A,A,A,A
+A,A,A,C,A,A,A,A,A,A,A,A,A,B,A,A,A,A,A,A,A,A,A,A
+A,A,A,C,A,A,A,A,A,A,A,A,A,A,B,A,A,A,A,A,A,A,A,A
+A,A,A,C,A,A,A,A,A,A,A,A,A,A,A,B,A,A,A,A,A,A,A,A
+A,A,A,C,A,A,A,A,A,A,A,A,A,A,A,A,B,A,A,A,A,A,A,A
+A,A,A,C,A,A,A,A,A,A,A,A,A,A,A,A,A,B,A,A,A,A,A,A
+A,A,A,C,A,A,A,A,A,A,A,A,A,A,A,A,A,A,B,A,A,A,A,A
+A,A,A,C,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,B,A,A,A,A
