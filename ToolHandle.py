@@ -7,6 +7,7 @@ email: kbeckmann@sunypoly.edu
 
 import sys
 sys.path.append('Drivers')
+
 from ctypes import *
 import os as os
 import pathlib as path
@@ -21,11 +22,7 @@ import threading as th
 import DataHandling as dh
 import queue as qu
 import StdDefinitions as std
-import Agilent as ag 
-import ProbeStations as PS
-import Keithley as KL
-import BerkeleyNuc as BNC
-import Instruments as Inst
+import Drivers.Instruments as Inst
 import copy as cp
 
 
@@ -539,7 +536,7 @@ class ToolHandle:
             raise ValueError("ToolHandle: Calibration - either GPIB or ID must be defined and valid!")
 
         thread = None
-        print("cali", instrument)
+        
         if instrument['Instrument'] != None:
             if not instrument["Busy"]:
                 self.readyQu.put([address, True])

@@ -11,7 +11,7 @@ import datetime as dt
 import types as tp
 import StdDefinitions as std
 import time as tm
-from Exception import *
+from Exceptions import *
 
 
 #LeCroy WavePro 740Zi Oscilloscope: 

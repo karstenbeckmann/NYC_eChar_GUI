@@ -14,8 +14,6 @@ import win32con
 import time
 import threading as th
 import ECharacterization as EC
-import ProbeStations as PS
-import Keithley as KL
 import datetime as dt
 import Configuration as cf
 import pyvisa as vs
@@ -113,8 +111,8 @@ class MainUI(QtWidgets.QMainWindow):
         self.DateFolder = ""
         self.loader = "etc/Pacman-1s-200px.gif"
 
-        self.eChar = ElectricalCharacterization
-        self.Configuration = Configuration
+        #self.eChar = ElectricalCharacterization
+        #self.Configuration = Configuration
 
         self._main = QtWidgets.QWidget(self)
         self.QFont = QtGui.QFont()
@@ -667,6 +665,12 @@ class MainUI(QtWidgets.QMainWindow):
         
         while not self.__ErrorQu.empty():
             error = self.__ErrorQu.get()
+            self.Configuration.addElementErrorList(error)
+            self.updateErrorFrames(error)
+            
+        while not self.eChar.ErrorQueue.empty():
+            error = self.eChar.ErrorQueue.get()
+            print("err", error)
             self.Configuration.addElementErrorList(error)
             self.updateErrorFrames(error)
         

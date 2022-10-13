@@ -137,7 +137,7 @@ class MainMeasurementFrame(QtWidgets.QWidget):
                 return None
 
             return files
-       
+
         return None
 
     def SaveMeasurementBut(self):
@@ -170,7 +170,7 @@ class MainMeasurementFrame(QtWidgets.QWidget):
     
     def LoadMeasurementBut(self):
 
-        self.folder = "%s\Measurements" %(self.MainWindow.getHomeDirectory())
+        self.folder = os.path.join(self.MainWindow.getHomeDirectory(), "Measurements")
         fileItems = self.getFileItems(self.folder)
 
         if fileItems != None:
@@ -186,7 +186,7 @@ class MainMeasurementFrame(QtWidgets.QWidget):
     
     def LoadMeasurement(self, measName):
         
-        measFile = "%s/%s.mfs" %(self.folder, measName)
+        measFile = os.path.join(self.folder, "%s.mfs" %(measName))
         try:
             f = open(measFile, "rb")
         except OSError as e:
@@ -211,7 +211,7 @@ class MainMeasurementFrame(QtWidgets.QWidget):
     def DeleteMeasurement(self, measNames):
         
         for m in measNames:                
-            measFile = "%s/%s.mfs" %(self.folder, m)
+            measFile = os.path.join(self.folder, "%s.mfs" %(m))
             os.remove(measFile)
     
     def checkForTools(self, Measurements):

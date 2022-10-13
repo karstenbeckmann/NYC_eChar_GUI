@@ -32,6 +32,7 @@ import pyvisa as vs
 import traceback
 import numpy as np
 import queue as qu
+from Exceptions import *
 
 
 #Keysight B1530A WGFMU: 
@@ -1652,7 +1653,7 @@ class Agilent_B1530A:
 
     def SysError(self, error):
         self.__write(error)
-        raise B1530A_InputError("B1530A - %s: %s" %(self.__GPIB, error))
+        raise B1500AError("B1530A - %s: %s" %(self.__GPIB, error))
 
     def ValError(self, error):
         self.__write(error)
@@ -1668,10 +1669,10 @@ class Agilent_B1530A:
         try:
             self.__write("WGFMU_openSession(%s)" %(gpib))
             ret = self.checkError(self.__inst.WGFMU_openSession(gpib))
-        except SystemError as e:
+        except B1500AError as e:
             if str(e).find("A session has already been opened") != -1:
                 return 0
-            self.SysError(e)
+            raise B1530AError(e)
 
         return ret
 

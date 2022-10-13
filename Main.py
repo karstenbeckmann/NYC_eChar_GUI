@@ -7,8 +7,6 @@ import win32con
 import time
 import threading as th
 import ECharacterization as EC
-import ProbeStations as PS
-import Keithley as KL
 import datetime as dt
 import Configuration as cf
 import pyvisa as vs

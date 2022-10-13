@@ -24,6 +24,8 @@ import engineering_notation as eng
 import LetToArray as LtA
 from datetime import datetime as dt
 
+from Exceptions import *
+
 import glob, imp
 import os as os
 
@@ -262,7 +264,6 @@ class ECharacterization:
             self.Instruments.checkInstrumentation()
             self.writeLog("Instrumentation Checked")
         except SystemError as e:
-            print(e)
             self.Instruments.ReInitialize()
             start = tm.time()
             while not self.Instruments.ready:
@@ -270,7 +271,6 @@ class ECharacterization:
                 if (tm.time() - start) > 2:
                     break
             self.getTools()
-        print("finished Check eChar")
 
 
     def writeMeasLog(self, data):

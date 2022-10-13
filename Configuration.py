@@ -66,16 +66,6 @@ class Configuration:
         self.UseMatrix = False
         self.ApplyParametersB1530 = False
         self.Measurements = None
-        self.B1530Chn1Mode = 2000
-        self.B1530Chn2Mode = 2000
-        self.B1530Chn1ForceVoltageRange = 3000
-        self.B1530Chn2ForceVoltageRange = 3000
-        self.B1530Chn1MeasureMode = 4000
-        self.B1530Chn2MeasureMode = 4000
-        self.B1530Chn1MeasureVoltage = 5001
-        self.B1530Chn2MeasureVoltage = 5001
-        self.B1530Chn1MeasureCurrent = 6001
-        self.B1530Chn2MeasureCurrent = 6001
         self.ResultGraphStyle = None
         self.ResultGraphWidth = None
         self.ResultGraphColor = None
@@ -100,7 +90,7 @@ class Configuration:
         configFile =  self.configFile
         if configFile.find("/") == -1 and configFile.find("\\") == -1:
             cwd = os.getcwd()
-            File = "%s/%s" %(cwd,configFile)
+            File = os.path.join(cwd,configFile)
         else:
             File = configFile
 
@@ -358,9 +348,11 @@ class Configuration:
             if key.find('$ToolRank$_') != -1:
                 vars(self)[key] = value
             if key.find('$B1530A$_') == 0:
+                print(key, value)
                 try:
                     vars(self)[key] = int(value)
                 except ValueError:
+                    print("error")
                     None
             if key == "InititalMeasurement":
                 vars(self)[key] = str(value)
@@ -391,24 +383,24 @@ class Configuration:
         self.UpdateMatrixConfig(self.ErrorQueue)
         self.UpdateMeasurementFile(self.ErrorQueue)
 
-    def setValue(self, name, value):
+    def setValue(self, name, value, outputError=True):
 
-        #print(name, value)
         try: 
             vars(self)[name] = value
             return True
         except:
-            self.ErrorQueue.put("Config Set: Variable '%s' does not exist in Configuration." %(name))
+            if outputError:
+                self.ErrorQueue.put("Config Set: Variable '%s' does not exist in Configuration." %(name))
             return False
     
-    def getValue(self, name):
+    def getValue(self, name, outputError=True):
 
-        #print(name)
         try: 
             ret = vars(self)[name.strip()]
             return ret
         except: 
-            self.ErrorQueue.put("Config Get: Variable '%s' does not exist in Configuration." %(name))
+            if outputError:
+                self.ErrorQueue.put("Config Get: Variable '%s' does not exist in Configuration." %(name))
             return None
 
     def getComputerName(self):

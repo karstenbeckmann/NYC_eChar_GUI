@@ -244,7 +244,6 @@ class ResultHandling():
         Meas = []
         for res in self.Results:
             M = res.getMeasurement()
-            print(M)
 
             Xdie = res.getDieX()
             Ydie = res.getDieY()

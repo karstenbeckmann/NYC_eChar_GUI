@@ -46,17 +46,17 @@ def WGFMUSetChannelParameters(eChar, Configuration, Instruments):
                 chns = inst.getChannelIDs()['Channels']
                 for chn in chns:
 
-                    inst.setChannelParameter(chn, Configuration.getValue("%s_%s_ModeList" %(devCode, chn)), Configuration.getValue("%s_%s_ForceVoltageRange" %(devCode, chn)), 
-                                                            Configuration.getValue("%s_%s_MeasureMode" %(devCode, chn)), Configuration.getValue("%s_%s_MeasureCurrentRange" %(devCode, chn)), 
-                                                            Configuration.getValue("%s_%s_MeasureVoltageRange" %(devCode, chn)), Configuration.getValue("%s_%s_ForceDelay" %(devCode, chn)), 
-                                                            Configuration.getValue("%s_%s_MeasureDelay" %(devCode, chn)))
+                    inst.setChannelParameter(chn, Configuration.getValue("%s_%s_ModeList" %(devCode, chn),False), Configuration.getValue("%s_%s_ForceVoltageRange" %(devCode, chn),False), 
+                                                            Configuration.getValue("%s_%s_MeasureMode" %(devCode, chn),False), Configuration.getValue("%s_%s_MeasureCurrentRange" %(devCode, chn),False), 
+                                                            Configuration.getValue("%s_%s_MeasureVoltageRange" %(devCode, chn),False), Configuration.getValue("%s_%s_ForceDelay" %(devCode, chn),False), 
+                                                            Configuration.getValue("%s_%s_MeasureDelay" %(devCode, chn),False))
                    
 
                     line = "Set WGFMU Channel Values - Channel: %s, Mode: %s, Force Voltage Range: %s, Measure Mode: %s, Current Measure Range: %s, Voltage Measure Range: %s, Force Delay: %s, Measure Delay: %s." %(chn, 
-                                                            Configuration.getValue("%s_%s_ModeList" %(devCode, chn)), Configuration.getValue("%s_%s_ForceVoltageRange" %(devCode, chn)), 
-                                                            Configuration.getValue("%s_%s_MeasureMode" %(devCode, chn)), Configuration.getValue("%s_%s_MeasureCurrentRange" %(devCode, chn)), 
-                                                            Configuration.getValue("%s_%s_MeasureVoltageRange" %(devCode, chn)), Configuration.getValue("%s_%s_ForceDelay" %(devCode, chn)), 
-                                                            Configuration.getValue("%s_%s_MeasureDelay" %(devCode, chn)))
+                                                            Configuration.getValue("%s_%s_ModeList" %(devCode, chn),False), Configuration.getValue("%s_%s_ForceVoltageRange" %(devCode, chn),False), 
+                                                            Configuration.getValue("%s_%s_MeasureMode" %(devCode, chn),False), Configuration.getValue("%s_%s_MeasureCurrentRange" %(devCode, chn),False), 
+                                                            Configuration.getValue("%s_%s_MeasureVoltageRange" %(devCode, chn),False), Configuration.getValue("%s_%s_ForceDelay" %(devCode, chn),False), 
+                                                            Configuration.getValue("%s_%s_MeasureDelay" %(devCode, chn),False))
 
                     eChar.writeMeasLog(line)
 

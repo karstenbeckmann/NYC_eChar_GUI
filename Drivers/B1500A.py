@@ -39,8 +39,8 @@ class Agilent_B1500A():
     CurrentName = ['I1','I2','I3','I4','I5','I6','I7','I8']
     TimeName = ['T1','T2','T3','T4','T5','T6','T7','T8']
     SMUtype = ['MP']*4
-    VR = [5, 50, 20, 200, 400, 1000, 2000, -5, -50, -20, -200, -400, -1000, -2000, None]
-    IR = [11,12,13,14,15,16,17,18,19,20,-11,-12,-13,-14,-15,-16,-17,-18,-19,-20, None]
+    VR = [5, 50, 20, 200, 400, 1000, 2000, -5, -50, -20, -200, -400, -1000, -2000, 0]
+    IR = [11,12,13,14,15,16,17,18,19,20,-11,-12,-13,-14,-15,-16,-17,-18,-19,-20, 0]
     RIlabel = [1e-12, 1e-11, 1e-10, 1e-9, 1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 1e-12, 1e-11, 1e-10, 1e-9, 1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, "Auto"]
     RVlabel = [0.5, 5, 2, 20, 40, 100, 200, "Auto"]
     ADC_HS_Mode = 0
@@ -327,7 +327,13 @@ class Agilent_B1500A():
         err = binStb[5]
         if err == 1:
             ret = self.inst.query("ERR? 1\n")
-            raise SystemError("B1500 encountered error #%s." %(ret.strip()))
+            try:
+                ret = int(ret)
+                raise B1500A_InputError("Error #%s." %(ret))
+            except TypeError:
+                ret.strip()
+                
+            raise B1500AError("Error #%s." %(ret))
 
     def instRead(self):
         ret = self.inst.read()
@@ -614,7 +620,10 @@ class Agilent_B1500A():
         VR = self.VR
         IR = self.IR
         
+        print("Val", Val)
         for element in Val:
+            print(element,VorI[n], VR,RV, np.absolute(int(element)) > 42)
+
             if VorI[n]:    
                 if RV[n] == VR[0]:
                     if np.absolute(int(element)) > 42:

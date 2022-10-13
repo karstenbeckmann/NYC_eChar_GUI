@@ -1,6 +1,6 @@
 
 
-class ToolInputError(Exception):
+class ToolError(Exception):
 
     def __init__(self, message, eChar=None, *args):
         self.message = "Tool Error: %s" %(message) 
@@ -10,7 +10,7 @@ class ToolInputError(Exception):
             self.eChar.writeError(self.message)
 
             
-class ToolInputError(ToolInputError):
+class ToolInputError(ToolError):
 
     def __init__(self, message, eChar=None, *args):
         self.message = "Input Error: %s" %(message) 
@@ -20,7 +20,7 @@ class ToolInputError(ToolInputError):
             self.eChar.writeError(self.message)
 
             
-class OperationError(ToolInputError):
+class OperationError(ToolError):
 
     def __init__(self, message, eChar=None, *args):
         self.message = "Operation Error: %s" %(message) 
@@ -38,13 +38,13 @@ class CommunicationError(ToolInputError):
         if self.eChar != None: 
             self.eChar.writeError(self.message)
 
-class B1500AError(ToolInputError):
+class B1500AError(ToolError):
     def __init__(self, message, eChar=None, *args):
         self.message = "B1500: %s" %(message) 
 
         super().__init__(message, eChar, *args)
 
-class B1500A_InputError(InputError):
+class B1500A_InputError(ToolInputError):
     def __init__(self, message, eChar=None, *args):
         self.message = "B1500A Wrong Input: %s" %(message) 
 
@@ -62,15 +62,21 @@ class B1500A_CalibrationError(B1500AError):
 
         super().__init__(message, eChar, *args)
         
-class B1530AError(ToolInputError):
+class B1530AError(ToolError):
     def __init__(self, message, eChar=None, *args):
         self.message = "B1530: %s" %(message) 
 
         super().__init__(message, eChar, *args)
 
-class B1530A_InputError(InputError):
+class B1530A_InputError(ToolInputError):
     def __init__(self, message, eChar=None, *args):
         self.message = "B1530A Wrong Input: %s" %(message) 
+
+        super().__init__(message, eChar, *args)
+        
+class B1530A_SessionExistsError(ToolError):
+    def __init__(self, message="", eChar=None, *args):
+        self.message = "B1530A A session has already been opened. %s" (message)
 
         super().__init__(message, eChar, *args)
         
@@ -81,37 +87,37 @@ class ProbeStationError(B1530AError):
         super().__init__(message, eChar, *args)
 
         
-class BNC_Model765Error(ToolInputError):
+class BNC_Model765Error(ToolError):
     def __init__(self, message, eChar=None, *args):
         self.message = "BNC_Model765: %s" %(message) 
 
         super().__init__(message, eChar, *args)
 
-class BNC_Model765_InputError(InputError):
+class BNC_Model765_InputError(ToolInputError):
     def __init__(self, message, eChar=None, *args):
         self.message = "BNC Model 765 Wrong Input: %s" %(message) 
 
         super().__init__(message, eChar, *args)
         
-class ProbeStationError(ToolInputError):
+class ProbeStationError(ToolError):
     def __init__(self, message, eChar=None, *args):
         self.message = "ProbeStation: %s" %(message) 
 
         super().__init__(message, eChar, *args)
 
-class ProbeStation_InputError(InputError):
+class ProbeStation_InputError(ToolInputError):
     def __init__(self, message, eChar=None, *args):
         self.message = "Probe Station Wrong Input: %s" %(message) 
 
         super().__init__(message, eChar, *args)
 
-class E5274AError(ToolInputError):
+class E5274AError(ToolError):
     def __init__(self, message, eChar=None, *args):
         self.message = "E5274A: %s" %(message) 
 
         super().__init__(message, eChar, *args)
 
-class E5274A_InputError(InputError):
+class E5274A_InputError(ToolInputError):
     def __init__(self, message, eChar=None, *args):
         self.message = "E5274A Wrong Input: %s" %(message) 
 
@@ -129,38 +135,38 @@ class E5274A_CalibrationError(E5274AError):
 
         super().__init__(message, eChar, *args)
         
-class LeCroy_Osc_Error(ToolInputError):
+class LeCroy_Osc_Error(ToolError):
     def __init__(self, message, eChar=None, *args):
         self.message = "LeCroy WP740Zi: %s" %(message) 
 
         super().__init__(message, eChar, *args)
 
-class LeCroy_Osc_InputError(InputError):
+class LeCroy_Osc_InputError(ToolInputError):
     def __init__(self, message, eChar=None, *args):
         self.message = "LeCroy WP740Zi Wrong Input: %s" %(message) 
 
         super().__init__(message, eChar, *args)
 
         
-class Keithley_707A_Error(ToolInputError):
+class Keithley_707A_Error(ToolError):
     def __init__(self, message, eChar=None, *args):
         self.message = "Keithley_707A: %s" %(message) 
 
         super().__init__(message, eChar, *args)
 
-class Keithley_707A_InputError(InputError):
+class Keithley_707A_InputError(ToolInputError):
     def __init__(self, message, eChar=None, *args):
         self.message = "Keithley_707A Wrong Input: %s" %(message) 
 
         super().__init__(message, eChar, *args)
         
-class B1110A_Error(ToolInputError):
+class B1110A_Error(ToolError):
     def __init__(self, message, eChar=None, *args):
         self.message = "B1110A: %s" %(message) 
 
         super().__init__(message, eChar, *args)
 
-class B1110A_InputError(InputError):
+class B1110A_InputError(ToolInputError):
     def __init__(self, message, eChar=None, *args):
         self.message = "B1110A Wrong Input: %s" %(message) 
 

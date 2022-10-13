@@ -149,7 +149,6 @@ class Value:
                     self.FailSpec = True
 
             else:
-                print("input", InputValue)
                 self.size = 1
                 self.average = InputValue
                 self.averageSq = np.square(InputValue)
