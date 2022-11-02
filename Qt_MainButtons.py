@@ -109,7 +109,7 @@ class MainButtons(QtWidgets.QWidget):
         PercCompl = self.Complete*100
         if self.Configuration.getValue("MultipleDev"):
             PercCompl = PercCompl/self.Configuration.getNumOfDevices()
-        if not self.Configuration.getCurrentDie():
+        if self.Configuration.getMultipleDies():
             PercCompl = PercCompl/self.Configuration.getNumOfDies()
         self.ProgressBar.setValue(PercCompl)
 

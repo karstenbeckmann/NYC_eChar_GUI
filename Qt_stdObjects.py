@@ -480,7 +480,6 @@ class Checkbutton(QtWidgets.QCheckBox):
        
         self.MainGI.addWidgetVariables(self, self.valueName)
         self.clicked.connect(self.callFunc)
-
     
     def getVariable(self):
         return self.isChecked()

@@ -1,10 +1,10 @@
-WaferID,2570013VSEA0
+WaferID,2226BRLI002.000
 GPIBB1500,
 GPIBProbeStation,
 GPIBMatrix,
-Mainfolder,C:/Users/Ryan/Documents
-Subfolder,Forming
-DeviceName,1R
+Mainfolder,C:\Users\Probe Station\Documents
+Subfolder,Test
+DeviceName,S3_1R_5k
 FailingConditions,
 DieSizeX,12.0
 DieSizeY,15.0
@@ -42,7 +42,7 @@ MaxErrorLogFileSize,1000000000.0
 CurrentMeasurementType,Full Wafer
 Prober,None
 Matrix,None
-ErrorList,['None is not a Keysight Mainframe (i.e. B1500A)', "Config Get: Variable '$ToolRank$_GPIB0::17::INSTR' does not exist in Configuration.", "Config Get: Variable '$ToolRank$_GPIB0::17::INSTR' does not exist in Configuration.", "Config Get: Variable '$ADC$_$HR$_$N$' does not exist in Configuration.", "Config Get: Variable '$ADC$_None_$HR$_$Mode$' does not exist in Configuration.", "Config Get: Variable '$ADC$_$HS$_$N$' does not exist in Configuration.", "Config Get: Variable '$ADC$_None_$HS$_$Mode$' does not exist in Configuration.", "Config Get: Variable '$ADC$_GPIB0::17::INSTR_$SMU3$' does not exist in Configuration.", "Config Get: Variable '$ADC$_GPIB0::17::INSTR_$SMU2$' does not exist in Configuration.", "Config Get: Variable '$ADC$_GPIB0::17::INSTR_$SMU1$' does not exist in Configuration.", "Config Get: Variable '$ADC$_$HR$_$N$' does not exist in Configuration.", "Config Get: Variable '$ADC$_$HS$_$N$' does not exist in Configuration.", 'Spec File: -- does not exist.', 'WGFMU WGFMUUseGUI state could not be loaded', 'ConfigurationFile: Die File does not exist.', 'ConfigurationFile: Die File does not exist.', 'ConfigurationFile: Die File does not exist.', "Echar - getTools - PulseGenerator - 'NoneType' object is not subscriptable", 'Echar - getTools - PG 81110A - list index out of range', "Echar - getTools - Oscilloscope - 'NoneType' object is not subscriptable"]
+ErrorList,['None is not a Keysight Mainframe (i.e. B1500A)', "Config Get: Variable '$ToolRank$_GPIB0::17::INSTR' does not exist in Configuration.", "Config Get: Variable '$ToolRank$_GPIB0::17::INSTR' does not exist in Configuration.", "Config Get: Variable '$ADC$_$HR$_$N$' does not exist in Configuration.", "Config Get: Variable '$ADC$_None_$HR$_$Mode$' does not exist in Configuration.", "Config Get: Variable '$ADC$_$HS$_$N$' does not exist in Configuration.", "Config Get: Variable '$ADC$_None_$HS$_$Mode$' does not exist in Configuration.", "Config Get: Variable '$ADC$_GPIB0::17::INSTR_$SMU3$' does not exist in Configuration.", "Config Get: Variable '$ADC$_GPIB0::17::INSTR_$SMU2$' does not exist in Configuration.", "Config Get: Variable '$ADC$_GPIB0::17::INSTR_$SMU1$' does not exist in Configuration.", "Config Get: Variable '$ADC$_$HR$_$N$' does not exist in Configuration.", "Config Get: Variable '$ADC$_$HS$_$N$' does not exist in Configuration.", 'Spec File: -- does not exist.', 'WGFMU WGFMUUseGUI state could not be loaded', 'ConfigurationFile: Die File does not exist.', 'ConfigurationFile: Die File does not exist.', 'ConfigurationFile: Die File does not exist.', 'ConfigurationFile: Mainfolder does not exist.', "Echar - getTools - PulseGenerator - 'NoneType' object is not subscriptable", 'Echar - getTools - PG 81110A - list index out of range', "Echar - getTools - Oscilloscope - 'NoneType' object is not subscriptable"]
 LogList,[]
 WGFMUUseGUI,True
 InititalMeasurement,1RForming

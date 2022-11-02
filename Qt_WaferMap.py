@@ -140,9 +140,9 @@ class WaferMap(stdObj.stdFrameGrid):
         self.addWidget(self.LogFrame, row=row+1, column=1, columnspan=5, rowspan=5)
 
         row = row + 1
-        self.__CurrentDie = stdObj.Checkbutton(self, MainGI, "CurrentDie", command=self.CheckBoxCurDie, alignment=QtCore.Qt.AlignLeft)
-        self.addWidget(self.__CurrentDie, row=row, column=col+2, columnspan=1, alignment=QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
-        self.TxCurDie=stdObj.Label("Current Die:", self)
+        self.__MultipleDies = stdObj.Checkbutton(self, MainGI, "MultipleDies", command=self.CheckBoxMultDies, alignment=QtCore.Qt.AlignLeft)
+        self.addWidget(self.__MultipleDies, row=row, column=col+2, columnspan=1, alignment=QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
+        self.TxCurDie=stdObj.Label("Multiple Dies:", self)
         self.addWidget(self.TxCurDie, row=row, column=col, columnspan=2, alignment=QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         row = row + 1
 
@@ -179,7 +179,7 @@ class WaferMap(stdObj.stdFrameGrid):
         row = row + 1
 
         self.CheckBoxMultDev()
-        self.CheckBoxCurDie()
+        self.CheckBoxMultDies()
         self.CheckBoxMatrix()
         self.updateCanvas()
 
@@ -261,17 +261,17 @@ class WaferMap(stdObj.stdFrameGrid):
                 self.__YPitch.setEnabled(True)
                 self.Configuration.setValue("MultipleDev",True)
 
-    def CheckBoxCurDie(self):
-        if self.__CurrentDie.getVariable():
+    def CheckBoxMultDies(self):
+        if self.__MultipleDies.getVariable():
             self.__DieFileButton.setEnabled(False)
             self.__DieMaps.setEnabled(False)
             self.__DieMapUpdate.setEnabled(False)
-            self.Configuration.setCurrentDie(True)
+            self.Configuration.setMultipleDies(True)
         else:
             self.__DieFileButton.setEnabled(True)
             self.__DieMaps.setEnabled(True)
             self.__DieMapUpdate.setEnabled(True)
-            self.Configuration.setCurrentDie(False)
+            self.Configuration.setMultipleDies(False)
 
     def disableMatrix(self):
         self.__UseMatrix.setEnabled(False)
@@ -286,12 +286,12 @@ class WaferMap(stdObj.stdFrameGrid):
             self.__NumOfYDev.setEnabled(True)
             self.__XPitch.setEnabled(True)
             self.__YPitch.setEnabled(True)
-        self.__CurrentDie.setEnabled(True)
-        if self.__CurrentDie.getVariable() == True:
+        self.__MultipleDies.setEnabled(True)
+        if self.__MultipleDies.getVariable() == True:
             self.__DieFileButton.setEnabled(True)
             self.__DieMaps.setEnabled(True)
             self.__DieMapUpdate.setEnabled(True)
-            self.Configuration.setCurrentDie(True)
+            self.Configuration.setMultipleDies(True)
 
     def disableProber(self):
 
@@ -301,11 +301,11 @@ class WaferMap(stdObj.stdFrameGrid):
         self.__YPitch.setEnabled(False)
         self.__MulipleDevices.setEnabled(False)
         self.Configuration.setMultipleDev(False)
-        self.__CurrentDie.setEnabled(False)
+        self.__MultipleDies.setEnabled(False)
         self.__DieFileButton.setEnabled(False)
         self.__DieMaps.setEnabled(False)
         self.__DieMapUpdate.setEnabled(False)
-        self.Configuration.setCurrentDie(False)
+        self.Configuration.setMultipleDies(False)
     
     def CallDieMaps(self, Map):
         

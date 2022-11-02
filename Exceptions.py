@@ -76,7 +76,7 @@ class B1530A_InputError(ToolInputError):
         
 class B1530A_SessionExistsError(ToolError):
     def __init__(self, message="", eChar=None, *args):
-        self.message = "B1530A A session has already been opened. %s" (message)
+        self.message = "B1530A A session has already been opened. %s" %(message)
 
         super().__init__(message, eChar, *args)
         

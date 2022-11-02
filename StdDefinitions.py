@@ -74,7 +74,7 @@ def MesurementExecution(deviceCharacterization, eChar, Configuration, threads, G
 
 
         if Prober == None: 
-            Configuration.setCurrentDie(True)
+            Configuration.setMultipleDies(False)
             Configuration.setMultipleDev(False)
             line = "No Prober Available"
         else:
@@ -171,7 +171,7 @@ def MesurementExecutionPS(deviceCharacterization, eChar, Configuration, threads,
         ProStat = ProberWrapper()
         initPos = [0,0]
         Configuration.setMultipleDev(False)
-        Configuration.setCurrentDie(True)
+        Configuration.setMultipleDies(False)
     else: 
         ProStat = Instruments.getProberInstrument()
         initPos = ProStat.ReadChuckPosition("X","C")
@@ -290,7 +290,7 @@ def MesurementExecutionPS(deviceCharacterization, eChar, Configuration, threads,
         eChar.ExternalHeader.append('')
     n=0
 
-    CurrentDie = Configuration.getCurrentDie()
+    MultipleDies = Configuration.getMultipleDies()
     
     
     die0 = []
@@ -298,7 +298,7 @@ def MesurementExecutionPS(deviceCharacterization, eChar, Configuration, threads,
         die0.append(int(round(float(x)+Configuration.getCenterLocation()[n])))
         n+=1
 
-    if CurrentDie:
+    if not MultipleDies:
         lenDies = 1
         dies = [die0]
 
@@ -306,7 +306,7 @@ def MesurementExecutionPS(deviceCharacterization, eChar, Configuration, threads,
     first = True
     
     ### only create Batches for the Die if more than one wafer gets measured
-    if not CurrentDie:
+    if MultipleDies:
         dieBatchPos = dh.batch("DiePositionSummary")
         dieBatchComp = dh.batch("DieComplete")
         dieBatchSubMeas = dh.batch("DieMeasSummary")
@@ -331,7 +331,7 @@ def MesurementExecutionPS(deviceCharacterization, eChar, Configuration, threads,
         
         eChar.writeLog("Die: %s will be measured" %(dies[n]))
                 
-        if not CurrentDie:
+        if MultipleDies:
             
             if n == 0:
                 move = indexMove([die0[0],die0[1]],dies[n])
@@ -605,7 +605,7 @@ def MesurementExecutionPS(deviceCharacterization, eChar, Configuration, threads,
             except UnboundLocalError:
                 None
         
-        if not CurrentDie:
+        if MultipleDies:
             try:
                 dieBatchPos.addRow(BatchPos.getCompresedRow(True))
                 dieBatchComp.addRows(BatchComp.getRows())
@@ -627,7 +627,7 @@ def MesurementExecutionPS(deviceCharacterization, eChar, Configuration, threads,
         stop = eChar.Stop.get()
 
     #ProStat.MoveChuckMicron(-initPosMic[0],-initPosMic[1],"C")
-    if not CurrentDie:
+    if MultipleDies:
 
         threads.put(dieBatchPos.WriteBatch(eChar, Max=True, Min=True))
         threads.put(dieBatchComp.WriteBatch(eChar, Max=True, Min=True))
@@ -1360,7 +1360,7 @@ def CreateExternalHeader(eChar, WaferSize, XPitch, YPitch, NumXdevices, NumYdevi
         eChar.ExternalHeader.append('ProbeStation,Die.FileName,%s' %(DieFile))
     else:
         if diePat == 0:
-            eChar.ExternalHeader.append('ProbeStation,Die.Map,CurrentDie')
+            eChar.ExternalHeader.append('ProbeStation,Die.Map,MultipleDies')
         elif diePat == 1:
             eChar.ExternalHeader.append('ProbeStation,Die.Map,All')
         elif diePat == 2: 

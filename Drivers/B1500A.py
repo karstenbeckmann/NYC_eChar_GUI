@@ -724,6 +724,8 @@ class Agilent_B1500A():
         #if np.any(VComp) == 0:
         #    raise B1500A_InputError("Voltage Compliance can't be 0")
         
+        print(RV, VR)
+
         for element in IComp:
             if VorI[n]:
                 if RV[n] == VR[0]:
@@ -778,11 +780,12 @@ class Agilent_B1500A():
                     else:
                         raise B1500A_InputError(">100V not supported with a Current Measurement Range of %s." %(self.RVlabel[RV[n]]))
                 if RV[n] == VR[7] or RV[n] == VR[14]:
-                    if np.absolute(Val[n]) <= 200:
-                        if np.absolute(int(element)) != 2e-3:
+                    if np.absolute(Val[n]) < 200:
+                        if np.absolute(int(element)) > 100e-3:
                             raise B1500A_InputError("Current Compliance for Voltage range %d in Channel %d is not 2e-3 A." %(RV[n], Chns[n]))
                     else:
                         raise B1500A_InputError("Incorrect Voltage Compliance Used (200V Output range won't work)!")
+                    
             n+=1
 
         n=0

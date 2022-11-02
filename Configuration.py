@@ -60,7 +60,7 @@ class Configuration:
         self.SpecCode = ""
         self.DoYield = False
         self.MeasFile = None
-        self.CurrentDie = True
+        self.MultipleDies = False
         self.MatrixConfiguration = None
         self.MatrixFile = ""
         self.UseMatrix = False
@@ -119,11 +119,11 @@ class Configuration:
                     self.DieSizeY = float(wp[key])
                 except:
                     self.ErrorQueue.put("Die Size Y is not of type float.")
-            if key == "CurrentDie":
+            if key == "MultipleDies":
                 if value.strip().lower() == "true":
-                    self.CurrentDie = True
+                    self.MultipleDies = True
                 else:
-                    self.CurrentDie = False
+                    self.MultipleDies = False
             if key == "MultipleDev":
                 if value.strip().lower() == "true":
                     self.MultipleDev = True
@@ -435,8 +435,8 @@ class Configuration:
     def getMultipleDev(self):
         return self.MultipleDev
 
-    def getCurrentDie(self):
-        return self.CurrentDie
+    def getMultipleDies(self):
+        return self.MultipleDies
 
     def getMeasurementType(self):
         return self.CurrentMeasurementType
@@ -466,8 +466,8 @@ class Configuration:
     def setMultipleDev(self, MultipleDev):
         self.MultipleDev = MultipleDev 
     
-    def setCurrentDie(self, CurrentDie):
-        self.CurrentDie = CurrentDie
+    def setMultipleDies(self, MultipleDies):
+        self.MultipleDies = MultipleDies
 
     def getMatrixConfiguration(self):
         return self.MatrixConfiguration

@@ -573,7 +573,7 @@ class ECharacterization:
         if not self.Subfolder == "":
             folder = "%s/%s" %(folder, self.Subfolder)
             
-        if self.WaferChar and withDie and not self.Configuration.getCurrentDie():
+        if self.WaferChar and withDie and self.Configuration.getMultipleDies():
             folder = "%s/DieX%sY%s" %(folder, str(self.DieX), str(self.DieY))
 
         return folder
