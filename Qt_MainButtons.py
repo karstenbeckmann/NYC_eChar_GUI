@@ -89,7 +89,7 @@ class MainButtons(QtWidgets.QWidget):
         self.__StartButton.setAutoFillBackground(True)
         self.__StartButton.setPalette(pal)
 
-    def Update(self):
+    def update(self):
         if self.MainGI.isRunning():
             self.__MeasurementType.setEnabled(False)
             self.__StartButton.setEnabled(False)
@@ -200,7 +200,7 @@ class sideButtons(QtWidgets.QWidget):
         self.__StatButton = stdObj.PushButton("S\nt\na\nt\ni\ns\nt\ni\nc\ns", self, minimumWidth=1, command=self.StatisticsButton)
         self.layout.addWidget(self.__StatButton)
         
-        self.__ProbeButton = stdObj.PushButton("P\nr\no\nb\ne\n \nS\nt\na\nt\ni\no\nn\n", self, minimumWidth=1, command=self.ProbeStationButton)
+        self.__ProbeButton = stdObj.PushButton("P\nr\no\nb\ne\nr", self, minimumWidth=1, command=self.ProbeStationButton)
         self.layout.addWidget(self.__ProbeButton)
         self.__ProbeButton.hide()
         
@@ -214,4 +214,14 @@ class sideButtons(QtWidgets.QWidget):
         None
 
     def ProbeStationButton(self):
-        None
+        if self.MainGI.ProberWindow.isVisible():
+            self.MainGI.ProberWindow.hide()
+        else:
+            self.MainGI.ProberWindow.show()
+            self.MainGI.setProberWindowPosition()
+
+    def HideProbeButton(self):
+        self.__ProbeButton.hide()
+
+    def ShowProbeButton(self):
+        self.__ProbeButton.show()

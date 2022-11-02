@@ -191,8 +191,6 @@ class ProberWindow(QtWidgets.QMainWindow):
         self.savePosition()
         super().hide()
 
-
-
     def ChangeTempReturn(self):
         try:
             self.setTemp = int(self.TempEnt.text())
@@ -208,7 +206,6 @@ class ProberWindow(QtWidgets.QMainWindow):
         self.moveIndexX = self.MoveXIndexWid.getVariable()
         self.moveIndexY = self.MoveYIndexWid.getVariable()
         self.moveVel = self.VelocityEntryWid.getVariable()
-
 
     def writeMoveX(self):
         self.moveX = self.MoveXWid.getVariable()
@@ -261,11 +258,6 @@ class ProberWindow(QtWidgets.QMainWindow):
         x = self.moveX
         y = 0
         v = self.moveVel
-
-        if self.chuckScope:
-            cmd = "MoveChuck %s %s R Y %s" %(x, y, v)
-        else:
-            cmd = "MoveScope %s %s R Y %s" %(x, y, v)
 
         if self.chuckScope:
             cmd = "MoveChuck"
@@ -399,7 +391,6 @@ class ProberWindow(QtWidgets.QMainWindow):
                 self.scopeStatus = self.Instruments.getProberScopeStatus()
                 for entry in self.updList:
                     entry.update()
-
         else:
             self.setEnabled(False)
 

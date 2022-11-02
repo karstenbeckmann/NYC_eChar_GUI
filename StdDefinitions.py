@@ -1874,3 +1874,24 @@ def equalizeArray(data):
 
     return data
 
+def getIntegerToBinaryArray(integer, bits, high=True, low=False):
+
+    try:
+        integer = int(integer)
+    except ValueError:
+        return None
+
+    binary = bin(integer)[2:]
+    ret = []
+
+    for n in range(bits):
+        try:
+            b = binary[-n-1]
+        except IndexError:
+            b = 0
+        if int(b) == 0:
+            ret.append(low)
+        else:
+            ret.append(high)
+            
+    return ret

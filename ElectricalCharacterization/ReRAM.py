@@ -13,9 +13,9 @@ import queue as qu
 import copy as cp
 
 
-def formingDC(eChar, SweepSMU, GNDSMU, GateSMU, Vform, Vgate, steps, Compl, GateCompl, hold, delay, DCSMUs, Vdc, DCcompl):
+def FormingDCE5274A(eChar, SweepSMU, GNDSMU, GateSMU, Vform, Vgate, steps, Compl, GateCompl, hold, delay, DCSMUs, Vdc, DCcompl):
 
-    Typ = 'forming-DC'
+    Typ = 'Forming-DC'
 
     Chns = [SweepSMU, GNDSMU, GateSMU]
     Chns.extend(DCSMUs)
@@ -86,14 +86,10 @@ def formingDC(eChar, SweepSMU, GNDSMU, GateSMU, Vform, Vgate, steps, Compl, Gate
         data.append(line)
 
     eChar.writeDataToFile(header, data, Typ=Typ, startCyc=0, endCyc=1)
-           
-    #resis = []
-    #resis.append(dh.Value(eChar, calcRes, name, DoYield=eChar.DoYield, Unit='ohm'))
 
-    #row = dh.Row(resis,eChar.DieX,eChar.DieY,eChar.DevX,eChar.DevY,Typ)
-    #eChar.StatOutValues.addRow(row)
+
     
-def setDC(eChar, SweepSMU, GNDSMU, GateSMU, Vset, Vgate, steps, Compl, GateCompl, hold, delay, DCSMUs, Vdc, DCcompl):
+def SetDCE5274A(eChar, SweepSMU, GNDSMU, GateSMU, Vset, Vgate, steps, Compl, GateCompl, hold, delay, DCSMUs, Vdc, DCcompl):
 
     Typ = 'set-DC'
     
@@ -174,7 +170,7 @@ def setDC(eChar, SweepSMU, GNDSMU, GateSMU, Vset, Vgate, steps, Compl, GateCompl
     #row = dh.Row(resis,eChar.DieX,eChar.DieY,eChar.DevX,eChar.DevY,Typ)
     #eChar.StatOutValues.addRow(row)
 
-def resetDC(eChar, SweepSMU, GNDSMU, GateSMU, Vreset, Vgate, steps, Compl, GateCompl, hold, delay, DCSMUs, Vdc, DCcompl):
+def ResetDCE5274A(eChar, SweepSMU, GNDSMU, GateSMU, Vreset, Vgate, steps, Compl, GateCompl, hold, delay, DCSMUs, Vdc, DCcompl):
 
     Typ = 'reset-DC'
     
@@ -250,13 +246,240 @@ def resetDC(eChar, SweepSMU, GNDSMU, GateSMU, Vreset, Vgate, steps, Compl, GateC
 
     eChar.writeDataToFile(header, data, Typ=Typ, startCyc=CycStart)
            
+def FormingDC(eChar, SweepSMU, GNDSMU, GateSMU, Vform, Vgate, steps, Compl, GateCompl, hold, delay, DCSMUs, Vdc, DCcompl):
+
+    Typ = 'Forming-DC'
+
+    Chns = [SweepSMU, GNDSMU, GateSMU]
+    Chns.extend(DCSMUs)
+    VorI = [True, True, True]
+    VorI.extend([True]*len(DCSMUs))
+    mode = 3
+
+    Val = [0,0,Vgate]
+    Val.extend(Vdc)
+
+    IComp = []
+    VComp = []
+
+    step = (Vform)/(steps-1)
+
+    if VorI:
+        Xlab = "Voltage (V)"
+        Ylab = "Current (A)"
+    else:
+        Xlab = "Current (A)"
+        Ylab = "Voltage (V)"
+
+    IComp = [Compl, Compl, GateCompl]
+    VComp = [None, None, None]
+    
+    IComp.extend(DCcompl)
+    VComp.extend([None]*len(DCcompl))
+        
+    out = eChar.B1500A.StaircaseSweepMeasurement(Chns, VorI, SweepSMU, 0, Vform, steps, hold, delay, Val, VComp, IComp, Mmode=mode)
+    
+    # fix for first value 1e101
+    out['Data'][0][0] = 1e-12
+    out['Data'][0][-1] = 1e-12
+
+    Plot = [out['Data'][-1]]
+    Plot.extend([out['Data'][0]])
+
+    eChar.plotIVData({"Add": False, 'Xaxis': True, 'Yscale': 'lin',  "Traces": Plot, 'Xlabel': Xlab, "Ylabel": Ylab, 'Title': "Forming", "MeasurementType": Typ, "ValueName": 'Forming'})
+            
+    try: 
+
+        header = out['Header']
+        
+        header.insert(0,"TestParameter,Measurement.Type,%s" %(Typ))
+        header.append("Measurement,Device,%s" %(eChar.device))
+        header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
+        
+        DataName = "DataName, Vform, Iform, Ignd, Igate"
+        Unit = "Units, V, A, A, A" 
+        
+        Dimension = "Dimension, %d, %d, %d, %d" %(len(out['Data'][-1]), len(out['Data'][0]), len(out['Data'][0]), len(out['Data'][0]))
+
+        header.append(DataName)
+        header.append(Unit)
+        header.append(Dimension)
+
+    except UnboundLocalError: 
+        None
+
+    data = []
+    
+    for n in range(len(out['Data'][0])):
+        line = "DataValue, %e" %(out['Data'][-1][n])
+
+        for m in range(len(out['Data'])-1):
+            line = "%s, %e" %(line, out['Data'][m][n])
+        
+        data.append(line)
+
+    eChar.writeDataToFile(header, data, Typ=Typ, startCyc=0, endCyc=1)
+
+
+    
+def SetDC(eChar, SweepSMU, GNDSMU, GateSMU, Vset, Vgate, steps, Compl, GateCompl, hold, delay, DCSMUs, Vdc, DCcompl):
+
+    Typ = 'set-DC'
+    
+    Chns = [SweepSMU, GNDSMU, GateSMU]
+    VorI = [True, True, True]
+    Val = [0,0,Vgate]
+    if DCSMUs != None:
+        Chns.extend(DCSMUs)
+        VorI.extend([True]*len(DCSMUs))
+        Val.extend(Vdc)
+    CycStart = eChar.curCycle
+    mode = 3
+
+    IComp = []
+    VComp = []
+
+    step = (Vset)/(steps-1)
+
+    if VorI:
+        Xlab = "Voltage (V)"
+        Ylab = "Current (A)"
+    else:
+        Xlab = "Current (A)"
+        Ylab = "Voltage (V)"
+
+    IComp = [Compl, Compl, GateCompl]
+    VComp = [None, None, None]
+    
+    IComp.extend(DCcompl)
+    VComp.extend([None]*len(DCcompl))
+        
+    out = eChar.B1500A.StaircaseSweepMeasurement(Chns, VorI, SweepSMU, 0, Vset, steps, hold, delay, Val, VComp, IComp, Mmode=mode)
+        
+    # fix for first value 1e101
+    out['Data'][0][0] = 1e-12
+    out['Data'][0][-1] = 1e-12
+    
+    Plot = [out['Data'][-1]]
+    Plot.extend([out['Data'][0]])
+
+    eChar.plotIVData({"Add": False, 'Xaxis': True, 'Yscale': 'lin',  "Traces": Plot, 'Xlabel': Xlab, "Ylabel": Ylab, 'Title': "Set", "MeasurementType": Typ, "ValueName": 'Set'})
+            
+    try: 
+
+        header = out['Header']
+        
+        header.insert(0,"TestParameter,Measurement.Type,%s" %(Typ))
+        header.append("Measurement,Device,%s" %(eChar.device))
+        header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
+        
+        DataName = "DataName, Vreset, Ireset, Ignd, Igate"
+        Unit = "Units, V, A, A, A" 
+        
+        Dimension = "Dimension, %d, %d, %d, %d" %(len(out['Data'][-1]), len(out['Data'][0]), len(out['Data'][0]), len(out['Data'][0]))
+
+        header.append(DataName)
+        header.append(Unit)
+        header.append(Dimension)
+
+    except UnboundLocalError: 
+        None
+
+    data = []
+    
+    for n in range(len(out['Data'][0])):
+        line = "DataValue, %e" %(out['Data'][-1][n])
+
+        for m in range(len(out['Data'])-1):
+            line = "%s, %e" %(line, out['Data'][m][n])
+        
+        data.append(line)
+
+    eChar.writeDataToFile(header, data, Typ=Typ, startCyc=CycStart, endCyc=eChar.curCycle-1)
+           
     #resis = []
     #resis.append(dh.Value(eChar, calcRes, name, DoYield=eChar.DoYield, Unit='ohm'))
 
     #row = dh.Row(resis,eChar.DieX,eChar.DieY,eChar.DevX,eChar.DevY,Typ)
     #eChar.StatOutValues.addRow(row)
+
+def ResetDC(eChar, SweepSMU, GNDSMU, GateSMU, Vreset, Vgate, steps, Compl, GateCompl, hold, delay, DCSMUs, Vdc, DCcompl):
+
+    Typ = 'reset-DC'
+    
+    Chns = [SweepSMU, GNDSMU, GateSMU]
+    VorI = [True, True, True]
+    Val = [0,0,Vgate]
+    if DCSMUs != None:
+        Chns.extend(DCSMUs)
+        VorI.extend([True]*len(DCSMUs))
+        Val.extend(Vdc)
+    CycStart = eChar.curCycle
+    mode = 3
+
+    IComp = []
+    VComp = []
+
+    step = (Vreset)/(steps-1)
+
+    if VorI:
+        Xlab = "Voltage (V)"
+        Ylab = "Current (A)"
+    else:
+        Xlab = "Current (A)"
+        Ylab = "Voltage (V)"
+
+    IComp = [Compl, Compl, GateCompl]
+    VComp = [None, None, None]
+    
+    IComp.extend(DCcompl)
+    VComp.extend([None]*len(DCcompl))
+        
+    out = eChar.B1500A.StaircaseSweepMeasurement(Chns, VorI, SweepSMU, 0, Vreset, steps, hold, delay, Val, VComp, IComp, Mmode=mode)
+        
+    # fix for first value 1e101
+    out['Data'][0][0] = 1e-12
+    out['Data'][0][-1] = 1e-12
     
 
+    Plot = [out['Data'][-1]]
+    Plot.extend([out['Data'][0]])
+
+    eChar.plotIVData({"Add": False, 'Xaxis': True, 'Yscale': 'lin',  "Traces": Plot, 'Xlabel': Xlab, "Ylabel": Ylab, 'Title': "Reset", "MeasurementType": Typ, "ValueName": 'Reset'})
+            
+    try: 
+
+        header = out['Header']
+        
+        header.insert(0,"TestParameter,Measurement.Type,%s" %(Typ))
+        header.append("Measurement,Device,%s" %(eChar.device))
+        header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
+        
+        DataName = "DataName, Vreset, Ireset, Ignd, Igate"
+        Unit = "Units, V, A, A, A" 
+        
+        Dimension = "Dimension, %d, %d, %d, %d" %(len(out['Data'][-1]), len(out['Data'][0]), len(out['Data'][0]), len(out['Data'][0]))
+
+        header.append(DataName)
+        header.append(Unit)
+        header.append(Dimension)
+
+    except UnboundLocalError: 
+        None
+
+    data = []
+    
+    for n in range(len(out['Data'][0])):
+        line = "DataValue, %e" %(out['Data'][-1][n])
+
+        for m in range(len(out['Data'])-1):
+            line = "%s, %e" %(line, out['Data'][m][n])
+        
+        data.append(line)
+
+    eChar.writeDataToFile(header, data, Typ=Typ, startCyc=CycStart)
+           
+           
 def PulseRead(eChar, PulseChn, GroundChn, Vread, delay, tread, tbase, WriteHeader=True):
     """
     Recommendation: Pulsed Forming, forming times should be in the ms regime

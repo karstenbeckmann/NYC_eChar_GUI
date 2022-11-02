@@ -117,7 +117,12 @@ class FormFactor:
         return ret
 
     def getStatus(self):
-        self.instQuery("STB?")
+        ret = self.instQuery("STB?")
+        return ret
+
+    def read_stb(self):
+        ret = self.getStatus()
+        return ret
         
     #Chuck control
     ##############################################################
@@ -330,6 +335,11 @@ class FormFactor:
     def StopHeatChuck(self):
         self.instQuery("StopHeatChuck")
 
+    #Read the Scope Status.
+    def ReadScopeStatus(self):
+        ret = self.instQuery("ReadScopeStatus")
+        ret = ret.split(' ')[1:]
+        return ret
 
     ############################################
     ############## check Values:################ 
@@ -456,8 +466,12 @@ class Cascade_S300:
         return ret
 
     def getStatus(self):
-        self.instQuery("STB?")
-    
+        ret = self.instQuery("STB?")
+        return ret
+
+    def read_stb(self):
+        ret = self.getStatus()
+        return ret
 
     def GetUnit(self):
         out = self.instQuery(":set:unit? %d" %(self.deviceID))
@@ -795,7 +809,11 @@ class Cascade_S300:
         if 0.1 < temp > 9.9:
             raise ProbeStation_InputError("The temperature window must be a float value between 0.1 and 9.9C.")
         
-
+    #Read the Scope Status.
+    def ReadScopeStatus(self):
+        ret = self.instQuery("ReadScopeStatus")
+        ret = ret.split(' ')[1:]
+        return ret
         
 class SUSS_PA300(FormFactor): 
 

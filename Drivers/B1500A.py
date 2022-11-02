@@ -723,8 +723,6 @@ class Agilent_B1500A():
         #    raise B1500A_InputError("Current Compliance can't be 0")
         #if np.any(VComp) == 0:
         #    raise B1500A_InputError("Voltage Compliance can't be 0")
-        
-        print(RV, VR)
 
         for element in IComp:
             if VorI[n]:
@@ -860,7 +858,7 @@ class Agilent_B1500A():
                     else:
                         raise B1500A_InputError(">115e-3A not supported with a Current Measurement Range of %s " %(self.RIlabel[RI[n]]))
                 if RI[n] == IR[10] or RI[n] == IR[20]:
-                    if np.absolute(Val[n]) <= 200e-3:
+                    if np.absolute(Val[n]) > 200:
                         if np.absolute(int(element)) != 100000:
                             raise B1500A_InputError("Voltage Compliance for Current range %d in Channel %d is not 100000V." %(RI[n], Chns[n]))
                     else:

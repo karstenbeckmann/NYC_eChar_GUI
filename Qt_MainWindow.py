@@ -36,6 +36,7 @@ import Qt_stdObjects as stdObj
 import Qt_MeasTab as Qt_MT
 import Qt_Config as Qt_CF
 import Qt_ResultWindow as Qt_RW
+import Qt_ProberWindow as Qt_PW
 import Qt_Tables as Qt_TB
 import Qt_B1500A as Qt_B1500A
 import Qt_E5274A as Qt_E5274A
@@ -109,6 +110,7 @@ class MainUI(QtWidgets.QMainWindow):
             size = ""
         
         self.DateFolder = ""
+        self.iconPath = os.path.join(os.getcwd(), 'etc')
         self.loader = "etc/Pacman-1s-200px.gif"
 
         #self.eChar = ElectricalCharacterization
@@ -166,7 +168,10 @@ class MainUI(QtWidgets.QMainWindow):
             self.QFont.setPointSize(10)
             self.QMargin = [5,1,5,1]
             self.QSpacing = 2
-            
+        
+        defColor = self.palette().color(QtGui.QPalette.Background)
+        self.defColor = [defColor.red(), defColor.green(), defColor.blue()]
+
         self.QFont.setStyleName("Helvetica")
         self.setFont(self.QFont)
         #self.Qpalette.setColor(QtGui.QPalette.Text, self.LightBlue)
@@ -278,6 +283,11 @@ class MainUI(QtWidgets.QMainWindow):
         self.setResultWindowPosition()
         self.ResultWindow.hide()
 
+        self.ProberWindowWidth = self.__widthTab/2
+        self.ProberWindowHeight = self.__height/2
+        self.ProberWindow = Qt_PW.ProberWindow(self, self.QFont, self.QMargin, self.QSpacing, self.ProberWindowWidth, self.ProberWindowHeight, self.icon)
+        self.ProberWindow.hide()
+
         self.tabs.addTab(self.MatrixTable, "Matrix")
         
         self.tabs.addTab(self.SpecTable, "Specs")
@@ -296,6 +306,38 @@ class MainUI(QtWidgets.QMainWindow):
         self.Configuration.setValue("MainWindowMon", QtWidgets.QDesktopWidget().screenNumber(self))
 
         self.ResultWindow.savePosition()
+
+    def setProberWindowPosition(self):
+
+        configName = "ProberWindow"
+        window = self.ProberWindow
+        posX = self.Configuration.getValue("%sX" %(configName))
+        posY = self.Configuration.getValue("%sY" %(configName))
+        screen = self.Configuration.getValue("%sMon" %(configName))
+        
+        sc = QtWidgets.QDesktopWidget().screenCount()
+        if screen == None or screen >= sc:
+            if sc > 1: 
+                screen = 1
+            else: 
+                screen = 0
+        monSize = QtWidgets.QDesktopWidget().availableGeometry(screen).size()
+        if posX == None:
+            if sc > 1:
+                posX = 0
+            else:
+                posX =  self.windowHandle().width()
+            if posX+self.__width > monSize.width():
+                posX = monSize.width()-self.__width
+        if posY == None:
+            if sc > 1:
+                posY = 0
+            else:
+                posY = 0
+        
+        window.move(posX, posY)
+        scList = QtGui.QGuiApplication.screens()
+        window.windowHandle().setScreen(scList[screen])
 
     def setResultWindowPosition(self):
 
@@ -485,7 +527,6 @@ class MainUI(QtWidgets.QMainWindow):
     def getWindowWidth(self):
         return self.__width
 
-        
     def getTabWidth(self):
         return self.__widthTab
 
@@ -799,14 +840,77 @@ class MainUI(QtWidgets.QMainWindow):
         except AttributeError as e:
             self.__ErrorQu.put("Not able to restart Result Handling. %s" %(e))
 
-        self.MainButtons.Update()
+        if self.Instruments.getProberInstrument() == None:
+            self.ProberWindow.hide()
+            self.SideButtons.HideProbeButton()
+        else:
+            self.SideButtons.ShowProbeButton()
+
+        self.MainButtons.update()
         self.WaferMapTab.update()
         self.ConfigTab.update()
         self.B1500Tab.update()
         self.E5274ATab.update()
         self.ResultWindow.update()
+        self.ProberWindow.update()
         
         self.timer.start()
+
+    def getQColor(self, color):
+
+        color = color.lower()
+        
+        '''
+        Alternative color scheme:
+        colors['white'] = QtGui.QColor(255,255,255,255)
+        colors['blue'] = QtGui.QColor("#1e376c")
+        colors['lightblue'] = QtGui.QColor("#16b6c0")
+        colors['grey'] = QtGui.QColor(132,134,135)
+        colors['red'] = QtGui.QColor("#e75049")
+        colors['yellow'] = QtGui.QColor("#f0b000")
+        colors['orange'] = QtGui.QColor("#ec8a3e")
+        colors['pink'] = QtGui.QColor(236,9,141)
+        colors['purple'] = QtGui.QColor(120,29,126)
+        colors['green'] = QtGui.QColor(84,185,72)
+        colors['black'] = QtGui.QColor(0,0,0,f0)
+        colors['default'] = QtGui.QColor(self.defColor[0], self.defColor[1], self.defColor[2])
+        '''
+
+
+        colors = dict()
+        colors['white'] = QtGui.QColor(255,255,255,255)
+        colors['blue'] = QtGui.QColor(0,76,147)
+        colors['lightblue'] = QtGui.QColor(0,158,224)
+        colors['grey'] = QtGui.QColor(132,134,135)
+        colors['yellow'] = QtGui.QColor(255,229,18)
+        colors['orange'] = QtGui.QColor(255,102,0)
+        colors['pink'] = QtGui.QColor(236,9,141)
+        colors['purple'] = QtGui.QColor(120,29,126)
+        colors['green'] = QtGui.QColor(84,185,72)
+        colors['black'] = QtGui.QColor(0,0,0,0)
+        colors['default'] = QtGui.QColor(self.defColor[0], self.defColor[1], self.defColor[2])
+
+        try:
+            c = colors[color]
+        except KeyError:
+            c = colors['default']
+
+        return c
+
+    def changeWidgetColor(self, widget, color, typ):
+
+        c = self.getQColor(color)
+        
+        red = c.red()
+        green = c.green()
+        blue = c.blue()
+        alpha = c.alpha()
+        
+        if typ == "background":
+            widget.setStyleSheet("background-color: rgb(%s,%s,%s,%s);" %(red, green, blue, alpha)) 
+            return True
+
+        return False
 
     def getColorPalette(self, color=None, typ=None):
 

@@ -484,8 +484,8 @@ class Agilent_E5274A:
                         else:
                             raise E5274A_InputError("Incorrect Voltage Compliance Used!")
                     if RV[n] == VR[7] or RV[n] == VR[14]:
-                        if np.absolute(Val[n]) <= 200:
-                            if np.absolute(int(element)) != 2e-3:
+                        if np.absolute(Val[n]) < 200:
+                            if np.absolute(int(element)) > 100e-3:
                                 raise E5274A_InputError("Current Compliance for Voltage range %d in Channel %d is not 2e-3 A." %(RV[n], Chns[n]))
                         else:
                             raise E5274A_InputError("Incorrect Voltage Compliance Used (200V Output range won't work)!")

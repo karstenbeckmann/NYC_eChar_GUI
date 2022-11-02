@@ -390,7 +390,7 @@ class ToolHandle:
         com = {"Instr": instr, "Command": command, "ReturnQueue": returnQueue}
         if args != None:
             com["Args"] = args
-        if args != None:
+        if kwargs != None:
             com["Kwargs"] = kwargs
         
         self.commandQueue.put(com)
@@ -706,7 +706,6 @@ class ToolHandle:
     def update(self, MainGI):
         
         for inst in self.InitializedInst:
-
             try:
                 logQueue = inst['Instrument'].getLogQueue()
                 while not logQueue.empty():
@@ -785,17 +784,14 @@ class ToolHandle:
                             cmd = {"Command": "*STB?", "ReturnQueue": self.commandReturnQueue, 'Instr': inst}
                             self.commandQueue.put(cmd)
 
-                '''
-
-                if self.cmdThread == None:
+            if self.cmdThread == None:
+                self.cmdThread = th.Thread(target=self.commandThread, args=(self.commandQueue, self.Errors, self.commandSleep))
+                self.cmdThread.start()
+            else:
+                if not self.cmdThread.is_alive():
                     self.cmdThread = th.Thread(target=self.commandThread, args=(self.commandQueue, self.Errors, self.commandSleep))
                     self.cmdThread.start()
-                else:
-                    if not self.cmdThread.is_alive():
-                        self.cmdThread = th.Thread(target=self.commandThread, args=(self.commandQueue, self.Errors, self.commandSleep))
-                        self.cmdThread.start()
-                '''
-
+            
         else:
             self.commandQueue.put({"Pause": True})
 
@@ -935,6 +931,7 @@ class ToolHandle:
                     except Exception as e:
                         ret = {"Command": command, "Instr": cmd['Instr'], "Return": None, "Error": True, "ErrorMsg": e}
                         errorQueue.put("Command Execution error - Instrument: %s, Command: %s, Error: %s." %(typ, command, e))
+                
                 retQu.put(ret)
 
             except KeyError:

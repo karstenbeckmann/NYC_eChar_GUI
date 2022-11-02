@@ -316,14 +316,42 @@ VariableName, test
 Default, 1
 Datatype, int
 #####################
-Name, formingDC
+Name, FormingDC
+Folder, ReRAM
+Tools, B1500A
+VariableName, SweepSMU, GNDSMU, GateSMU, Vform, Vgate, steps, Compl, GateCompl, hold, delay, DCSMUs, Vdc, DCcompl
+Default, 1, 2, 3, 3.3, 1.5, 101, 0.01, 0.001, 0,0, , , 
+Datatype, SMU, SMU, SMU, float, float, int, float, float, float, float, SMUAr, floatAr, floatAr
+##############
+Name, ResetDC
+Folder, ReRAM
+Tools, B1500A
+VariableName, SweepSMU, GNDSMU, GateSMU, Vreset, Vgate, steps, Compl, GateCompl, hold, delay, DCSMUs, Vdc, DCcompl
+Default, 1, 2, 3, 1.5, 1.5, 101, 0.01, 0.001, 0, 0, , , 
+Datatype, SMU, SMU, SMU, float, float, int, float, float, float, float, SMUAr, floatAr, floatAr
+##############
+Name, SetDC
+Folder, ReRAM
+Tools, B1500A
+VariableName, SweepSMU, GNDSMU, GateSMU, Vreset, Vgate, steps, Compl, GateCompl, hold, delay, DCSMUs, Vdc, DCcompl
+Default, 1, 2, 3, 1.5, 1.5, 101, 0.01, 0.001, 0, 0, , , 
+Datatype, SMU, SMU, SMU, float, float, int, float, float, float, float, SMUAr, floatAr, floatAr
+##############
+Name, FormingDCE5274A
 Folder, ReRAM
 Tools, E5274A
 VariableName, SweepSMU, GNDSMU, GateSMU, Vform, Vgate, steps, Compl, GateCompl, hold, delay, DCSMUs, Vdc, DCcompl
 Default, 1, 2, 3, 3.3, 1.5, 101, 0.01, 0.001, 0,0, , , 
 Datatype, SMU, SMU, SMU, float, float, int, float, float, float, float, SMUAr, floatAr, floatAr
 ##############
-Name, resetDC
+Name, SetDCE5274A
+Folder, ReRAM
+Tools, E5274A
+VariableName, SweepSMU, GNDSMU, GateSMU, Vreset, Vgate, steps, Compl, GateCompl, hold, delay, DCSMUs, Vdc, DCcompl
+Default, 1, 2, 3, 1.5, 1.5, 101, 0.01, 0.001, 0, 0, , , 
+Datatype, SMU, SMU, SMU, float, float, int, float, float, float, float, SMUAr, floatAr, floatAr
+##############
+Name, ResetDCE5274A
 Folder, ReRAM
 Tools, E5274A
 VariableName, SweepSMU, GNDSMU, GateSMU, Vreset, Vgate, steps, Compl, GateCompl, hold, delay, DCSMUs, Vdc, DCcompl
