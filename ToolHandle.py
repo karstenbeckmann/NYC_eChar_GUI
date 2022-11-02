@@ -387,12 +387,13 @@ class ToolHandle:
             return None
         return self.ChuckTemp
 
-    def queueCommand(self, instr, returnQueue, command, parameter=None):
-        if parameter == None:
-            com = {"Instr": instr, "Command": command, "ReturnQueue": returnQueue}
-        else:
-            com = {"Instr": instr, "Command": command, "Parameter": parameter, "ReturnQueue": returnQueue}
-
+    def queueCommand(self, instr, returnQueue, command, args=None, kwargs=None):
+        com = {"Instr": instr, "Command": command, "ReturnQueue": returnQueue}
+        if args != None:
+            com["Args"] = args
+        if args != None:
+            com["Kwargs"] = kwargs
+        
         self.commandQueue.put(com)
 
     def getMatrix(self):
@@ -568,7 +569,6 @@ class ToolHandle:
             raise ValueError("ToolHandle: Calibration - either GPIB or ID must be defined and valid!")
 
         thread = None
-        print("cali", instrument)
         if instrument['Instrument'] != None:
             if not instrument["Busy"]:
                 self.readyQu.put([address, True])
@@ -866,16 +866,25 @@ class ToolHandle:
                 inst = cmd['Instr']['Instrument']
                 typ = cmd['Instr']['Type']
                 busy = cmd['Instr']['Busy']
-                param = tuple()
                 try:
-                    param = cmd['Parameter']
+                    args = cmd['Args']
                 except KeyError:
-                    None
+                    args = tuple()
 
-                if param == None:
-                    param = tuple()
-                if param == "":
-                    param = tuple()
+                if args == None:
+                    args = tuple()
+                if args == "":
+                    args = tuple()
+
+                try:
+                    kwargs = cmd['Kwargs']
+                except KeyError:
+                    kwargs = dict()
+
+                if kwargs == None:
+                    kwargs = dict()
+                if kwargs == "":
+                    kwargs = dict()
                 
                 if inst == None:
                     continue
@@ -922,7 +931,7 @@ class ToolHandle:
                 elif typ != "B1530A":
                     try:
                         func = getattr(inst,command)
-                        cmdRet = func(*param)
+                        cmdRet = func(*args, **kwargs)
                         ret = {"Command": command, "Instr": cmd['Instr'], "Return": cmdRet, "Error": False, "ErrorMsg":""}
                     except Exception as e:
                         ret = {"Command": command, "Instr": cmd['Instr'], "Return": None, "Error": True, "ErrorMsg": e}

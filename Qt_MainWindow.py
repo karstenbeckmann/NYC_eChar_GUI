@@ -290,9 +290,7 @@ class MainUI(QtWidgets.QMainWindow):
         self.ProberWindowWidth = self.__widthTab/2
         self.ProberWindowHeight = self.__height/2
         self.ProberWindow = Qt_PW.ProberWindow(self, self.QFont, self.QMargin, self.QSpacing, self.ProberWindowWidth, self.ProberWindowHeight, self.icon)
-        self.ProberWindow.show()
-        self.setProberWindowPosition()
-        #self.ProberWindow.hide()
+        self.ProberWindow.hide()
 
         self.tabs.addTab(self.MatrixTable, "Matrix")
         
@@ -847,7 +845,15 @@ class MainUI(QtWidgets.QMainWindow):
         except AttributeError as e:
             self.__ErrorQu.put("Not able to restart Result Handling. %s" %(e))
 
-        self.MainButtons.Update()
+        
+        if self.Instruments.getProberInstrument() == None:
+            self.ProberWindow.hide()
+            self.SideButtons.HideProbeButton()
+        else:
+            self.SideButtons.ShowProbeButton()
+
+
+        self.MainButtons.update()
         self.WaferMapTab.update()
         self.ConfigTab.update()
         self.B1500Tab.update()
@@ -855,6 +861,7 @@ class MainUI(QtWidgets.QMainWindow):
         self.ResultWindow.update()
         self.ProberWindow.update()
         self.eChar.update()
+
 
         
         self.timer.start()

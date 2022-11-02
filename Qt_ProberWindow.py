@@ -187,6 +187,10 @@ class ProberWindow(QtWidgets.QMainWindow):
     def updateList(self, widget):
         self.updList.append(widget)
 
+    def hide(self):
+        self.savePosition()
+        super().hide()
+
 
 
     def ChangeTempReturn(self):
@@ -227,12 +231,14 @@ class ProberWindow(QtWidgets.QMainWindow):
         v = self.moveVel
 
         if self.chuckScope:
-            cmd = "MoveChuck %s %s R Y %s" %(x, y, v)
+            cmd = "MoveChuck"
         else:
-            cmd = "MoveScope %s %s R Y %s" %(x, y, v)
+            cmd = "MoveChuck"
 
-        self.Instruments.queueCommand(self.Prober, self.returnQueue, cmd)
+        args = (x,y)
+        kwargs = {"velocity":v}
 
+        self.Instruments.queueCommand(self.Prober, self.returnQueue, cmd, args, kwargs)
 
     def moveDown(self):
         
@@ -241,11 +247,14 @@ class ProberWindow(QtWidgets.QMainWindow):
         v = self.moveVel
 
         if self.chuckScope:
-            cmd = "MoveChuck %s %s R Y %s" %(x, y, v)
+            cmd = "MoveChuck"
         else:
-            cmd = "MoveScope %s %s R Y %s" %(x, y, v)
+            cmd = "MoveChuck"
 
-        self.Instruments.queueCommand(self.Prober, self.returnQueue, cmd)
+        args = (x,y)
+        kwargs = {"velocity":v}
+
+        self.Instruments.queueCommand(self.Prober, self.returnQueue, cmd, args, kwargs)
 
     
     def moveRight(self):
@@ -258,7 +267,15 @@ class ProberWindow(QtWidgets.QMainWindow):
         else:
             cmd = "MoveScope %s %s R Y %s" %(x, y, v)
 
-        self.Instruments.queueCommand(self.Prober, self.returnQueue, cmd)
+        if self.chuckScope:
+            cmd = "MoveChuck"
+        else:
+            cmd = "MoveChuck"
+
+        args = (x,y)
+        kwargs = {"velocity":v}
+
+        self.Instruments.queueCommand(self.Prober, self.returnQueue, cmd, args, kwargs)
 
     def moveLeft(self):
         
@@ -267,11 +284,14 @@ class ProberWindow(QtWidgets.QMainWindow):
         v = self.moveVel
 
         if self.chuckScope:
-            cmd = "MoveChuck %s %s R Y %s" %(x, y, v)
+            cmd = "MoveChuck"
         else:
-            cmd = "MoveScope %s %s R Y %s" %(x, y, v)
+            cmd = "MoveChuck"
 
-        self.Instruments.queueCommand(self.Prober, self.returnQueue, cmd)
+        args = (x,y)
+        kwargs = {"velocity":v}
+
+        self.Instruments.queueCommand(self.Prober, self.returnQueue, cmd, args, kwargs)
 
     def moveUpIndex(self):
         x = 0
@@ -279,11 +299,14 @@ class ProberWindow(QtWidgets.QMainWindow):
         v = self.moveVel
 
         if self.chuckScope:
-            cmd = "MoveChuckIndex %s %s R Y %s" %(x, y, v)
+            cmd = "MoveChuckIndex"
         else:
-            cmd = "MoveScopeIndex %s %s R Y %s" %(x, y, v)
+            cmd = "MoveScopeIndex"
 
-        self.Instruments.queueCommand(self.Prober, self.returnQueue, cmd)
+        args = (x,y)
+        kwargs = {"velocity":v}
+
+        self.Instruments.queueCommand(self.Prober, self.returnQueue, cmd, args, kwargs)
 
 
     def moveDownIndex(self):
@@ -292,11 +315,14 @@ class ProberWindow(QtWidgets.QMainWindow):
         v = self.moveVel
 
         if self.chuckScope:
-            cmd = "MoveChuckIndex %s %s R Y %s" %(x, y, v)
+            cmd = "MoveChuckIndex"
         else:
-            cmd = "MoveScopeIndex %s %s R Y %s" %(x, y, v)
+            cmd = "MoveScopeIndex"
 
-        self.Instruments.queueCommand(self.Prober, self.returnQueue, cmd)
+        args = (x,y)
+        kwargs = {"velocity":v}
+
+        self.Instruments.queueCommand(self.Prober, self.returnQueue, cmd, args, kwargs)
 
     
     def moveRightIndex(self):
@@ -305,12 +331,14 @@ class ProberWindow(QtWidgets.QMainWindow):
         v = self.moveVel
 
         if self.chuckScope:
-            cmd = "MoveChuckIndex %s %s R Y %s" %(x, y, v)
+            cmd = "MoveChuckIndex"
         else:
-            cmd = "MoveScopeIndex %s %s R Y %s" %(x, y, v)
+            cmd = "MoveScopeIndex"
 
-        self.Instruments.queueCommand(self.Prober, self.returnQueue, cmd)
+        args = (x,y)
+        kwargs = {"velocity":v}
 
+        self.Instruments.queueCommand(self.Prober, self.returnQueue, cmd, args, kwargs)
 
     def moveLeftIndex(self):
         
@@ -319,11 +347,14 @@ class ProberWindow(QtWidgets.QMainWindow):
         v = self.moveVel
 
         if self.chuckScope:
-            cmd = "MoveChuckIndex %s %s R Y %s" %(x, y, v)
+            cmd = "MoveChuckIndex"
         else:
-            cmd = "MoveScopeIndex %s %s R Y %s" %(x, y, v)
+            cmd = "MoveScopeIndex"
 
-        self.Instruments.queueCommand(self.Prober, self.returnQueue, cmd)
+        args = (x,y)
+        kwargs = {"velocity":v}
+
+        self.Instruments.queueCommand(self.Prober, self.returnQueue, cmd, args, kwargs)
 
 
     def scopeClicked(self):
@@ -457,8 +488,8 @@ class StatusWidgets(stdObj.stdFrameGrid):
         wid = StatusPushButton(self, self.iconPath, "Motor_QuiteMode", "Mode", [6,6], 2, self.layout, self.RowHeight, self.ColumnWidth, 7,1, command=self.toggleQuiteMode)
         self.proWid.append(wid)
         
-        wid = StatusPushButton(self, self.iconPath, "ChuckVacuum", "Vacuum", 0, 0, self.layout, self.RowHeight, self.ColumnWidth, 1, 1, command=self.toggleQuiteMode)
-        self.proWid.append(wid)
+        #wid = StatusPushButton(self, self.iconPath, "ChuckVacuum", "Vacuum", 0, 0, self.layout, self.RowHeight, self.ColumnWidth, 1, 3, command=self.toggleQuiteMode)
+        #self.proWid.append(wid)
 
         size = QtCore.QSize(self.width, self.height)
 

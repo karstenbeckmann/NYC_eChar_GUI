@@ -89,7 +89,7 @@ class MainButtons(QtWidgets.QWidget):
         self.__StartButton.setAutoFillBackground(True)
         self.__StartButton.setPalette(pal)
 
-    def Update(self):
+    def update(self):
         if self.MainGI.isRunning():
             self.__MeasurementType.setEnabled(False)
             self.__StartButton.setEnabled(False)
@@ -99,7 +99,6 @@ class MainButtons(QtWidgets.QWidget):
 
             self.TxTempDisp.setText("%s ℃ " %(self.Instruments.getChuckTemperature()))
         
-
     def reset(self):
         self.Complete = 0
         self.ProgressBar.setValue(0)
@@ -202,7 +201,7 @@ class sideButtons(QtWidgets.QWidget):
         
         self.__ProbeButton = stdObj.PushButton("P\nr\no\nb\ne\nr", self, minimumWidth=1, command=self.ProbeStationButton)
         self.layout.addWidget(self.__ProbeButton)
-        #self.__ProbeButton.hide()
+        self.__ProbeButton.hide()
         
     def ResultButton(self):
         if self.MainGI.ResultWindow.isVisible():
@@ -218,3 +217,10 @@ class sideButtons(QtWidgets.QWidget):
             self.MainGI.ProberWindow.hide()
         else:
             self.MainGI.ProberWindow.show()
+            self.MainGI.setProberWindowPosition()
+
+    def HideProbeButton(self):
+        self.__ProbeButton.hide()
+
+    def ShowProbeButton(self):
+        self.__ProbeButton.show()
