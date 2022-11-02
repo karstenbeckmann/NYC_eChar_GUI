@@ -255,7 +255,6 @@ def IVsweep(eChar, SweepSMU, start, stop, steps, VorI, Compl, Double, Log, DCSMU
         if len(DCVorI) == 1:
              DCVorI = [DCVorI[0]]*len(DCSMUs)
 
-
     VorI = [VorI]
     VorI.extend(DCVorI)
 
@@ -396,6 +395,15 @@ def IVsweepE5274A(eChar, SweepSMU, start, stop, steps, VorI, Compl, Double, Log,
     
     Chns = [SweepSMU]
     Chns.extend(DCSMUs)
+    
+    if len(DCSMUs) > 1:
+        if len(DCval) == 1:
+             DCval = [DCval[0]]*len(DCSMUs)
+        if len(DCCompl) == 1:
+             DCCompl = [DCCompl[0]]*len(DCSMUs)
+        if len(DCVorI) == 1:
+             DCVorI = [DCVorI[0]]*len(DCSMUs)
+             
     VorI = [VorI]
     VorI.extend(DCVorI)
 
