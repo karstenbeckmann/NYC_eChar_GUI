@@ -36,6 +36,13 @@ class ToolHandle:
     readyQu = qu.Queue()
     threads = []
     ready = False
+    commandSleep = 1
+    commandQueue = qu.Queue()
+    commandReturnQueue = qu.Queue()
+    proberChuckStatus = None
+    proberScopeStatus = None
+    proberStatus = None
+    cmdThread = None
 
     supportedDevices = []
     #supportedDevices.append(['SUSS_PA300', 'Prober', "Suss MicroTec Test Systems GmbH,ProberBench PC"])
@@ -55,12 +62,17 @@ class ToolHandle:
     WGFMU_Channels = []
     SMUs = []
 
-    def __init__(self, B1530ADLL="C:/Windows/System32/wgfmu.dll", offline = False):
+    def __init__(self, B1530ADLL="C:/Windows/System32/wgfmu.dll", offline = False, threadTimeOut=200):
 
         self.CurrentProberAdr = None
         self.CurrentMatrixAdr = None
         self.ChuckTemp = "--"
         self.offline = offline
+        self.commandQueue = qu.Queue()
+        self.commandReturnQueue = qu.Queue()
+        self.threadTimeout = 200 #in milliseconds
+        self.toolStatusUpdate = 500 #in milliseconds
+        self.tupdateOld = tm.time_ns() #old tool update time in ns
 
         try:
             self.rm = vs.ResourceManager()
@@ -219,6 +231,7 @@ class ToolHandle:
                                 self.InitializedInst[n]['Model'] = ret
                                 self.InitializedInst[n]['Rank'] = self.getNextAvailableRank(initInst["Type"])
                                 self.InitializedInst[n]["Busy"] = False
+                                self.InitializedInst[n]["ConnectedDevices"] = []
                                 self.AvailDevices.put({self.InitializedInst[n]["Type"]: True})
 
                                 if str(self.InitializedInst[n]["Identifier"]).find("Agilent Technologies,B1500A") != -1:
@@ -227,7 +240,7 @@ class ToolHandle:
                                     tm.sleep(0.1)
                                     ret = instrument.read()
                                     modules = ret.strip().split(';')
-                                    n=1
+                                    l=1
                                     self.SMUChns = []
                                     for module in modules:
                                         module = module.split(',')[0]
@@ -248,14 +261,16 @@ class ToolHandle:
                                                 addInstruments[ID]["Identifier"] = 'Agilent Technologies,B1500A'
                                                 addInstruments[ID]["Type"] = "B1530A"
                                                 addInstruments[ID]['Class'] = "Agilent_B1530A"
-                                                addInstruments[ID]['Status'] = None
+                                                addInstruments[ID]['Status'] = self.InitializedInst[n]["Status"]
+                                                self.InitializedInst[n]["ConnectedDevices"].append(addInstruments[ID])
+                                                
                                                 self.AvailDevices.put({tool: True})
                                                 Chans = DevClass.getChannelIDs()
                                                 self.WGFMU_Channels = Chans['Channels']
                                             except (vs.VisaIOError, OSError) as e:
                                                 self.Warnings.put("Initialization Failed for B1530")
                                         
-                                        n+=1
+                                        l+=1
                             else:
                                 addInstruments.append(dict())
                                 ID = len(addInstruments)-1
@@ -269,7 +284,7 @@ class ToolHandle:
                                 addInstruments[ID]["Identifier"] = initInst["Identifier"]
                                 addInstruments[ID]["Type"] = initInst["Type"]
                                 addInstruments[ID]["Class"] = initInst["Class"]
-                                addInstruments[ID]['Status'] = None
+                                addInstruments[ID]['Status'] = 0
                                 addInstruments[ID]['Rank'] = self.getNextAvailableRank(initInst["Type"])
                         
                         n = n+1
@@ -295,6 +310,13 @@ class ToolHandle:
                     self.setCurrentMatrix(Instr[0]['GPIB'])
                     break
                 n = n+1
+
+        while not self.commandQueue.empty():
+            cmd = self.commandQueue.get()
+            cmd = None
+
+        self.cmdThread = th.Thread(target=self.commandThread, args=(self.commandQueue, self.Errors, self.commandSleep, self.threadTimeout))
+        self.cmdThread.start()
 
     def isTypePresent(self, tool, gpib=None):
         
@@ -358,10 +380,20 @@ class ToolHandle:
             return None
             #self.Warnings.put("Tool Handle: No prober available!")
 
+
     def getChuckTemperature(self):
         if not self.ready:
             return None
         return self.ChuckTemp
+
+    def queueCommand(self, instr, returnQueue, command, args=None, kwargs=None):
+        com = {"Instr": instr, "Command": command, "ReturnQueue": returnQueue}
+        if args != None:
+            com["Args"] = args
+        if args != None:
+            com["Kwargs"] = kwargs
+        
+        self.commandQueue.put(com)
 
     def getMatrix(self):
         if not self.ready:
@@ -536,7 +568,6 @@ class ToolHandle:
             raise ValueError("ToolHandle: Calibration - either GPIB or ID must be defined and valid!")
 
         thread = None
-        
         if instrument['Instrument'] != None:
             if not instrument["Busy"]:
                 self.readyQu.put([address, True])
@@ -549,10 +580,50 @@ class ToolHandle:
         return thread
 
     def setCurrentProber(self, GPIB):
-
         self.setToolRank(GPIB, 1)
         self.CurrentProberAdr = GPIB
+
+    def getProberStatus(self):
+        return self.proberStatus
     
+    def getProberChuckStatus(self):
+
+        pStat = self.proberChuckStatus
+        if self.proberChuckStatus == None:
+            pStat = [0,0,0,0,0,0,0,0,0,0]
+
+        ret = {}
+        ret['IsInitialized'] = std.getIntegerToBinaryArray(pStat[0], 4)
+        ret['Mode'] = std.getIntegerToBinaryArray(pStat[1], 8)
+        ret['OnEndLimit'] = std.getIntegerToBinaryArray(pStat[2],8)
+        ret['IsMoving'] = std.getIntegerToBinaryArray(pStat[3],4)
+        ret['CompMode'] = pStat[4]
+        ret['Vacuum'] = std.getIntegerToBinaryArray(pStat[5],1)
+        ret['ZHeight'] = pStat[6]
+        ret['Load Position'] = std.getIntegerToBinaryArray(pStat[7],2)
+        ret['Lift'] = std.getIntegerToBinaryArray(pStat[8], 1)
+        ret['ChuckCamera'] = pStat[9]
+
+        return ret
+        
+    def getProberScopeStatus(self):
+        
+        pStat = self.proberScopeStatus
+        if self.proberScopeStatus == None:
+            pStat = [0,0,0,0,0,0,0,0]
+
+        ret = {}
+        ret['IsInitialized'] = std.getIntegerToBinaryArray(pStat[0], 3)
+        ret['OnEndLimit'] = std.getIntegerToBinaryArray(pStat[1], 6)
+        ret['IsMoving'] = std.getIntegerToBinaryArray(pStat[2], 3)
+        ret['CompMode'] = pStat[3]
+        ret['CompMode'] = pStat[4]
+        ret['ZHeight'] = pStat[5]
+        ret['ScopeLIght'] = std.getIntegerToBinaryArray(pStat[6], 1)
+        ret['Mode'] = std.getIntegerToBinaryArray(pStat[7], 8)
+        
+        return ret
+        
     def setCurrentMatrix(self, GPIB):
         self.setToolRank(GPIB, 1)
         self.CurrentMatrixAdr = GPIB
@@ -611,6 +682,8 @@ class ToolHandle:
         self.readyQu.put([tool, False])
 
     def close(self):
+        cmd = {"Stop":True}
+        self.commandQueue.put(cmd)
         try:
             self.instruments = self.rm.list_resources()
             for adr in self.instruments:
@@ -629,9 +702,6 @@ class ToolHandle:
             if inst['Type'] == typ and inst["GPIB"] != None and inst['Rank'] == 1:
                 return inst
         return None
-
-    def updateThread(self, MainGI):
-        None
 
     def update(self, MainGI):
         
@@ -659,18 +729,77 @@ class ToolHandle:
                         self.InitializedInst[n]["Busy"] = (not bool(get[1]))
                         break
                     n = n+1
-
+    
         if not MainGI.isRunning():
+            self.commandQueue.put({"Pause": False})
             Prober = self.getProber()
-            if Prober != None:
-                if Prober['Instrument'] != None:
-                    if not Prober['Busy']:
-                        try:
-                            self.ChuckTemp = Prober['Instrument'].ReadChuckThermoValue()[0]
-                        except:
-                            SystemError("ToolHandle: Prober is offline.")
+            
+            # Processing returning command over GPIB
+            while not self.commandReturnQueue.empty():
+
+                ret = self.commandReturnQueue.get()
+                cmd = ret["Command"]
+                retData = ret["Return"]
+                retInstr = ret['Instr']
+                errMsg = ret['ErrorMsg']
+                err = ret['Error']
+
+                if err:
+                    msg = "ToolHandle: Error in executing command '%s' - %s" %(cmd, errMsg)
+                    self.Errors.put(msg)
                 else:
-                    self.ChuckTemp = "--"
+                    if cmd == "ReadChuckThermoValue":
+                        self.ChuckTemp = retData[0]
+                    if cmd == "ReadChuckStatus":
+                        self.proberChuckStatus = retData
+                    if cmd == "ReadScopeStatus":
+                        self.proberScopeStatus = retData
+                    if cmd =="*STB?":
+                        retInstr['Status'] = retData
+                        try:
+                            for dev in retInstr['ConnectedDevices']:
+                                dev['Status'] = retData
+                        except KeyError:
+                            None
+
+            #Sent command ommand over GPIB every self.toolStatusUpdate
+            tupdate = self.toolStatusUpdate * 1000 * 1000
+            if self.tupdateOld + tupdate < tm.time_ns():
+                self.tupdateOld = tm.time_ns()
+
+                if Prober != None:
+                    if Prober['Instrument'] != None:
+                        if not Prober['Busy']:
+                            cmd = {"Command": "ReadChuckThermoValue", "ReturnQueue": self.commandReturnQueue, 'Instr': Prober}
+                            self.commandQueue.put(cmd)
+                            cmd = {"Command": "ReadChuckStatus", "ReturnQueue": self.commandReturnQueue, 'Instr': Prober}
+                            self.commandQueue.put(cmd)
+                            cmd = {"Command": "ReadScopeStatus", "ReturnQueue": self.commandReturnQueue, 'Instr': Prober}
+                            self.commandQueue.put(cmd)
+                    else:
+                        self.ChuckTemp = "--"
+
+                for inst in self.InitializedInst:
+                    if not inst["Busy"]:
+                        if inst['Instrument'] != None and inst['Type'] != "B1530":
+                            cmd = {"Command": "*STB?", "ReturnQueue": self.commandReturnQueue, 'Instr': inst}
+                            self.commandQueue.put(cmd)
+
+                '''
+
+                if self.cmdThread == None:
+                    self.cmdThread = th.Thread(target=self.commandThread, args=(self.commandQueue, self.Errors, self.commandSleep))
+                    self.cmdThread.start()
+                else:
+                    if not self.cmdThread.is_alive():
+                        self.cmdThread = th.Thread(target=self.commandThread, args=(self.commandQueue, self.Errors, self.commandSleep))
+                        self.cmdThread.start()
+                '''
+
+        else:
+            self.commandQueue.put({"Pause": True})
+
+
 
         for initInst in self.InitializedInst:
             if initInst['Type'] == 'B1530A':
@@ -683,6 +812,134 @@ class ToolHandle:
                     err = initInst['Instrument'].ErrQueue.get()
                     self.Errors.put("ToolHandle: %s" %(err))
                 
+    def commandThread(self, commandQueue, errorQueue, sleep, timeout=200):
+        
+        #transfer timeout from milliseconds in nanoseconds
+        timeout = timeout*1000*1000
+        error = False
+
+        activeTime = tm.time_ns()
+        pause = False
+
+        while True:
+            if commandQueue.empty():
+                
+                if activeTime + timeout < tm.time_ns():
+                    break
+                tm.sleep(sleep)
+                continue
+
+            else:
+                cmd = commandQueue.get()
+                activeTime = tm.time_ns()
+                error = False
+
+            try:
+                if cmd['Stop']:
+                    break
+            except KeyError:
+                None
+            
+            try:
+                if cmd['Pause']:
+                    pause = True
+                    while not commandQueue.empty():
+                        ret = commandQueue.get()
+                        ret = None
+                    pause = True
+                    continue
+                else:
+                    pause = False
+                    continue
+
+            except KeyError:
+                None
+
+            if pause:
+                continue
+                
+            
+            try:
+                retQu = cmd['ReturnQueue']
+                command = cmd['Command']
+                inst = cmd['Instr']['Instrument']
+                typ = cmd['Instr']['Type']
+                busy = cmd['Instr']['Busy']
+                try:
+                    args = cmd['Args']
+                except KeyError:
+                    args = tuple()
+
+                if args == None:
+                    args = tuple()
+                if args == "":
+                    args = tuple()
+
+                try:
+                    kwargs = cmd['Kwargs']
+                except KeyError:
+                    kwargs = dict()
+
+                if kwargs == None:
+                    kwargs = dict()
+                if kwargs == "":
+                    kwargs = dict()
+                
+                if inst == None:
+                    continue
+                    
+                if busy:
+                    continue
+
+                if command == "*STB?" and typ != "B1530A":
+                    try:
+                        stb = inst.instQuery("*STB?")
+                        
+                        try:
+                            stb = int(stb)
+                        except ValueError:
+                            stb = int(stb.split(" ")[1].strip())                            
+                    except (vs.VisaIOError, TypeError, ValueError):
+                        try:
+                            stb = inst.read_stb()
+                        except vs.VisaIOError:
+                            error = True
+                            break
+                    if error:
+                        stb = None
+                    else:
+                        try:
+                            stb = int(stb)
+                        except ValueError:
+                            try:
+                                stb = int(stb.split(" ")[1].strip())
+                            except:
+                                error = True
+                                stb = None
+                                break
+                    
+                    if error:
+                        msg = "Error during serial polling - %s." %(typ)
+                        ret = {"Command": command, "Instr": cmd['Instr'], "Return": None, "Error": True, "ErrorMsg":msg}
+
+                    else:
+                        binStb = std.getBinaryList(int(stb))
+                        ret = {"Command": command, "Instr": cmd['Instr'], "Return": binStb, "Error": False, "ErrorMsg":""}
+                    
+                    retQu.put(ret)
+                elif typ != "B1530A":
+                    try:
+                        func = getattr(inst,command)
+                        cmdRet = func(*args, **kwargs)
+                        ret = {"Command": command, "Instr": cmd['Instr'], "Return": cmdRet, "Error": False, "ErrorMsg":""}
+                    except Exception as e:
+                        ret = {"Command": command, "Instr": cmd['Instr'], "Return": None, "Error": True, "ErrorMsg": e}
+                        errorQueue.put("Command Execution error - Instrument: %s, Command: %s, Error: %s." %(typ, command, e))
+                retQu.put(ret)
+
+            except KeyError:
+                errorQueue.put("ToolHandle: InstrumentCommand could not be interpreted - %s." %(cmd))
+
 
     def checkInstrumentation(self, Instruments=None):
         
@@ -796,7 +1053,6 @@ class ToolHandle:
                             msg = "ToolHandle: checkInstrumentation after 3 recoverings: %s" %(err)
                             self.Errors.put(msg)
                             raise SystemError(msg)
-
 
     def changeADC(self, MainGI, gpib, typ, mod, n):
 
