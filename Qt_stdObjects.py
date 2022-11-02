@@ -976,12 +976,15 @@ class Entry(QtWidgets.QLineEdit):
 
         CurContent = self.text()
 
-        SucChange = self.Configuration.setValue(self.valueName, self.Type(CurContent))
-        
-        if SucChange:
-            if self.AddCommand != None:
-                self.AddCommand()
-        else:
+        try:
+            SucChange = self.Configuration.setValue(self.valueName, self.Type(CurContent))
+            if SucChange:
+                if self.AddCommand != None:
+                    self.AddCommand()
+            else:
+                self.setText(str(ConfigValue))
+
+        except ValueError:
             self.setText(str(ConfigValue))
 
         super().focusOutEvent(event)
