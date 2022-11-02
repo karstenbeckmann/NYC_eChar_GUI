@@ -5,6 +5,7 @@ Date: 11/6/2018
 email: kbeckmann@sunypoly.edu
 """
 
+from multiprocessing.sharedctypes import Value
 import sys
 sys.path.append('Drivers')
 
@@ -735,31 +736,33 @@ class ToolHandle:
             
             # Processing returning command over GPIB
             while not self.commandReturnQueue.empty():
+                try: 
+                    ret = self.commandReturnQueue.get()
+                    cmd = ret["Command"]
+                    retData = ret["Return"]
+                    retInstr = ret['Instr']
+                    errMsg = ret['ErrorMsg']
+                    err = ret['Error']
 
-                ret = self.commandReturnQueue.get()
-                cmd = ret["Command"]
-                retData = ret["Return"]
-                retInstr = ret['Instr']
-                errMsg = ret['ErrorMsg']
-                err = ret['Error']
-
-                if err:
-                    msg = "ToolHandle: Error in executing command '%s' - %s" %(cmd, errMsg)
-                    self.Errors.put(msg)
-                else:
-                    if cmd == "ReadChuckThermoValue":
-                        self.ChuckTemp = retData[0]
-                    if cmd == "ReadChuckStatus":
-                        self.proberChuckStatus = retData
-                    if cmd == "ReadScopeStatus":
-                        self.proberScopeStatus = retData
-                    if cmd =="*STB?":
-                        retInstr['Status'] = retData
-                        try:
-                            for dev in retInstr['ConnectedDevices']:
-                                dev['Status'] = retData
-                        except KeyError:
-                            None
+                    if err:
+                        msg = "ToolHandle: Error in executing command '%s' - %s" %(cmd, errMsg)
+                        self.Errors.put(msg)
+                    else:
+                        if cmd == "ReadChuckThermoValue":
+                            self.ChuckTemp = retData[0]
+                        if cmd == "ReadChuckStatus":
+                            self.proberChuckStatus = retData
+                        if cmd == "ReadScopeStatus":
+                            self.proberScopeStatus = retData
+                        if cmd =="*STB?":
+                            retInstr['Status'] = retData
+                            try:
+                                for dev in retInstr['ConnectedDevices']:
+                                    dev['Status'] = retData
+                            except KeyError:
+                                None
+                except (IndexError, ValueError) as e:
+                    self.Errors.put("Instruments: %s" %(e))
 
             #Sent command ommand over GPIB every self.toolStatusUpdate
             tupdate = self.toolStatusUpdate * 1000 * 1000
@@ -906,7 +909,7 @@ class ToolHandle:
                     else:
                         try:
                             stb = int(stb)
-                        except ValueError:
+                        except (TypeError,ValueError):
                             try:
                                 stb = int(stb.split(" ")[1].strip())
                             except:

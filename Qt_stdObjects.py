@@ -61,6 +61,87 @@ class RangeFrame(QtWidgets.QWidget):
         self.layout.setContentsMargins(0,0,0,0)
         self.layout.setSpacing(0)
 
+class SMURangeFrame(QtWidgets.QWidget):
+
+    def __init__(self, parent, MainGI, Tool):
+
+        self.MainGI = MainGI
+        self.Configuration = self.MainGI.Configuration
+        self.Inst = self.MainGI.Instruments
+        self.Tool = Tool
+        super().__init__(parent)
+
+        self.layout = QtWidgets.QVBoxLayout(self)
+        
+        self.GPIBLab = QtWidgets.QLabel("GPIB: %s" %(self.Tool), self)
+        self.layout.addWidget(self.GPIBLab)
+
+        smus = self.Inst.getModuleInformations(Tool)
+        self.SMUs = []
+
+        n = 1
+        if smus != None:
+            for key, val in smus.items():
+
+                self.SMUs.append(rangeSMU(self, self.Configuration, self.Inst, self.Tool,n))
+                self.layout.addWidget(self.SMUs[-1])
+                n = n+1
+
+        self.layout.setAlignment(QtCore.Qt.AlignTop|QtCore.Qt.AlignLeft)
+        self.layout.setContentsMargins(0,0,0,0)
+        self.layout.setSpacing(0)
+
+class rangeSMU(QtWidgets.QWidget):
+    
+    def __init__(self, parent, Configuration, Instruments, Tool, SMU):
+
+        self.Tool = Tool
+        self.MainGI = parent.MainGI
+        self.Configuration = Configuration
+        self.Inst = Instruments
+        self.SMU = SMU
+        super().__init__(parent)
+
+        desc = self.Inst.getModuleInformation(Tool, SMU)
+        for key, val in desc.items():
+            self.slot = key
+            self.desc = val
+            break
+
+        self.layout = QtWidgets.QHBoxLayout(self)
+
+        self.typ = self.Configuration.getValue("$SMURange$_%s_$SMU%d$" %(self.Tool, self.SMU))
+
+        if self.typ == None:
+            self.typ = 0
+        self.typ = int(self.typ)
+
+        self.SMULabel = QtWidgets.QLabel("SMU %d" %(self.SMU), self)
+        self.layout.addWidget(self.SMULabel)
+
+        self.Mode = ADCtypComboBox(self, self.desc, self.typ)
+        self.layout.addWidget(self.ADCtype)
+        self.layout.setAlignment(QtCore.Qt.AlignTop|QtCore.Qt.AlignLeft)
+        self.layout.setContentsMargins(0,0,0,0)
+        self.layout.setSpacing(0)
+
+        self.ADCtype.currentIndexChanged.connect(self.updateType)
+
+    def updateType(self, index):
+
+        ret = self.Inst.setADC(self.MainGI, self.Tool, index, self.SMU)
+        
+        if ret:
+
+            self.Configuration.setValue("$ADC$_%s_$SMU%d$" %(self.Tool, self.SMU), index)
+            self.typ = index
+        else:
+            self.ADCtype.currentIndexChanged.disconnect()
+            self.ADCtype.setCurrentIndex(self.typ)
+            self.ADCtype.currentIndexChanged.connect(self.updateType)
+
+
+
 class ADCFrame(QtWidgets.QWidget):
 
     def __init__(self, parent, MainGI, Tool):
@@ -98,8 +179,6 @@ class ADCFrame(QtWidgets.QWidget):
         self.layout.setContentsMargins(0,0,0,0)
         self.layout.setSpacing(0)
 
-class rangeSMU(QtWidgets.QWidget):
-    None
 
 class ADCsmu(QtWidgets.QWidget):
 
@@ -323,6 +402,69 @@ class ADCtypComboBox(QtWidgets.QComboBox):
 
         if default != None:
             self.setCurrentIndex(default)
+
+class SMURangeChangeRule(QtWidgets.QComboBox):
+
+    def __init__(self, parent, default=None):
+        
+        super().__init__(parent)
+
+        self.addItem("By FULL RANGE", 0)
+        self.addItem("Go UP AHEAD",1)
+        self.addItem("UP AND DOWN AHEAD",-1)
+
+        if default != None:
+            self.setCurrentIndex(default)
+
+class SMUMode(QtWidgets.QComboBox):
+
+    def __init__(self, parent, default=None):
+        
+        super().__init__(parent)
+
+        self.addItem("AUTO", 0)
+        self.addItem("LIMITED",1)
+        self.addItem("FIXED",-1)
+
+        if default != None:
+            self.setCurrentIndex(default)
+            
+class SMURange(QtWidgets.QComboBox):
+
+    def __init__(self, parent, desc, default=None):
+        
+        super().__init__(parent)
+
+        self.enable()
+
+        if default != None:
+            self.setCurrentIndex(default)
+
+    def enable(self, desc):
+        for n in self.count():
+            self.removeItem(0)
+        self.setEditable(True)
+
+        dec = [1,10,100]
+        eng = []
+        eng.extend(["nA","uA","mA"])
+        li = []
+        if desc == "HRSMU":
+            li = ["10pA", "100pA"]
+        elif desc == "HRSMU/ASU":
+            li = ["1pA","10pA","100pA"]
+
+        for e in eng:
+            for d in dec:
+                li.append("%d%s" %(d,e))
+        
+        for n, l in enumerate(li):
+            self.addItem(l, n+8)
+
+    def disable(self, desc):
+        for n in self.count():
+            self.removeItem(0)
+        self.setEditable(False)
 
 class stdFrame(QtWidgets.QWidget):
 

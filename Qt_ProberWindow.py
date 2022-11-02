@@ -494,26 +494,16 @@ class StatusWidgets(stdObj.stdFrameGrid):
         scopeStatus = self.getScopeStatus()
 
         try:
-            if chuckScope:
-                try:
-                    mode = chuckStatus["Mode"][6]
-                except IndexError as e:
-                    return False
+            try:
+                mode = chuckStatus["Mode"][6]
+            except IndexError as e:
+                return False
 
-                if mode:
-                    cmd = "DisableChuckAutoQuiet"
-                else:
-                    cmd = "EnableChuckAutoQuiet"
-            else: 
-                try:
-                    mode = scopeStatus["Mode"][6]
-                except IndexError as e:
-                    return False
-
-                if mode:
-                    cmd = "DisableScopeAutoQuiet"
-                else:
-                    cmd = "EnableScopeAutoQuiet"
+            if mode:
+                cmd = "DisableMotorQuiet"
+            else:
+                cmd = "EnableMotorQuiet"
+            
                     
             self.Instruments.queueCommand(self.Prober, self.returnQueue, cmd)
 

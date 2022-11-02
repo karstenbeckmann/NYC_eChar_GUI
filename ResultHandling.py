@@ -704,7 +704,6 @@ class ResultHandling():
     def updateCurGraphProp(self, res):
         
         if res != None:
-            print("curGraphPr",  res.createGraphProp())
             self.ResultWindow.Updates.put({"Figure": res.createGraphProp()})
 
     def updateCurData(self, res):

@@ -276,9 +276,9 @@ def FormingDC(eChar, SweepSMU, GNDSMU, GateSMU, Vform, Vgate, steps, Compl, Gate
     
     IComp.extend(DCcompl)
     VComp.extend([None]*len(DCcompl))
-        
+    print("here2")
     out = eChar.B1500A.StaircaseSweepMeasurement(Chns, VorI, SweepSMU, 0, Vform, steps, hold, delay, Val, VComp, IComp, Mmode=mode)
-    
+
     # fix for first value 1e101
     out['Data'][0][0] = 1e-12
     out['Data'][0][-1] = 1e-12
@@ -318,9 +318,26 @@ def FormingDC(eChar, SweepSMU, GNDSMU, GateSMU, Vform, Vgate, steps, Compl, Gate
         
         data.append(line)
 
+    V = np.array(out['Data'][-1])
+    I = np.array(out['Data'][0])
+    R = np.divide(V,I)
+
+    l = len(out['Data'][-1])
+
+    Idif = np.diff(I[:int(l/2)])
+    indMax = np.argmax(Idif)
+    Vform = V[indMax]
+
+    HRS = abs(R[2])
+    LRS = abs(R[-2])
+
+    val1 = eChar.dhValue(Vform, "Vform", Unit="V")
+    val2 = eChar.dhValue(HRS, "FirstHRS", Unit="V")
+    val3 = eChar.dhValue(LRS, "FirstLRS", Unit="V")
+    
+    eChar.dhAddRow([val1, val2, val3], Typ)
+
     eChar.writeDataToFile(header, data, Typ=Typ, startCyc=0, endCyc=1)
-
-
     
 def SetDC(eChar, SweepSMU, GNDSMU, GateSMU, Vset, Vgate, steps, Compl, GateCompl, hold, delay, DCSMUs, Vdc, DCcompl):
 
@@ -394,6 +411,25 @@ def SetDC(eChar, SweepSMU, GNDSMU, GateSMU, Vset, Vgate, steps, Compl, GateCompl
             line = "%s, %e" %(line, out['Data'][m][n])
         
         data.append(line)
+
+    V = np.array(out['Data'][-1])
+    I = np.array(out['Data'][0])
+    R = np.divide(V,I)
+
+    l = len(out['Data'][-1])
+
+    Idif = np.diff(I[:int(l/2)])
+    indMax = np.argmax(Idif)
+    Vset = V[indMax]
+
+    HRS = abs(R[2])
+    LRS = abs(R[-2])
+
+    val1 = eChar.dhValue(Vset, "Vset", Unit="V")
+    val2 = eChar.dhValue(HRS, "HRS", Unit="V")
+    val3 = eChar.dhValue(LRS, "LRS", Unit="V")
+    
+    eChar.dhAddRow([val1, val2, val3], Typ)
 
     eChar.writeDataToFile(header, data, Typ=Typ, startCyc=CycStart, endCyc=eChar.curCycle-1)
            
@@ -476,6 +512,25 @@ def ResetDC(eChar, SweepSMU, GNDSMU, GateSMU, Vreset, Vgate, steps, Compl, GateC
             line = "%s, %e" %(line, out['Data'][m][n])
         
         data.append(line)
+
+    V = np.array(out['Data'][-1])
+    I = np.array(out['Data'][0])
+    R = np.divide(V,I)
+
+    l = len(out['Data'][-1])
+
+    Idif = np.diff(I[:int(l/2)])
+    indMax = np.argmin(Idif)
+    Vreset = V[indMax]
+
+    HRS = abs(R[2])
+    LRS = abs(R[-2])
+
+    val1 = eChar.dhValue(Vreset, "Vreset", Unit="V")
+    val2 = eChar.dhValue(HRS, "HRS", Unit="V")
+    val3 = eChar.dhValue(LRS, "LRS", Unit="V")
+    
+    eChar.dhAddRow([val1, val2, val3], Typ)
 
     eChar.writeDataToFile(header, data, Typ=Typ, startCyc=CycStart)
            

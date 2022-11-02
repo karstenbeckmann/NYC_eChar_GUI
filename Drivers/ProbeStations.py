@@ -139,12 +139,12 @@ class FormFactor:
         self.instQuery("InitChuck 7 0 0")
 
     def EnableMotorQuiet(self):
-        ret = self.instQuery("EnableMotorQuiet 1")
-        return ret
+        self.instWrite("EnableMotorQuiet 1")
+        
         
     def DisableMotorQuiet(self):
-        ret = self.instQuery("EnableMotorQuiet 0")
-        return ret
+        self.instWrite("EnableMotorQuiet 0")
+        
 
     def close(self):
         if self.__online:
@@ -516,10 +516,16 @@ class Cascade_S300:
         self.MoveChuckHome()
 
     def EnableMotorQuiet(self):
-        None
-
+        try:
+            self.instWrite("EnableMotorQuiet 1")
+        except: 
+            pass
+        
     def DisableMotorQuiet(self):
-        None
+        try:
+            self.instWrite("EnableMotorQuiet 0")
+        except: 
+            pass
 
     def close(self):
         if self.__online:

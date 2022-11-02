@@ -115,6 +115,9 @@ class Agilent_B1500A():
             elif module =="B1517A":
                 self.SMUChns.append(n)
                 self.ModuleDesc.append("HRSMU")
+            elif module =="B1517A/E5288A":
+                self.SMUChns.append(n)
+                self.ModuleDesc.append("HRSMU/ASU")
             elif module == "B1530A":
                 self.B1530.append(n)
                 self.ModuleDesc.append("WGFMU")
@@ -620,10 +623,7 @@ class Agilent_B1500A():
         VR = self.VR
         IR = self.IR
         
-        print("Val", Val)
         for element in Val:
-            print(element,VorI[n], VR,RV, np.absolute(int(element)) > 42)
-
             if VorI[n]:    
                 if RV[n] == VR[0]:
                     if np.absolute(int(element)) > 42:

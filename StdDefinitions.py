@@ -373,6 +373,8 @@ def MesurementExecutionPS(deviceCharacterization, eChar, Configuration, threads,
                 
                 eChar.writeLog("Dev: X%s-Y%s will be measured" %(xdev, ydev))
                 
+                print("writeLog")
+
                 if Configuration.getUseMatrix() and Instruments.getMatrixInstrument() != None:
                     line = "Matrix will be used - UseMatrix: %s, MatrixInstrument: %s" %(Configuration.getUseMatrix(), Instruments.getMatrixInstrument())
                 else:
@@ -392,8 +394,11 @@ def MesurementExecutionPS(deviceCharacterization, eChar, Configuration, threads,
                 if Configuration.getUseMatrix():
                     eChar.writeMeasLog("Use Matrix.")
                 
+                print("cont")
                 ProStat.MoveChuckContact()
+                print("motor")
                 ProStat.EnableMotorQuiet()
+                print("motorf")
                 if Instruments.getProberInstrument() != None:
                     eChar.writeMeasLog("Move Chuck into Contact and Enable Quite Mode.")
                 
@@ -405,6 +410,7 @@ def MesurementExecutionPS(deviceCharacterization, eChar, Configuration, threads,
                 eChar.MatDev = 0
                 
                 while MC.setNext():
+                    print("MC")
                     if Configuration.getUseMatrix():
                         eChar.writeMeasLog(MC.getHeader())
 
@@ -475,7 +481,7 @@ def MesurementExecutionPS(deviceCharacterization, eChar, Configuration, threads,
                                         stop = True
                                     break
                                     
-                                except (SystemError, ValueError, vs.VisaIOError, IndexError) as e:
+                                except (SystemError, vs.VisaIOError) as e:
                                     print("error after Execution 1")
                                     print(traceback.print_exc())
                                     eChar.finished.put(True)
@@ -521,7 +527,7 @@ def MesurementExecutionPS(deviceCharacterization, eChar, Configuration, threads,
                                         stop = True
                                     break
 
-                                except (SystemError, ValueError, vs.VisaIOError, IndexError) as e:
+                                except (SystemError, vs.VisaIOError) as e:
                                     print("error after Execution 2", e)
                                     print(traceback.print_exc())
                                     eChar.finished.put(True)
