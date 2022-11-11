@@ -383,6 +383,9 @@ class Agilent_B1530A:
                                 MeasureVoltageRange=None, ForceDelay=None, MeasureDelay=None, measureEnabled=None):
         
         self.setOperationMode(chn, operationMode)
+        if operationMode == 2003: 
+            return
+
         if forceVoltageRange != None:
             self.setForceVoltageRange(chn, forceVoltageRange)
         if measureMode != None:

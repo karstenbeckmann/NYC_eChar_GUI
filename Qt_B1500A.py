@@ -203,12 +203,14 @@ class WGFMU_ChnInputs(QtWidgets.QWidget):
         #LaWid[-1].setFont(parent.parent.titleFont)
         self.layout.addWidget(self.LaWid[-1])
 
+        curMode = 2000
         for n in range(len(Labels)):
             
             self.LaWid.append(QtWidgets.QLabel(Labels[n], parent))
             self.layout.addWidget(self.LaWid[-1])
             if n == 0:
                 self.DropDowns.append(ComboBox(self, GPIB, chnID, "ModeList", parameters['ModeList'], self.Configuration))
+                curMode = self.DropDowns[-1].getValue()
             elif n == 1:
                 self.DropDowns.append(ComboBox(self, GPIB, chnID, "ForceVoltageRange", parameters['ForceVoltageRange'], self.Configuration))
             elif n == 2:
@@ -226,14 +228,16 @@ class WGFMU_ChnInputs(QtWidgets.QWidget):
         self.DropDowns[2].addCommand(adjustMeasRange, (self.DropDowns[2],self.DropDowns[-1],parameters))
         self.DropDowns[0].addCommand(adjustMeasurementMode, (self.DropDowns, self.LaWid[1:], parameters))
         self.setFixedSize(self.sizeHint())
-    
+
+        adjustMeasRange(self.DropDowns[2],self.DropDowns[-1],parameters)
+        adjustMeasurementMode(self.DropDowns, self.LaWid[1:], parameters)
+
     def update(self):
 
         for wid in self.DropDowns:
             wid.update()
 
 def adjustMeasurementMode(objs, labs, parameters):
-    
 
     obj = objs[0]
     objChn = objs[2]
@@ -362,6 +366,11 @@ class ComboBox(QtWidgets.QComboBox):
 
         if self.command != None:
             self.command(*(self.arguments))
+
+    def getValue(self):
+        text = self.currentText()
+        ret = self.parameter[text]
+        return ret
 
 class CheckBox(QtWidgets.QCheckBox):
 
