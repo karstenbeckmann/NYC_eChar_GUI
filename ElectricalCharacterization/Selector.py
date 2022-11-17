@@ -158,7 +158,7 @@ def SelectorPulseTest(eChar, PulseChn, GroundChn, Vhigh, Vlow, delay, trise, tfa
     eChar.finished.put(True)
 
     for thr in eChar.threads:
-        while thr.isAlive():
+        while thr.is_alive():
             thr.join()
 
     if WriteHeader:

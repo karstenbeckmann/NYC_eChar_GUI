@@ -1925,7 +1925,7 @@ def performEndurance(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tf
     eChar.finished.put(True)
 
     for thr in eChar.threads:
-        while thr.isAlive():
+        while thr.is_alive():
             thr.join()
             while not eChar.Stop.empty():
                 stop = eChar.Stop.get()
@@ -4954,7 +4954,7 @@ def EndurancePartialRead(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS
     eChar.finished.put(True)
 
     for thr in eChar.threads:
-        while thr.isAlive():
+        while thr.is_alive():
             thr.join()
             while not eChar.Stop.empty():
                 stop = eChar.Stop.get()
@@ -5137,7 +5137,7 @@ def AnalogEndurance(eChar, PulseChn, GroundChn, SMUs, Vg, NumLevels, Vgstep, Vse
     eChar.finished.put(True)
 
     for thr in eChar.threads:
-        while thr.isAlive():
+        while thr.is_alive():
             thr.join()
             while not eChar.Stop.empty():
                 stop = eChar.Stop.get()
@@ -5365,7 +5365,7 @@ def AnalogEnduranceVreset(eChar, PulseChn, GroundChn, Vreset, NumLevels, Vresets
     eChar.finished.put(True)
 
     for thr in eChar.threads:
-        while thr.isAlive():
+        while thr.is_alive():
             thr.join()
             while not eChar.Stop.empty():
                 stop = eChar.Stop.get()
@@ -5592,7 +5592,7 @@ def AnalogEnduranceVset(eChar, PulseChn, GroundChn, Vset, NumLevels, Vsetstep, V
     eChar.finished.put(True)
 
     for thr in eChar.threads:
-        while thr.isAlive():
+        while thr.is_alive():
             thr.join()
             while not eChar.Stop.empty():
                 stop = eChar.Stop.get()
@@ -5830,7 +5830,7 @@ def AnalogStepEnduranceIV(eChar, PulseChn, GroundChn, Cycles, Vset, Vsetstep, Vr
     eChar.finished.put(True)
 
     for thr in eChar.threads:
-        while thr.isAlive():
+        while thr.is_alive():
             thr.join()
             while not eChar.Stop.empty():
                 stop = eChar.Stop.get()
@@ -6054,7 +6054,7 @@ def ShortIntermittentReadEndurance(eChar, PulseChn, GroundChn, SMUs, Vg, NumRead
     eChar.finished.put(True)
 
     for thr in eChar.threads:
-        while thr.isAlive():
+        while thr.is_alive():
             thr.join()
             while not eChar.Stop.empty():
                 stop = eChar.Stop.get()
@@ -6298,7 +6298,7 @@ def LongIntermittentReadEndurance(eChar, PulseChn, GroundChn, SMUs, Vg, NumReads
     eChar.finished.put(True)
 
     for thr in eChar.threads:
-        while thr.isAlive():
+        while thr.is_alive():
             thr.join()
             while not eChar.Stop.empty():
                 stop = eChar.Stop.get()

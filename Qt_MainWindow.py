@@ -680,7 +680,7 @@ class MainUI(QtWidgets.QMainWindow):
 
             timeout = 30
 
-            if (not self.instClose.isAlive() and self.ResultHandling.isFinished()) or self.closeStart+timeout < tm.time():
+            if (not self.instClose.is_alive() and self.ResultHandling.isFinished()) or self.closeStart+timeout < tm.time():
                 
                 self.CloseMovie.stop()
                 self.app.quit()
@@ -775,7 +775,7 @@ class MainUI(QtWidgets.QMainWindow):
 
         finished = False
         if self.ExecThread != None:
-            if not self.ExecThread.isAlive():
+            if not self.ExecThread.is_alive():
                 finished = True
                 self.eChar.stopMeasureLog()
                 self.ExecThread = None
@@ -833,7 +833,7 @@ class MainUI(QtWidgets.QMainWindow):
                 self.SpecTabID = self.tabs.insertTab(ID+1, self.SpecTable, "Specs")
 
         try:
-            if not self.ResultHandling.isAlive():
+            if not self.ResultHandling.is_alive():
                 self.ResultHandling = RH.ResultHandling(self, self.ResultWindow)
                 self.ResultHandling.start()
                 

@@ -75,10 +75,10 @@ class ResultHandling():
         if self.thread == None:
             return True
         
-        return not self.thread.isAlive()
+        return not self.thread.is_alive()
 
-    def isAlive(self):
-        return self.thread.isAlive()
+    def is_alive(self):
+        return self.thread.is_alive()
 
 
     def SetChanged(self, changed):
