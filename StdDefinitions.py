@@ -135,6 +135,7 @@ def getBinaryList(IntIn, binSize=8):
         binOut[n] = int(binIn[inSize-1-n])
 
     return binOut
+    
 
 def MesurementExecutionWPS(deviceCharacterization, eChar, Configuration, threads, GraInterface, Instruments):
 
@@ -1786,11 +1787,15 @@ class MatrixChange:
             m = 0
             for key, value in self.MatrixData.items():
                 x = ""
-                if len(value[n]) == 0:
-                    x = "- "
-                else: 
-                    for v in value[n]:
-                        x = "%s %s" %(x, v)
+                try:
+                    if len(value[n]) == 0:
+                        x = "- "
+                    else: 
+                        for v in value[n]:
+                            x = "%s %s" %(x, v)
+                except TypeError:
+                    pass
+
                 if m == 0:
                     line = "%s: %s" %(key, x) 
                 else:

@@ -64,6 +64,11 @@ class Keithley_707A:
         self.inst.write(command)
         if self.printOutput:
             print("Write: ", command)
+    
+    def read_stb(self):
+        stb = self.inst.read_stb()
+        binStb = self.getBinaryList(stb)
+        return binStb
 
     def initialize(self):
         self.RestoreDefault()
@@ -450,3 +455,14 @@ class Keithley_707A:
     def BreakMake(self, BreakMake):
         self.CheckMakeBreak([], BreakMake)
         self.setBreakMake(BreakMake)
+
+    def getBinaryList(self, IntIn, binSize=8):
+        
+        binIn = bin(IntIn)[2:]
+        binOut = [0]*binSize
+        inSize = len(binIn)
+
+        for n in range(inSize):
+            binOut[n] = int(binIn[inSize-1-n])
+
+        return binOut

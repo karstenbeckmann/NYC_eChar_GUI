@@ -511,16 +511,6 @@ class Agilent_B1500A():
             return False
         raise B1500A_InputError("CMU %d is used." %(CMUNum))
 
-    def getBinaryList(self, IntIn, binSize=8):
-        
-        binIn = bin(IntIn)[2:]
-        binOut = [0]*binSize
-        inSize = len(binIn)
-
-        for n in range(inSize):
-            binOut[n] = int(binIn[inSize-1-n])
-
-        return binOut
 
     def performCalibration(self):
         self.SelfCalibration()
