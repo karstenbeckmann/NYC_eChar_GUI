@@ -693,8 +693,10 @@ class XY(plottingRoutine):
                 #cbarkwargs = {'format': formatter}
                 self.cbar = self.__Graph.figure.colorbar(self.lines[0], ax=self.__Graph, **cbarkwargs)
             else:
-                None
-                self.cbar.update_bruteforce(self.lines[-1])
+                try:
+                    self.cbar.update_bruteforce(self.lines[-1])
+                except ArithmeticError:
+                    pass            
             self.cbar.ax.set_ylabel(ylabel=self.cbarlabel, rotation=-90, va='bottom')
             self.cbar.formatter.set_powerlimits((0, 0))
             self.cbar.update_ticks()
