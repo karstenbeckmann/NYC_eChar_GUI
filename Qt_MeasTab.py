@@ -690,6 +690,11 @@ class Measurement(QtWidgets.QWidget):
                     self.Widget.append(Entry(self, self.WidgetVar[n], validateNumbers=valFloatArray))
                     self.layout.addWidget(self.Widget[-1])
 
+                elif MeasDetail['DataType'][n].strip().lower() == "csvfile":
+                    self.WidgetVar.append(StringVar(Value))
+                    self.Widget.append(FileDialog(self, self.WidgetVar[n], self.boolList.keys()))
+                    self.layout.addWidget(self.Widget[-1])
+
                 self.Widget[-1].setSizePolicy(QtWidgets.QSizePolicy.Minimum,QtWidgets.QSizePolicy.Minimum)
                 self.Widget[-1].setFixedWidth(self.width)
 
