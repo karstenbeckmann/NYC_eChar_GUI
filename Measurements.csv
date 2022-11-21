@@ -364,4 +364,116 @@ Tools,
 VariableName, SweepSMU, GNDSMU, GateSMU, Vreset, Vgate, steps, Compl, GateCompl, hold, delay, DCSMUs, Vdc, DCcompl
 Default, 1, 2, 3, 1.5, 1.5, 101, 0.01, 0.001, 0, 0, , , 
 Datatype, SMU, SMU, SMU, float, float, int, float, float, float, float, SMUAr, floatAr, floatAr
-##############
+#####################
+Name, Meas_8x81T1RForm_UTK
+Folder, Max
+Tools, E5274A, Matrix
+VariableName, test
+Default, 1
+Datatype, int
+#####################
+Name, Meas_8x81T1RNeuron_Test1a
+Folder, Max
+Tools, E5274A, Matrix
+VariableName, test
+Default, 1
+Datatype, int
+#####################
+Name, Meas_UTKDCNeuron_Test_Sagar
+Folder, Max
+Tools, E5274A, Matrix
+VariableName, test
+Default, 1
+Datatype, int
+#####################
+Name, Meas_UTKDCNeuron_Test_Sagar_3Voltages
+Folder, Max
+Tools, E5274A, Matrix
+VariableName, test
+Default, 1
+Datatype, int
+#####################
+Name, Meas_UTKDCNeuron_Test_Sam
+Folder, Max
+Tools, E5274A, Matrix
+VariableName, test
+Default, 1
+Datatype, int
+#####################
+Name, AnalogCycle8x8
+Folder, ReRAMarray
+Tools, E5274A, Matrix
+VariableName, Set Channel, Ground Channel, Gate Channel, # of Cycles, Vset, Vreset, Vread, Vgate, # of Levels, Gate Diff. per lvl, Set. Pul. Width, Reset. Pul. Width, Read Pul. Width
+Default, 1, 2, 3, 10, 2.5, -1.5, -0.2, 1.5, 1, 0.1, 10e-3, 10e-3, 10e-3
+Datatype, int, int, int, int, float, float, float, float, int, float, float, float, float
+####################
+Name, Meas_UTK_Adnan
+Folder, Max
+Tools, E5274A, Matrix
+VariableName, test
+Default, 1
+Datatype, int
+####################
+Name, Meas_SPERO_VMM_Test
+Folder, Max
+Tools, E5274A, Matrix
+VariableName, Vgate
+Default, 1.3
+Datatype, float
+#####################
+Name, Meas_8x81T1R_SPERO
+Folder, Max
+Tools, E5274A, Matrix
+VariableName, Vgate1, Vgate2, Vset, Vreset
+Default, 1.3, 1.9, 2.5, -1.5
+Datatype, float, float, float, float
+#####################
+Name, ImageWrite8x8_SPERO
+Folder, Max
+Tools, E5274A, Matrix
+VariableName, Matrix File, Set Channel, Ground Channel, Gate Channel, Vset, Vread, Low Vgate, High Vgate, Set. Pul. Width, Read Pul. Width
+Default, " ", 1, 2, 3, 2.5, -0.2, 1.2, 2.2, 0.01, 0.01
+Datatype, csvfile, int, int, int, float, float, float, float, float, float
+#####################
+Name, ImageWrite8x8_SPERO_Single_Row
+Folder, Max
+Tools, E5274A, Matrix
+VariableName, Matrix File, Set Channel, Ground Channel, Gate Channel, Vset, Vread, Low Vgate, High Vgate, Set. Pul. Width, Read Pul. Width
+Default, "", 1, 2, 3, 2.5, -0.2, 1.2, 2.2, 10e-3, 10e-3
+Datatype, csvfile, int, int, int, float, float, float, float, float, float
+#####################
+Name, Meas_OnChipPulse
+Folder, Max
+Tools, E5274A, Matrix
+VariableName, Vinput (Gate), Iinput (Iref), RRAMinput (TopElec)
+Default, 1.2, 1e-3, 2.0
+Datatype, float, float, float
+#####################
+Name, ImageSimilaritySearchSPERO_1
+Folder, Max
+Tools, E5274A, Matrix
+VariableName, Matrix File, VMM File, Number of pics, LRSComp (1-LRS 2-MultiLRS/HRS other-Single Case), Sigma_LRS (1-1sig 2-2sig else-1try), Max num. Switching Cycles, SetChn, GNDChn, GateChn, Vgate (Low to High), Vset, Vreset, Vread, VMM Vgate, pos VMM Voltage Value, neg VMM Voltage Value, Set. Pul. Width, Reset. Pul. Width, LRS Range (Single Case), HRS Range (Single Case)
+Default, "", "", 4, 1, 1, 25, 1, 2, 3, 1.5, 2.5, -1.5, -0.2, 1.5, 0.2, -0.2, 10e-3, 10e-3, 2.5e3;8e3, 2e4;1.5e5
+Datatype, csvfile, csvfile, int, int, int, int, int, int, int, floatAr, float, float, float, float, float, float, float, float, floatAr, floatAr
+####################
+Name, UTK_Forming_Circuit_2
+Folder, Max
+Tools, E5274A, Matrix
+VariableName, VDD, Vreset(pos value), Vread, Cycle
+Default, 3.3, 1.5, 0.2, 2
+Datatype, float, float, float, int
+####################
+Name, Zachery_Test_1
+Folder, Max
+Tools, E5274A, Matrix
+VariableName, Matrix File, VMM File, Number of pics, LRSComp (1-LRS 2-MultiLRS/HRS other-Single Case), Sigma_LRS (1-1sig 2-2sig else-1try), Max num. Switching Cycles, SetChn, GNDChn, GateChn, Vgate (Low to High), Vset, Vreset, Vread, VMM Vgate, pos VMM Voltage Value, neg VMM Voltage Value, Set. Pul. Width, Reset. Pul. Width, LRS Range (Single Case), HRS Range (Single Case)
+Default, "", "", 8, 3, 1, 25, 1, 2, 3, 1.8, 2.5, -1.5, -0.2, 1.5, 0.2, -0.2, 10e-3, 10e-3, 2.5e3;8e3, 2e4;1.5e5
+Datatype, csvfile, csvfile, int, int, int, int, int, int, int, floatAr, float, float, float, float, float, float, float, float, floatAr, floatAr
+####################
+Name, ImageSimilaritySearchSPERO_2
+Folder, Max
+Tools, E5274A, Matrix
+VariableName, Matrix File, VMM File, Number of pics, LRSComp (1-LRS 2-MultiLRS/HRS other-Single Case), Sigma_LRS (1-1sig 2-2sig else-1try), Max num. Switching Cycles, SetChn, GNDChn, GateChn, Vgate (Low to High), Vset, Vreset, Vread, VMM Vgate, pos VMM Voltage Value, neg VMM Voltage Value, Set. Pul. Width, Reset. Pul. Width, LRS Range (Single Case), HRS Range (Single Case)
+Default, "", "", 4, 1, 1, 25, 1, 2, 3, 1.5, 2.5, -1.5, -0.2, 1.5, 0.2, -0.2, 10e-3, 10e-3, 2.5e3;8e3, 2e4;1.5e5
+Datatype, csvfile, csvfile, int, int, int, int, int, int, int, floatAr, float, float, float, float, float, float, float, float, floatAr, floatAr
+####################
