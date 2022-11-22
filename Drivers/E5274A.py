@@ -156,6 +156,11 @@ class Agilent_E5274A:
     def getNumberOfSMU(self):
         return sum(self.SMUActive)
 
+    def read_stb(self):
+        stb = self.inst.read_stb()
+        binStb = self.getBinaryList(stb)
+        return binStb
+
     def instWrite(self, command):
 
         if self.printOutput:
