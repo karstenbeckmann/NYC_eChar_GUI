@@ -1525,3 +1525,13 @@ class BNC_Model765:
             self.setVoltageHigh(V, chn)
             self.setVoltageLow(0, chn)
             self.normalOutputPolarity(chn) 
+
+    def getBinaryList(self, IntIn, binSize=8):
+        binIn = bin(IntIn)[2:]
+        binOut = [0]*binSize
+        inSize = len(binIn)
+
+        for n in range(inSize):
+            binOut[n] = int(binIn[inSize-1-n])
+
+        return binOut

@@ -1277,3 +1277,13 @@ class Agilent_81110A:
     def turnOffline(self):
 
         self.inst.close()
+        
+    def getBinaryList(self, IntIn, binSize=8):
+        binIn = bin(IntIn)[2:]
+        binOut = [0]*binSize
+        inSize = len(binIn)
+
+        for n in range(inSize):
+            binOut[n] = int(binIn[inSize-1-n])
+
+        return binOut
