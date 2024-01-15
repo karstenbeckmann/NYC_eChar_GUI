@@ -482,7 +482,7 @@ class stdFrame(QtWidgets.QWidget):
 
         if isinstance(width, int):
             self.width = width
-            super().setMinimumWidth(self.width)
+            super().setMinimumWidth(int(self.width))
         if isinstance(height, int):
             self.height = height
             super().setMinimumHeight(self.height)
@@ -515,7 +515,7 @@ class stdScrollFrame(QtWidgets.QScrollArea):
 
         if isinstance(width, int):
             self.width = width
-            super().setMinimumWidth(self.width)
+            super().setMinimumWidth(int(self.width))
         if isinstance(height, int):
             self.height = height
             super().setMinimumHeight(self.height)
@@ -562,10 +562,10 @@ class stdFrameGrid(stdFrame):
         self.layout = QtWidgets.QGridLayout(self)
         
         for n in range(columns):
-            self.layout.setColumnMinimumWidth(n+1, self.ColumnWidth)
+            self.layout.setColumnMinimumWidth(n+1, int(self.ColumnWidth))
         
         for n in range(rows):
-            self.layout.setRowMinimumHeight(n+1, self.RowHeight)
+            self.layout.setRowMinimumHeight(n+1, int(self.RowHeight))
 
     def __getattr__(self, item):
         return getattr(self.parent(), item)
@@ -738,7 +738,7 @@ class PushButton(QtWidgets.QPushButton):
         super().__init__(text, parent)
 
         if "minimumWidth" in kwargs:
-            self.setMinimumWidth(kwargs["minimumWidth"])
+            self.setMinimumWidth(int(kwargs["minimumWidth"]))
         
         if "command" in kwargs:
             self.clicked.connect(kwargs["command"])
@@ -1105,7 +1105,7 @@ class Entry(QtWidgets.QLineEdit):
         if "default" in kwargs:
             self.default = kwargs['default']
             
-        self.setMinimumWidth(kwargs['width'])
+        self.setMinimumWidth(int(kwargs['width']))
 
         if validateNumbers != None:
             self.validateNumbers = str(validateNumbers)

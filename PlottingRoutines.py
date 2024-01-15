@@ -249,7 +249,7 @@ class WaferMap(plottingRoutine):
         self.xlow = self.xticks[0]
         self.ylow = self.yticks[0]
         
-        self.data = np.empty((len(self.yticks), len(self.xticks)), np.float)
+        self.data = np.empty((len(self.yticks), len(self.xticks)), np.longdouble)
         self.data[:] = np.nan
 
         if not self.initValue == None:
@@ -343,7 +343,7 @@ class WaferMap(plottingRoutine):
         if calcUpdate:
             self.calcProp()
             
-            self.data = np.empty((len(self.yticks), len(self.xticks)), np.float)
+            self.data = np.empty((len(self.yticks), len(self.xticks)), np.longdouble)
             self.data[:] = np.nan
             self.__Figure.clf()
             self.__Graph = self.__Figure.add_subplot(111)
@@ -462,7 +462,7 @@ class WaferMapValues(plottingRoutine):
         self.xlow = self.xticks[0]
         self.ylow = self.yticks[0]
 
-        self.data = np.empty((len(self.yticks), len(self.xticks)), np.float)
+        self.data = np.empty((len(self.yticks), len(self.xticks)), np.longdouble)
         #self.data[:] = 1
         self.data[:] = np.nan
 
@@ -778,7 +778,7 @@ class XY(plottingRoutine):
 
         elif self.PlotType == 'Map':
             data = std.equalizeArray(self.data)
-            data = np.array(data, np.float64)
+            data = np.array(data, np.longdouble)
             self.lines.append(None)
             self.lines[-1] = self.__Graph.imshow(data, aspect='auto')
 

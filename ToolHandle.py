@@ -77,10 +77,11 @@ class ToolHandle:
 
         try:
             self.rm = vs.ResourceManager()
-        except (SystemError) as e:
+        except (SystemError, ValueError) as e:
             err = "Please install the NI visa software. Error: %s" %(e)
             self.Errors.put(err)
-            raise SystemError(err)
+            offline = True
+            #raise SystemError(err)
         
         self.addSupportedDevices()
 
@@ -691,11 +692,11 @@ class ToolHandle:
                 for inst in self.InitializedInst:
                     if inst['GPIB'] == adr:
                         inst['Instrument'].turnOffline()
-        except (vs.VisaIOError, vs.InvalidSession):
+        except (AttributeError, vs.VisaIOError, vs.InvalidSession):
             None
         try:
             self.rm.close()
-        except (vs.VisaIOError, vs.InvalidSession):
+        except (AttributeError, vs.VisaIOError, vs.InvalidSession):
             None
 
     def getPrimaryTool(self, typ):
@@ -705,7 +706,6 @@ class ToolHandle:
         return None
 
     def update(self, MainGI):
-        
         for inst in self.InitializedInst:
             try:
                 logQueue = inst['Instrument'].getLogQueue()

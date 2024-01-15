@@ -75,14 +75,14 @@ class ProberWindow(QtWidgets.QMainWindow):
         
         self._main.setFont(self.QFont)
         self._main.setContentsMargins(*self.QMargin)
-        self.resize(self.__width, self.__height)
-        self._main.resize(self.__width, self.__height)
+        self.resize(int(self.__width), int(self.__height))
+        self._main.resize(int(self.__width), int(self.__height))
         self.layout = self._main.layout
 
         rowHeight = self._main.getRowHeight()
         colWidth = self._main.getColumnWidth()
         for n in range(1,6,1):
-            self.layout.setColumnMinimumWidth(n, rowHeight)
+            self.layout.setColumnMinimumWidth(n, int(rowHeight))
             
         self.Menus = []
         self.proWid = []
@@ -482,7 +482,7 @@ class StatusWidgets(stdObj.stdFrameGrid):
         #wid = StatusPushButton(self, self.iconPath, "ChuckVacuum", "Vacuum", 0, 0, self.layout, self.RowHeight, self.ColumnWidth, 1, 3, command=self.toggleQuiteMode)
         #self.proWid.append(wid)
 
-        size = QtCore.QSize(self.width, self.height)
+        size = QtCore.QSize(int(self.width), int(self.height))
 
         self.defPal = self.MainGI.getColorPalette("default", "base")
         self.actPal = self.MainGI.getColorPalette("orange", "base")
@@ -662,7 +662,7 @@ class Contact(ProberWindowSubFrame):
         width = self.AlignWid.size().width()
         height = self.AlignWid.size().height()
 
-        size = QtCore.QSize(width, height)
+        size = QtCore.QSize(int(width), int(height))
 
         self.SeparationWid.setIconSize(size)
         self.ContactWid.setIconSize(size)
@@ -1101,7 +1101,7 @@ class LineEdit(QtWidgets.QLineEdit):
         self.layout.addWidget(self, row, column, rowspan, columnspan)
 
         if 'width' in kwargs:
-            self.setMinimumWidth(kwargs['width'])
+            self.setMinimumWidth(int(kwargs['width']))
 
         self.addCommand = None
         if 'command' in kwargs:

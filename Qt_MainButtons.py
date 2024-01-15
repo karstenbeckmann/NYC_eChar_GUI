@@ -42,7 +42,7 @@ class MainButtons(QtWidgets.QWidget):
         AvailMeasTypes = ["Full Wafer"]
 
         self.__MeasurementType = stdObj.ComboBox(self, self.MainGI, "CurrentMeasurementType", list(AvailMeasTypes), command=self.callMeasTypes, width=15)
-        self.__MeasurementType.setMinimumWidth(0.2*self.width)
+        self.__MeasurementType.setMinimumWidth(int(0.2*self.width))
         self.layout.addWidget(self.__MeasurementType)
         
         ChuckTemp = "--"
@@ -65,7 +65,7 @@ class MainButtons(QtWidgets.QWidget):
         self.layout.addWidget(self.__StopButton)
         
         self.ProgressBar = QtWidgets.QProgressBar(self)
-        self.ProgressBar.setFixedWidth(self.width*0.15)
+        self.ProgressBar.setFixedWidth(int(self.width*0.15))
         self.ProgressBar.setValue(0)
         self.ProgressBar.setAlignment(QtCore.Qt.AlignCenter)
         self.layout.addWidget(self.ProgressBar)
