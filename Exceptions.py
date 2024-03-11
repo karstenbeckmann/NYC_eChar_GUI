@@ -159,7 +159,13 @@ class Keithley_707A_InputError(ToolInputError):
         self.message = "Keithley_707A Wrong Input: %s" %(message) 
 
         super().__init__(message, eChar, *args)
-        
+    
+class Keithley_7002_InputError(ToolInputError):
+    def __init__(self, message, eChar=None, *args):
+        self.message = "Keithley_7002 Wrong Input: %s" %(message) 
+
+        super().__init__(message, eChar, *args)
+
 class B1110A_Error(ToolError):
     def __init__(self, message, eChar=None, *args):
         self.message = "B1110A: %s" %(message) 

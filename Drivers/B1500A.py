@@ -10,6 +10,7 @@ import pyvisa as vs
 import datetime as dt 
 import types as tp
 import time as tm
+import copy as cp
 import queue as qu
 from Exceptions import *
 
@@ -40,9 +41,24 @@ class Agilent_B1500A():
     TimeName = ['T1','T2','T3','T4','T5','T6','T7','T8']
     SMUtype = ['MP']*4
     VR = [5, 50, 20, 200, 400, 1000, 2000, -5, -50, -20, -200, -400, -1000, -2000, 0]
-    IR = [11,12,13,14,15,16,17,18,19,20,-11,-12,-13,-14,-15,-16,-17,-18,-19,-20, 0]
-    RIlabel = [1e-12, 1e-11, 1e-10, 1e-9, 1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 1e-12, 1e-11, 1e-10, 1e-9, 1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, "Auto"]
-    RVlabel = [0.5, 5, 2, 20, 40, 100, 200, "Auto"]
+    IR = [8,9,10,11,12,13,14,15,16,17,18,19,20,-8,-9,-10,-11,-12,-13,-14,-15,-16,-17,-18,-19,-20, 0]
+    VRval = dict()
+    VRval['HRSMU/ASU'] = [1e-12, 1e-11, 1e-10, 1e-9, 1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, None, 1e-12, 1e-11, 1e-10, 1e-9, 1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, None, 1e-1]
+    VRval['HRSMU'] = [None, 1e-11, 1e-10, 1e-9, 1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, None, 1e-12, 1e-11, 1e-10, 1e-9, 1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, None, 1e-1]
+    VRval['MPSMU'] = [None,None,None, 1e-9, 1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, None, 1e-12, 1e-11, 1e-10, 1e-9, 1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, None, 1e-1]
+    VRval['HPSMU'] = [None,None,None, 1e-9, 1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 1, 1e-12, 1e-11, 1e-10, 1e-9, 1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 1, 1]
+    IRval = dict()
+    IRval['HRSMU/ASU'] = [0.5, 5, 2, 20, 40, 100, None, 0.5, 5, 2, 20, 40, 100, None, 100]
+    IRval['HRSMU'] = [0.5, 5, 2, 20, 40, 100, None, 0.5, 5, 2, 20, 40, 100, None, 100]
+    IRval['MRSMU'] = [0.5, 5, 2, 20, 40, 100, None, 0.5, 5, 2, 20, 40, 100, None, 100]
+    IRval['HPSMU'] = [None, None, 2, 20, 40, 100, 200, 0.5, 5, 2, 20, 40, 100, 200, 200]
+    RIlabel = cp.deepcopy(VRval)
+    RVlabel = cp.deepcopy(IRval)
+    for value in RIlabel.values():
+            value[-1] = "Auto"
+    for value in RVlabel.values():
+            value[-1] = "Auto"
+
     ADC_HS_Mode = 0
     ADC_HR_Mode = 0
     ADC_HS_Coef = 1
@@ -590,8 +606,8 @@ class Agilent_B1500A():
     #check ranges for 5281A MPSMU if all values in RR are allowed ranges
     def CheckRanges(self, Chns, VorI, Range):
         n=0
-        VR = [0, 5, 50, 20, 200, 400, 1000, 2000, -5, -50, -20, -200, -400, -1000, -2000]
-        IR = [0,11,12,13,14,15,16,17,18,19,20,-11,-12,-13,-14,-15,-16,-17,-18,-19,-20]
+        VR = self.VR
+        IR = self.IR
         
         if VorI == "Voltage":
             for element in Range:
@@ -613,71 +629,28 @@ class Agilent_B1500A():
         VR = self.VR
         IR = self.IR
         
-        for element in Val:
-            if VorI[n]:    
-                if RV[n] == VR[0]:
-                    if np.absolute(int(element)) > 42:
-                        raise B1500A_InputError("Voltage for Voltage range %d in Channel %d is above 42V." %(RV[n], Chns[n]))
-                if RV[n] == VR[1] or RV[n] == VR[8]:
-                    if np.absolute(int(element)) > 0.5:
-                        raise B1500A_InputError("Voltage for Voltage range %d in Channel %d is above 0.5V." %(RV[n], Chns[n]))
-                if RV[n] == VR[2] or RV[n] == VR[9]:
-                    if np.absolute(int(element)) > 5:
-                        raise B1500A_InputError("Voltage for Voltage range %d in Channel %d is above 5V." %(RV[n], Chns[n]))
-                if RV[n] == VR[3] or RV[n] == VR[10]:
-                    if np.absolute(int(element)) > 2:
-                        raise B1500A_InputError("Voltage for Voltage range %d in Channel %d is above 2V." %(RV[n], Chns[n]))
-                if RV[n] == VR[4] or RV[n] == VR[11]:
-                    if np.absolute(int(element)) > 20:
-                        raise B1500A_InputError("Voltage for Voltage range %d in Channel %d is above 20V." %(RV[n], Chns[n]))
-                if RV[n] == VR[5] or RV[n] == VR[12]:
-                    if np.absolute(int(element)) > 40:
-                        raise B1500A_InputError("Voltage for Voltage range %d in Channel %d is above 40V." %(RV[n], Chns[n]))
-                if RV[n] == VR[6] or RV[n] == VR[13]:
-                    if np.absolute(int(element)) > 100:
-                        raise B1500A_InputError("Voltage for Voltage range %d in Channel %d is above 42V." %(RV[n], Chns[n]))
-                if RV[n] == VR[7] or RV[n] == VR[14]:
-                    if np.absolute(int(element)) > 200:
-                        raise B1500A_InputError("Voltage for Voltage range %d in Channel %d is above 42V." %(RV[n], Chns[n]))
-            n+=1
+        modDesc = self.getModuleDescription()
 
-        n=0
-        for element in Val:
-            if VorI[n] == False:
-                if RI[n] == IR[0]:
-                    if np.absolute(int(element)) > 0.2:
-                        raise B1500A_InputError("Current for Current range %d in Channel %d is above 200 mA." %(RI[n], Chns[n]))
-                if RI[n] == IR[1] or RI[n] == IR[11]:
-                    if np.absolute(int(element)) > 1.15e-9:
-                        raise B1500A_InputError("Current for Current range %d in Channel %d is above 1.15 nA." %(RI[n], Chns[n]))
-                if RI[n] == IR[2] or RI[n] == IR[12]:
-                    if np.absolute(int(element)) > 11.5e-9:
-                        raise B1500A_InputError("Current for Current range %d in Channel %d is above 11.5 nA." %(RI[n], Chns[n]))
-                if RI[n] == IR[3] or RI[n] == IR[13]:
-                    if np.absolute(int(element)) > 115e-9:
-                        raise B1500A_InputError("Current for Current range %d in Channel %d is above 115 nA." %(RI[n], Chns[n]))
-                if RI[n] == IR[4] or RI[n] == IR[14]:
-                    if np.absolute(int(element)) > 1.15e-6:
-                        raise B1500A_InputError("Current for Current range %d in Channel %d is above 1.15 uA." %(RI[n], Chns[n]))
-                if RI[n] == IR[5] or RI[n] == IR[15]:
-                    if np.absolute(int(element)) > 11.5e-6:
-                        raise B1500A_InputError("Current for Current range %d in Channel %d is above 11.5 uA." %(RI[n], Chns[n]))
-                if RI[n] == IR[6] or RI[n] == IR[16]:
-                    if np.absolute(int(element)) > 115e-6:
-                        raise B1500A_InputError("Current for Current range %d in Channel %d is above 115 uA." %(RI[n], Chns[n]))
-                if RI[n] == IR[7] or RI[n] == IR[17]:
-                    if np.absolute(int(element)) > 1.15e-3:
-                        raise B1500A_InputError("Current for Current range %d in Channel %d is above 1.15 mA." %(RI[n], Chns[n]))
-                if RI[n] == IR[8] or RI[n] == IR[18]:
-                    if np.absolute(int(element)) > 11.5e-3:
-                        raise B1500A_InputError("Current for Current range %d in Channel %d is above 11.5 mA." %(RI[n], Chns[n]))
-                if RI[n] == IR[9] or RI[n] == IR[19]:
-                    if np.absolute(int(element)) > 115e-3:
-                        raise B1500A_InputError("Current for Current range %d in Channel %d is above 115 mA." %(RI[n], Chns[n]))
-                if RI[n] == IR[10] or RI[n] == IR[20]:
-                    if np.absolute(int(element)) > 200e-3:
-                        raise B1500A_InputError("Current for Current range %d in Channel %d is above 200 mA." %(RI[n], Chns[n]))
-            n+=1
+        for n, element in enumerate(Val):
+            if VorI[n]:    
+                modDesc = self.getModuleDescription(Chns[n])
+                for vr, vrVal in zip(self.VR, self.VRval[modDesc]):
+                    if RV[n] == vr:
+                        if vrVal == None:
+                            raise B1500A_InputError("Voltage range %d in Channel %d for %d V is not valid for %s." %(RI[n], Chns[n]), vrVal, modDesc)
+                        elif np.absolute(int(element)) > vrVal:
+                            raise B1500A_InputError("Voltage value for Voltage range %d in Channel %d is above %d V." %(RV[n], Chns[n]), vrVal)
+                        
+        for n, element in enumerate(Val):
+            if not VorI[n]: 
+                modDesc = self.getModuleDescription(Chns[n])
+                for ir, irVal in zip(self.IR, self.IRval[modDesc]):
+                    if RI[n] == ir:
+                        if irVal == None:
+                            raise B1500A_InputError("Current range %d in Channel %d for %d V is not valid for %s." %(RV[n], Chns[n]), irVal, modDesc)
+                        elif np.absolute(int(element)) > irVal:
+                            raise B1500A_InputError("Current value for Current range %d in Channel %d is above %d I." %(RI[n], Chns[n]), irVal)
+        
     
     def CheckCMUValues(self, freq, Vac, mode, Vdc=None):
 
@@ -704,6 +677,8 @@ class Agilent_B1500A():
             if not mode in modes:
                 raise B1500A_InputError("CMU Measurement mode must be 1,2,10,11,20,21,100,101,102,103,200,201,202,300,301,302,303,400,401 or 402.")
 
+
+    ############## NEEDS WORK
     def CheckCompliance(self, Chns, VorI, Val, IComp, VComp, RV, RI):
         n=0
         VR = self.VR
@@ -714,148 +689,97 @@ class Agilent_B1500A():
         #if np.any(VComp) == 0:
         #    raise B1500A_InputError("Voltage Compliance can't be 0")
 
-        for element in IComp:
+        
+        #VR = [5, 50, 20, 200, 400, 1000, 2000, -5, -50, -20, -200, -400, -1000, -2000, 0]
+        #IR = [8,9,10,11,12,13,14,15,16,17,18,19,20,-8,-9,-10,-11,-12,-13,-14,-15,-16,-17,-18,-19,-20, 0]
+        #VRval = [1e-12, 1e-11, 1e-10, 1e-9, 1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 1, 1e-12, 1e-11, 1e-10, 1e-9, 1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 1, 1]
+        #IRval = [0.5, 5, 2, 20, 40, 100, 200, 0.5, 5, 2, 20, 40, 100, 200, 200]
+
+        VcompMax = dict()
+        VcompMax[1e-12] = 100
+        VcompMax[1e-11] = 100
+        VcompMax[1e-10] = 100
+        VcompMax[1e-9] = {'HPSMU': 200, 'MPSMU': 100, 'HRSMU': 100, 'HRSMU/ASU': 100}
+        VcompMax[1e-8] = {'HPSMU': 200, 'MPSMU': 100, 'HRSMU': 100, 'HRSMU/ASU': 100}
+        VcompMax[1e-7] = {'HPSMU': 200, 'MPSMU': 100, 'HRSMU': 100, 'HRSMU/ASU': 100}
+        VcompMax[1e-6] = {'HPSMU': 200, 'MPSMU': 100, 'HRSMU': 100, 'HRSMU/ASU': 100}
+        VcompMax[1e-5] = {'HPSMU': 200, 'MPSMU': 100, 'HRSMU': 100, 'HRSMU/ASU': 100}
+        VcompMax[1e-4] = {'HPSMU': 200, 'MPSMU': 100, 'HRSMU': 100, 'HRSMU/ASU': 100}
+        VcompMax[1e-3] = {'HPSMU': 200, 'MPSMU': 100, 'HRSMU': 100, 'HRSMU/ASU': 100}
+        VcompMax[1e-2] = {'HPSMU': 200, 'MPSMU': 100, 'HRSMU': 100, 'HRSMU/ASU': 100}
+        VcompMax[1e-1] = {'HPSMU': [[20e-3,50e-3,100e-3,115e-3], [200,200,100,100]], 'MPSMU': [[20e-3,50e-3,100e-3,115e-3], [100,40,20,None]], 'HRSMU': [[20e-3,50e-3,100e-3,115e-3], [100,40,20,None]], 'HRSMU/ASU': [[20e-3,50e-3,100e-3,115e-3], [100,40,20,None]]}
+        VcompMax[1] = {'HPSMU': [[50e-3,125e-3,500e-3,1], [200,100,40,20]]}
+        
+        IcompMax = dict()
+        IcompMax[0.5] = 0.1
+        IcompMax[2] = 0.1
+        IcompMax[5] = 0.1
+        IcompMax[20] = 0.1
+        IcompMax[40] = {'HPSMU': [[20,40], [0.5e-3,0.5e-3]], 'MPSMU': [[20,40], [0.1,0.05]], 'HRSMU': [[20,40], [0.1,0.05]], 'HRSMU/ASU': [[20,40], [0.1,0.05]]}
+        IcompMax[100] = {'HPSMU': [[20,40,100], [0.125e-3,0.125e-3,0.125e-3]], 'MPSMU': [[20,40,100], [0.1,0.05,0.02]], 'HRSMU': [[20,40,100], [0.1,0.05,0.02]], 'HRSMU/ASU': [[20,40,100], [0.1,0.05,0.02]]}
+        IcompMax[200] = 0.05
+
+        for n in range(len(VorI)):
             if VorI[n]:
-                if RV[n] == VR[0]:
-                    if np.absolute(Val[n]) <= 42:
-                        if np.absolute(int(element)) > 100e-3:
-                            raise B1500A_InputError("Current Compliance for Voltage range %d in Channel %d is not less than or equal to 100e-3 A." %(RV[n], Chns[n]))
-                    else:
-                        raise B1500A_InputError(">42 not supported with a Current Measurement Range of %s " %(self.RVlabel[RV[n]]))
-                if RV[n] == VR[1] or RV[n] == VR[8]:
-                    if np.absolute(Val[n]) <= 0.5:
-                        if np.absolute(int(element)) > 100e-3:
-                            raise B1500A_InputError("Current Compliance for Voltage range %d in Channel %d is not less than or equal to 100e-3 A." %(RV[n], Chns[n]))
-                    else:
-                        raise B1500A_InputError(">0.5 not supported with a Current Measurement Range of %s " %(self.RVlabel[RV[n]]))
-                if RV[n] == VR[2] or RV[n] == VR[9]:
-                    if np.absolute(Val[n]) <= 5:
-                        if np.absolute(int(element)) > 100e-3:
-                            raise B1500A_InputError("Current Compliance for Voltage range %d in Channel %d is not less than or equal to 100e-3 A." %(RV[n], Chns[n]))
-                    else:
-                        raise B1500A_InputError(">5 not supported with a Current Measurement Range of %s " %(self.RVlabel[RV[n]]))
-                if RV[n] == VR[3] or RV[n] == VR[10]:
-                    if np.absolute(Val[n]) <= 2:
-                        if np.absolute(int(element)) > 100e-3:
-                            raise B1500A_InputError("Current Compliance for Voltage range %d in Channel %d is not less than or equal to 100e-3 A." %(RV[n], Chns[n]))
-                    else:
-                        raise B1500A_InputError(">2 not supported with a Current Measurement Range of %s " %(self.RVlabel[RV[n]]))
-                if RV[n] == VR[4] or RV[n] == VR[11]:
-                    if np.absolute(Val[n]) <= 20:
-                        if np.absolute(int(element)) > 100e-3:
-                            raise B1500A_InputError("Current Compliance for Voltage range %d in Channel %d is not less than or equal to 100e-3 A." %(RV[n], Chns[n]))
-                    else:
-                        raise B1500A_InputError(">20 not supported with a Current Measurement Range of %s " %(self.RVlabel[RV[n]]))
-                if RV[n] == VR[5] or RV[n] == VR[12]:
-                    if np.absolute(Val[n]) <= 20:
-                        if np.absolute(int(element)) > 100e-3:
-                            raise B1500A_InputError("Current Compliance for Voltage range %d in Channel %d is not less than or equal to 100e-3 A." %(RV[n], Chns[n]))
-                    elif np.absolute(Val[n]) <= 40:
-                        if np.absolute(int(element)) > 50e-3:
-                            raise B1500A_InputError("Current Compliance for Voltage range %d in Channel %d is not less than or equal to 50e-3 A." %(RV[n], Chns[n]))
-                    else:
-                        raise B1500A_InputError(">20 not supported with a Current Measurement Range of %s." %(self.RVlabel[RV[n]]))
-                if RV[n] == VR[6] or RV[n] == VR[13]:
-                    if np.absolute(Val[n]) <= 20:
-                        if np.absolute(int(element)) > 100e-3:
-                            raise B1500A_InputError("Current Compliance for Voltage range %d in Channel %d is not less than or equal to 100e-3 A." %(RV[n], Chns[n]))
-                    elif np.absolute(Val[n]) <= 40:
-                        if np.absolute(int(element)) > 50e-3:
-                            raise B1500A_InputError("Current Compliance for Voltage range %d in Channel %d is not less than or equal to 50e-3 A." %(RV[n], Chns[n]))
-                    elif np.absolute(Val[n]) <= 100:
-                        if np.absolute(int(element)) > 20e-3:
-                            raise B1500A_InputError("Current Compliance for Voltage range %d in Channel %d is not less than or equal to 20e-3 A." %(RV[n], Chns[n]))
-                    else:
-                        raise B1500A_InputError(">100V not supported with a Current Measurement Range of %s." %(self.RVlabel[RV[n]]))
-                if RV[n] == VR[7] or RV[n] == VR[14]:
-                    if np.absolute(Val[n]) < 200:
-                        if np.absolute(int(element)) > 100e-3:
-                            raise B1500A_InputError("Current Compliance for Voltage range %d in Channel %d is not 2e-3 A." %(RV[n], Chns[n]))
-                    else:
-                        raise B1500A_InputError("Incorrect Voltage Compliance Used (200V Output range won't work)!")
-                    
-            n+=1
+                if IComp[n] != None:
+                    icompFin = None
+                    modDesc = self.getModuleDescription(Chns[n])
+                    for vr, vrVal in zip(self.VR, self.VRval[modDesc]):
+                        if RV[n] == vr:
+                            icompMax = IcompMax[vrVal]
+                            if vrVal == None:
+                                raise B1500A_InputError("Voltage range %d in Channel %d for  %d V is not valid for %s." %(RV[n], Chns[n]), vrVal, modDesc)
+                            else:
+                                icompMax = IcompMax[vrVal]
+                                if isinstance(icompMax, dict):
+                                    if isinstance(icompMax[modDesc], list):
+                                        for bias, icompMaxVal in zip(icompMax[modDesc][0], icompMax[modDesc][1]):
+                                            if icompMaxVal == None:
+                                                raise B1500A_InputError("Current Compliance for Voltage range %d in Channel %d for  %d V for %s not valid." %(RV[n], Chns[n]), vrVal, modDesc)
+                                            if Val[n] < bias:
+                                                icompFin = icompMaxVal
+                                                break
+                                    else:
+                                        icompFin = icompMax[modDesc]
+                                else:
+                                    icompFin = icompMax
 
-        n=0
+                    if icompFin == None:
+                        raise B1500A_InputError("Current Compliance for Voltage range %d in Channel %d for  %d V for %s not found." %(RV[n], Chns[n]), vrVal, modDesc)
+                    if IComp[n] > icompFin:
+                        raise B1500A_InputError("Selected current Compliance for Voltage range %d in Channel %d using %s is not less than or equal to %f A." %(RV[n], Chns[n], modDesc, icompFin))
+            else:
+                if VComp[n] != None:
+                    vcompFin = None
+                    modDesc = self.getModuleDescription(Chns[n])
+                    for ir, irVal in zip(self.IR, self.IRval[modDesc]):
+                        if IR[n] == ir:
+                            vcompMax = VcompMax[irVal]
+                            if irVal == None:
+                                raise B1500A_InputError("Current range %d in Channel %d for  %d I is not valid for %s." %(RI[n], Chns[n]), irVal, modDesc)
+                            else:
+                                vcompMax = VcompMax[irVal]
+                                if isinstance(vcompMax, dict):
+                                    if isinstance(vcompMax[modDesc], list):
+                                        for bias, vcompMaxVal in zip(vcompMax[modDesc][0], vcompMax[modDesc][1]):
+                                            if vcompMaxVal == None:
+                                                raise B1500A_InputError("Voltage Compliance for Current range %d in Channel %d for %d I for %s not valid." %(RI[n], Chns[n]), irVal, modDesc)
+                                            if Val[n] < bias:
+                                                vcompFin = vcompMaxVal
+                                                break
+                                    else:
+                                        vcompFin = vcompMax[modDesc]
+                                else:
+                                    vcompFin = vcompMax
 
-        for element in VComp:
+                    if vcompFin == None:
+                        raise B1500A_InputError("Voltage Compliance for Current range %d in Channel %d for %d I for %s not found." %(RI[n], Chns[n]), irVal, modDesc)
+                    if VComp[n] > vcompFin:
+                        raise B1500A_InputError("Selected Voltage Compliance for Current range %d in Channel %d using %s is not less than or equal to %f A." %(RI[n], Chns[n], modDesc, vcompFin))
 
-            if not VorI[n]:
-                if RI[n] == IR[0]:
-                    if np.absolute(Val[n]) <= 0.2:
-                        if np.absolute(int(element)) > 100:
-                            raise B1500A_InputError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 100V." %(RI[n], Chns[n]))
-                    else:
-                        raise B1500A_InputError(">1A not supported with a Current Measurement Range of %s " %(self.RIlabel[RI[n]]))
-                if RI[n] == IR[1] or RI[n] == IR[11]:
-                    if np.absolute(Val[n]) <= 1.15e-9:
-                        if np.absolute(int(element)) > 100:
-                            raise B1500A_InputError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 100V." %(RI[n], Chns[n]))
-                    else:
-                        raise B1500A_InputError(">1.15e-9A not supported with a Current Measurement Range of %s " %(self.RIlabel[RI[n]]))
-                if RI[n] == IR[2] or RI[n] == IR[12]:
-                    if np.absolute(Val[n]) <= 11.5e-9:
-                        if np.absolute(int(element)) > 100:
-                            raise B1500A_InputError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 100V." %(RI[n], Chns[n]))
-                    else:
-                        raise B1500A_InputError(">11.5e-9A not supported with a Current Measurement Range of %s " %(self.RIlabel[RI[n]]))
-                if RI[n] == IR[3] or RI[n] == IR[13]:
-                    if np.absolute(Val[n]) <= 115e-9:
-                        if np.absolute(int(element)) > 100:
-                            raise B1500A_InputError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 100V." %(RI[n], Chns[n]))
-                    else:
-                        raise B1500A_InputError(">115e-9A not supported with a Current Measurement Range of %s " %(self.RIlabel[RI[n]]))
-                if RI[n] == IR[4] or RI[n] == IR[14]:
-                    if np.absolute(Val[n]) <= 1.15e-6:
-                        if np.absolute(int(element)) > 100:
-                            raise B1500A_InputError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 100V." %(RI[n], Chns[n]))
-                    else:
-                        raise B1500A_InputError(">1.15e-6A not supported with a Current Measurement Range of %s " %(self.RIlabel[RI[n]]))
-                if RI[n] == IR[5] or RI[n] == IR[15]:
-                    if np.absolute(Val[n]) <= 11.5e-6:
-                        if np.absolute(int(element)) > 100:
-                            raise B1500A_InputError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 100V." %(RI[n], Chns[n]))
-                    else:
-                        raise B1500A_InputError(">11.5e-6A not supported with a Current Measurement Range of %s " %(self.RIlabel[RI[n]]))
-                if RI[n] == IR[6] or RI[n] == IR[16]:
-                    if np.absolute(Val[n]) <= 115e-6:
-                        if np.absolute(int(element)) > 100:
-                            raise B1500A_InputError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 100V." %(RI[n], Chns[n]))
-                    else:
-                        raise B1500A_InputError(">115e-6A not supported with a Current Measurement Range of %s " %(self.RIlabel[RI[n]]))
-                if RI[n] == IR[7] or RI[n] == IR[17]:
-                    if np.absolute(Val[n]) <= 1.15e-3:
-                        if np.absolute(int(element)) > 100:
-                            raise B1500A_InputError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 100V." %(RI[n], Chns[n]))
-                    else:
-                        raise B1500A_InputError(">1.15e-3A not supported with a Current Measurement Range of %s " %(self.RIlabel[RI[n]]))
-                if RI[n] == IR[8] or RI[n] == IR[18]:
-                    if np.absolute(Val[n]) <= 11.5e-3:
-                        if np.absolute(int(element)) > 100:
-                            raise B1500A_InputError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 100V." %(RI[n], Chns[n]))
-                    else:
-                        raise B1500A_InputError(">11.5e-3A not supported with a Current Measurement Range of %s " %(self.RIlabel[RI[n]]))
-                if RI[n] == IR[9] or RI[n] == IR[19]:
-                    if np.absolute(Val[n]) <= 20e-3:
-                        if np.absolute(int(element)) > 100:
-                            raise B1500A_InputError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 100V." %(RI[n], Chns[n]))
-                    if np.absolute(Val[n]) <= 50e-3:
-                        if np.absolute(int(element)) > 40:
-                            raise B1500A_InputError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 40V." %(RI[n], Chns[n]))
-                    if np.absolute(Val[n]) <= 115e-3:
-                        if np.absolute(int(element)) > 20:
-                            raise B1500A_InputError("Voltage Compliance for Current range %d in Channel %d is not less than or equal to 20V." %(RI[n], Chns[n]))
-                    else:
-                        raise B1500A_InputError(">115e-3A not supported with a Current Measurement Range of %s " %(self.RIlabel[RI[n]]))
-                if RI[n] == IR[10] or RI[n] == IR[20]:
-                    if np.absolute(Val[n]) > 200:
-                        if np.absolute(int(element)) != 100000:
-                            raise B1500A_InputError("Voltage Compliance for Current range %d in Channel %d is not 100000V." %(RI[n], Chns[n]))
-                    else:
-                        raise B1500A_InputError("Incorrect Current Compliance Used (Above 100mA Output range won't work)!")
 
-            n=+1
-
+    def getModuleDescription(chn):
+        return self.ModuleDesc[chn]
 
     # check the filter that can be applied to each SMU
     def CheckFilter(self, Chns, VorI, FL):

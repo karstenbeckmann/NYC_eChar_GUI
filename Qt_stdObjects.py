@@ -1413,8 +1413,8 @@ class Table(QtWidgets.QTableWidget):
         self.content = content
 
         #self.resize(width, height)
-        self.setColumnCount(columns)
-        self.setRowCount(rows)
+        self.setColumnCount(int(columns))
+        self.setRowCount(int(rows))
 
         if horHeader != None:
             for n in range(len(horHeader)):

@@ -829,3 +829,318 @@ class Cascade_CM300(FormFactor):
 
     ProbeStationName = "Cascade CM300"
     
+class ProbeMaster: 
+
+    inst = None
+    ErrorQueue = qu.Queue()
+    logQueue = qu.Queue()
+    printOutput = False
+    __GPIB = None
+    __rm = None
+    __online = False\
+
+    ProbeStationName = "SignitoneProbeMaster"
+
+    def __init__(self,rm=None,GPIB_adr=None, Device=None):
+        
+
+        print(self.ProbeStationName)
+
+        if (rm == None or GPIB_adr == None) and Device == None:
+            self.write("%s: Either rm and GPIB_adr or a device must be given transmitted" %(self.ProbeStationName))  #maybe a problem, tranmitting None type
+        elif Device == None:    
+
+            try:
+                self.inst = rm.open_resource(GPIB_adr)
+                
+            except:
+                self.write("%s: The device %s does not exist." %(self.ProbeStationName, GPIB_adr))  #maybe a problem, tranmitting None type
+        
+            self.__GPIB = GPIB_adr
+            self.__rm = rm
+        else:
+                self.inst = Device
+        
+        try:
+            self.instWrite("*IDN?")
+            tm.sleep(0.1)
+            self.instRead()
+            self.__online = True
+        except (SystemError, vs.VisaIOError) as message:
+            self.ErrorQueue.put(message)
+            self.__online == False
+
+    def Connect(self):
+        try:
+            self.inst = self.__rm.open_resource(self.__GPIB)
+            self.instWrite("*IDN?")
+            tm.sleep(0.1)
+            self.instRead()
+            self.__online = True
+        except SystemError as message:
+            self.ErrorQueue.put(message)
+        
+
+    def write(self, command):
+        if self.printOutput:
+            print(command)
+        self.logQueue.put(command)
+
+    def setTimeOut(self, timeout):
+        if not isinstance(timeout,(float,int)):
+            raise ProbeStation_InputError("Timeout must be of type float bigger than 0. The unit is milliseconds.")
+        if timeout <= 0:
+            raise ProbeStation_InputError("Timeout must be of type float bigger than 0. The unit is milliseconds.")
+        if self.__online:
+            self.inst.timeout = timeout
+        else:
+            self.ErrorQueue.put("The Probe Station is offline.")
+    
+    def deleteTimeOut(self):
+        if self.__online:
+            del self.inst.timeout
+        else:
+            self.ErrorQueue.put("The Probe Station is offline.")
+
+    def instWrite(self, command):
+        if self.__online:
+            self.inst.write(command)
+            if self.printOutput:
+                print("Write: ", command)
+        else:
+            self.ErrorQueue.put("Probe Station is offline.")
+
+    def instRead(self):
+        ret = None
+        if self.__online:
+            ret = self.inst.read()
+            if self.printOutput:
+                print("Read!")
+        else:
+            self.ErrorQueue.put("Probe Station is offline.")
+        return ret
+
+    def instQuery(self, command):
+        ret = None
+        if self.__online:
+            ret = self.inst.query(command)
+            if self.printOutput:
+                print("Query: ", command)
+
+        else:
+            self.ErrorQueue.put("Probe Station is offline.")
+        return ret
+
+    def getStatus(self):
+        ret = self.instQuery("STB?")
+        return ret
+
+    def read_stb(self):
+        ret = self.getStatus()
+        return ret
+        
+    #Chuck control
+    ##############################################################
+
+    def InitChuck(self):
+        None
+
+    def EnableMotorQuiet(self):
+        None
+        
+    def DisableMotorQuiet(self):
+        None
+
+    def close(self):
+        if self.__online:
+            self.inst.close()
+            self.__online = False
+
+    def turnOffline(self):
+        self.close()
+
+    #Move Chuck
+    #realtiveTo can be: H: Home; Z: Zero; C: Center; R: Current Position;
+    #unit can be: Y: micron; I: Mils; X: Index; J: Jog;
+    #velocity is from 0 to 100%
+    def MoveChuck(self, X, Y, relativTo="R", unit="Y", velocity=100):
+        if not (X == 0 and Y == 0):
+            ret = self.instQuery("moverel %s, %s" %(-X,-Y))
+            if not ret.strip() == "C":
+                raise ProbeStationError(ret)
+
+    #Move Chuck by Index (one die)
+    #realtiveTo can be: H: Home; Z: Zero; C: Center; R: Current Position;
+    #X and Y are Integer 
+    #velocity is from 0 to 100%
+    def MoveChuckIndex(self, X, Y, relativTo="R", velocity=100):
+        self.checkIndex(X, 'X')
+        self.checkIndex(Y, 'Y')
+        self.checkPosRef(relativTo)
+        if not (X == 0 and Y == 0 and (not relativTo=="C")):
+            ret = self.instQuery("step  %s, %s" %(X,Y))
+            if not ret.strip() == "C":
+                raise ProbeStationError(ret)
+
+    def MoveChuckMicron(self, X, Y, relativTo="R", velocity=100):
+        self.checkXYValue(X, 'X')
+        self.checkXYValue(Y, 'X')
+        if not (X == 0 and Y == 0):
+            self.checkPosRef(relativTo)
+            ret = self.instQuery("moverel %s, %s" %(X,Y))
+            if not ret.strip() == "C":
+                raise ProbeStationError(ret)
+
+    def MoveChuckAlign(self, velocity=100):
+        None
+
+    def MoveChuckContact(self, vel=100):
+        ret = self.instQuery("zchuckup")
+        if not ret.strip() == "C":
+            raise ProbeStationError(ret)
+
+    #Moves the chuck to the upper (0) or lower = lifted (1) position. This initiates motion only, the actual movement may take some seconds.
+    def MoveChuckLift(self, Pos):
+        self.instQuery("MoveChuckLift %s" %(Pos))
+
+    #Moves the Chuck stage in X, Y, Z and Theta to the load position.
+    def MoveChuckLoad(self, Pos=1):
+        self.instQuery("loadwafer")
+
+    #Moves the chuck Z axis to the separation height. Returns error if no Contact height is set.
+    def MoveChuckSeparation(self, Vel=100):
+        self.instQuery("zchuckdown")
+
+    #Moves the Chuck to Home position.
+    def MoveChuckHome(self, Vel=100):
+        self.instQuery("gohome")
+
+    #The command gets the actual wafer size which is stored in the electronics.
+    def ReadChuckIndex(self, Pos=1):
+        output = None
+        ret = self.instQuery("getdie" )
+        if not type(None):
+            ret = ret.split(',')
+            output = []
+            for x in ret:
+                output.append(float(x))
+        return output
+
+    #Returns the actual chuck stage position in X, Y and Z. The default Compensation Mode is the currently activated compensation mode of the kernel. 
+    def ReadChuckPosition(self, Unit="Y", PosRef="H"):
+        output = None
+        ret = self.instQuery("ReadChuckPosition %s %s" %(Unit, PosRef))
+        if not ret == None:
+            ret = ret.split(' ')[1:]
+            output = []
+            first = True
+            for x in ret:
+                if first:
+                    output.append(-float(x))
+                else:
+                    output.append(-float(x))
+                first = False
+            return output
+
+    def ReadChuckPositionX(self, Unit="Y", PosRef="H"):
+        ret = self.instQuery("getscope")
+        ret = ret.split(',')[0]
+        output = float(ret)
+        return -output
+    
+    def ReadChuckPositionY(self, Unit="Y", PosRef="H"):
+        ret = self.instQuery("getscope")
+        ret = ret.split(',')[1]
+        output = float(ret)
+        return -output
+    
+    def ReadChuckHeights(self):
+        ret = self.instQuery("getzchuck")
+        ret = ret.strip()
+        output = float(x)
+        return output
+        
+    def ReadChuckPositionT(self, Unit="Y", PosRef="H"):
+        ret = self.instQuery("gettheta")
+        ret = ret.strip()
+        output = float(x)
+        return output
+
+    def ReadScopePosition(self, Unit="Y", PosRef="H"):
+        ret = self.instQuery("getscope")
+        ret = ret.strip().split(",")
+        output = [float(x) for x in ret]
+        return output
+
+    #Read the actual set or calculated temperature.
+    def ReadChuckThermoValue(self):
+        None
+
+    #Read the actual set or calculated temperature.
+    def ReadChuckStatus(self):
+        return None
+
+    #TemperatureChuck control
+    ##############################################################
+    
+    #Read the actual set or calculated temperature.
+    def EnableHeaterHoldMode(self, en):
+        return True
+
+    #This command returns the current dew point temperature, if a dew point sensor is connected. The default unit of the temperature is degrees Celsius. 
+    def GetDewPointTemp(self, Unit="C"):
+        return True
+
+    #This command reads the current temperature of the chuck and determines the status of the thermal system. The default unit is degrees Celsius.  
+    def GetHeaterTemp(self, Unit="C"):
+        return 25
+    
+    #This command reads the target temperature of the chuck. The default unit is degrees Celsius.
+    def GetTargetTemp(self, Unit="C"):
+        return 25
+
+    #This command sets a new target temperature and starts the heating or cooling of the chuck. An answer to the command will be returned after reaching the given temperature and waiting the soak time or an unexpected interrupt of the process. Given back is the already reached temperature. The default unit is degrees Celsius.
+    def HeatChuck(self, temp, Unit="C"):
+        None
+        
+    #This command sets a new target temperature and starts the heating or cooling of the temperature chuck. The response is returned immediately. 
+    #Given back is the new target temperature. The default unit is degrees Celsius. 
+    def SetHeaterTemp(self, temp, Unit="C"):
+        None
+
+    #This command sets a new soak time value. The unit of the value is seconds. If soak time is actually running, it may be affected by the change.
+    def SetHeaterSoak(self, time):
+        None
+
+    #This command sets a new soak time value. The unit of the value is seconds. If soak time is actually running, it may be affected by the change.
+    def StopHeatChuck(self):
+        None
+
+    #Read the Scope Status.
+    def ReadScopeStatus(self):
+        None
+
+    ############################################
+    ############## check Values:################ 
+    def checkIndex(self, n, axis): 
+        if not isinstance(n, int):
+            raise ProbeStation_InputError("The index for axis %s must be an int between 0 and 50." %(axis))
+        if n < -50 or n > 50: 
+            raise ProbeStation_InputError("The index for axis %s must be an int between 0 and 50." %(axis))
+
+    def checkXYValue(self, n, axis): 
+        if not isinstance(n, (float, int)):
+            raise ProbeStation_InputError("The index for axis %s must be a double value between 0 and +-150000. (Cur. Val. %s)" %(axis, n))
+        if n < -150000 or n > 150000: 
+            raise ProbeStation_InputError("The index for axis %s must be a double value between 0 and +-150000. (Cur. Val. %s)" %(axis, n))
+
+    def checkPosRef(self, pos): 
+        if not isinstance(pos, str):
+            raise ProbeStation_InputError("The position reference must be 'H' (Home), 'Z' (Zero), 'C' (Center) or 'R' (Current position).")
+        if not (pos == 'H' or pos == 'Z' or pos == 'C' or pos == 'R'):
+            raise ProbeStation_InputError("The position reference must be 'H' (Home), 'Z' (Zero), 'C' (Center) or 'R' (Current position).")
+
+    ###########################################################################################################################################
+    ###########################################################################################################################################
+    ###########################################################################################################################################
+

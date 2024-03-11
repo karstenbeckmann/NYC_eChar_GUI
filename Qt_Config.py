@@ -632,7 +632,7 @@ class LineEdit(QtWidgets.QLineEdit):
         self.layout.addWidget(self, row, column, rowspan, columnspan)
 
         if 'width' in kwargs:
-            self.setMinimumWidth(kwargs['width'])
+            self.setMinimumWidth(int(kwargs['width']))
 
         self.addCommand = None
         if 'command' in kwargs:
@@ -687,7 +687,7 @@ class ComboBox(QtWidgets.QComboBox):
         self.setCurrentIndex(dIndex)
 
         if 'width' in kwargs:
-            self.setMinimumWidth(kwargs['width'])
+            self.setMinimumWidth(int(kwargs['width']))
 
         if 'command' in kwargs:
             self.addCommand = kwargs['command']

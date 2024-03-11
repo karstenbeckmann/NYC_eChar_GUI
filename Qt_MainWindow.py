@@ -185,7 +185,7 @@ class MainUI(QtWidgets.QMainWindow):
         self.setObjectName("MainWindow")
         self.setWindowTitle("Electrical Characterization")
 
-        self.resize(self.__width, self.__height)
+        self.resize(int(self.__width), int(self.__height))
         self.__widthTab = int(0.96*self.__width)
         
         self.icon = QtGui.QIcon(icon)
@@ -904,10 +904,11 @@ class MainUI(QtWidgets.QMainWindow):
         red = c.red()
         green = c.green()
         blue = c.blue()
-        alpha = c.alpha()
+        #alpha = c.alpha()
         
         if typ == "background":
-            widget.setStyleSheet("background-color: rgb(%s,%s,%s,%s);" %(red, green, blue, alpha)) 
+            #widget.setStyleSheet("background-color: rgb(%s,%s,%s,%s);" %(red, green, blue, alpha))
+            widget.setStyleSheet("background-color: rgb(%s,%s,%s);" %(red, green, blue))  
             return True
 
         return False
@@ -915,7 +916,7 @@ class MainUI(QtWidgets.QMainWindow):
     def getColorPalette(self, color=None, typ=None):
 
         colors = dict()
-        colors['white'] = QtGui.QColor(255,255,255,255)
+        colors['white'] = QtGui.QColor(255,255,255)
         colors['blue'] = QtGui.QColor(0,76,147)
         colors['lightblue'] = QtGui.QColor(0,158,224)
         colors['grey'] = QtGui.QColor(132,134,135)
@@ -924,7 +925,7 @@ class MainUI(QtWidgets.QMainWindow):
         colors['pink'] = QtGui.QColor(236,9,141)
         colors['purple'] = QtGui.QColor(120,29,126)
         colors['green'] = QtGui.QColor(84,185,72)
-        colors['black'] = QtGui.QColor(0,0,0,0)
+        colors['black'] = QtGui.QColor(0,0,0)
 
         color = color.lower()
 

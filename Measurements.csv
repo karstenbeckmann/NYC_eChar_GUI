@@ -113,12 +113,12 @@ VariableName, Pulse Channel, Ground Channel, Vhigh, Vlow, delay, trise, tfall, t
 Default,  101, 102, 2, 1, 1e-5, 1e-5, 1e-5, 1e-5, 1e-5, 100, 10, 1000, True, 10
 Datatype, WGFMUChannel, WGFMUChannel, float, float, float, float, float, float, float, int, int, int, bool, int
 #####################
-Name, reservoirComp
-Folder, Wilkie
-Tools, E5274A, Matrix
-VariableName, test
-Default, 1
-Datatype, int
+#Name, reservoirComp
+#Folder, Wilkie
+#Tools, E5274A, Matrix
+#VariableName, test
+#Default, 1
+#Datatype, int
 #####################
 Name, AnalogForm_PGBNC765
 Folder, ReRAM_PG
@@ -302,19 +302,19 @@ VariableName, test
 Default, 1
 Datatype, int
 #####################
-Name, Meas_8x81T1RComp
-Folder, Sarah
-Tools, E5274A, Matrix
-VariableName, test
-Default, 1
-Datatype, int
+#Name, Meas_8x81T1RComp
+#Folder, Sarah
+#Tools, E5274A, Matrix
+#VariableName, test
+#Default, 1
+#Datatype, int
 #####################
-Name, test
-Folder, Sarah
-Tools, none
-VariableName, test
-Default, 1
-Datatype, int
+#Name, test
+#Folder, Sarah
+#Tools, none
+#VariableName, test
+#Default, 1
+#Datatype, int
 #####################
 Name, FormingDC
 Folder, ReRAM
