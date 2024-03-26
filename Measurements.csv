@@ -176,12 +176,12 @@ VariableName, PGPulseChnForm, PGPulseChnRead, OscPulseChn, OscGNDChn, ExpReadCur
 Default, 4, 2, 2A, 1A, 50e-6, 4.0, 5e-3, 1e-3, -0.3, 1e-5, true, 10000.0, 10
 Datatype, BNC765Chn, BNC765Chn, 740ZiChn, 740ZiChn, float, float, float, float, float, float, bool, float, int
 #####################
-Name, FEretention
+Name, FEendurance
 Folder, Ferroelectric
 Tools, B1530A
-VariableName, Pulse Channel, Ground Channel, Pulse Voltage, Delay, Pulse Slope, Pulse Width, Base Time, Meas. Points, # of Cycles, init. Pulse, Area
-Default, 201, 202, 2.5, 1e-4, 1e-5, 1e-5, 1e-5, 50, 100, True, 1e-7
-Datatype, WGFMUChannel, WGFMUChannel, float, float, float, float, float, int, int, bool, float
+VariableName, Pulse Channel, Ground Channel, Pulse Voltage, Delay, Pulse Slope, Pulse Width, Base Time, Meas. Points, # of Cycles, # of Meas. Cycles, Iterations, final Meas., init. Pulse, Area (cm2)
+Default, 201, 202, 2.5, 1e-4, 1e-5, 1e-5, 1e-5, 50, 100, 100, 1, False, True, 1e-7
+Datatype, WGFMUChannel, WGFMUChannel, float, float, float, float, float, int, int, int, int, bool, bool, float
 #####################
 Name, WriteString8x8
 Folder, ReRAMarray

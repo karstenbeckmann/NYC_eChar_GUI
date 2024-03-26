@@ -1154,8 +1154,8 @@ class MeasurementLoadWindow(QtWidgets.QMainWindow):
             self.MainWindow.writeError("Icon not found in window %s" %(title))
         
         self._main = QtWidgets.QWidget(self)
-        self.resize(width, height)
-        self._main.resize(width, height)
+        self.resize(int(width), int(height))
+        self._main.resize(int(width), int(height))
         self.setFixedSize(self.size())
         self._main.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
     
@@ -1201,8 +1201,8 @@ class MeasurementDeleteWindow(QtWidgets.QMainWindow):
             self.MainWindow.writeError("Icon not found in window %s" %(title))
         
         self._main = QtWidgets.QWidget(self)
-        self.resize(width, height)
-        self._main.resize(width, height)
+        self.resize(int(width), int(height))
+        self._main.resize(int(width), int(height))
         self.setFixedSize(self.size())
         self._main.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
     
@@ -1261,8 +1261,8 @@ class MeasurementSaveWindow(QtWidgets.QMainWindow):
             self.MainWindow.writeError("Icon not found in window %s" %(title))
         
         self._main = QtWidgets.QWidget(self)
-        self.resize(width, height)
-        self._main.resize(width, height)
+        self.resize(int(width), int(height))
+        self._main.resize(int(width), int(height))
         self.setFixedSize(self.size())
         self._main.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
     

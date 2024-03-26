@@ -21,6 +21,7 @@ from matplotlib import colors
 from PyQt5 import QtWidgets, QtCore, QtGui
 import Qt_stdObjects as stdObj
 import pickle as pk
+import numpy as np
 
 
 class ResultHandling():
@@ -723,14 +724,14 @@ class ResultHandling():
 
 class MeasurementResult():
 
-    def __init__(self, data, X, MaxLength=2.5e5, DieX='X', DieY='X', DevX='X', DevY='X',  Xlabel="", MapCoordinates=[None,None], Folder='', Clabel='', Xscale="lin", Ylabel="", Yscale="lin", linestyle='o', linewidth='1', color='b', Measurement='', ValueName='', WindowTitle='XY Plot'):
+    def __init__(self, data, X, MaxLength=2.5e5, DieX='X', DieY='Y', DevX='X', DevY='Y',  Xlabel="", MapCoordinates=[None,None], Folder='', Clabel='', Xscale="lin", Ylabel="", Yscale="lin", linestyle='o', linewidth='1', color='b', Measurement='', ValueName='', WindowTitle='XY Plot'):
         
         self.DieX = DieX
         self.DieY = DieY
         self.DevX = DevX
         self.DevY = DevY
         self.Folder = Folder
-        self.data = data
+        self.data = np.array(data, dtype=float)
         self.dumped = False
         self.Measurement = Measurement
         self.MaxLength = int(MaxLength)
@@ -747,20 +748,15 @@ class MeasurementResult():
         self.dumpFile = ""
         self.WindowTitle = WindowTitle
         self.MapCoordinates = MapCoordinates
+
         if MapCoordinates[0] == None or MapCoordinates[1] == None:
-            
             self.Map = False
-            self.data = data
+            self.data = np.array(data, dtype=float)
             
         else:
             self.Map = True
-            self.data = []
-            
-            while len(self.data) < MapCoordinates[0]+1:
-                self.data.append([])
-  
-            while len(self.data[MapCoordinates[0]]) < MapCoordinates[1]+1:
-                self.data[MapCoordinates[0]].append(None)
+            dataShape = (MapCoordinates[0],MapCoordinates[1])
+            self.data = np.zeros(dataShape, dtype=float)
 
             self.data[MapCoordinates[0]][MapCoordinates[1]] = data[0]
     
@@ -770,30 +766,42 @@ class MeasurementResult():
         return ret
 
     def extend(self, data, MapCoordinates=None):
+        if not isinstance(data, np.ndarray):
+            data = np.array(data,dtype=float)
+
         if not self.Map:
-            if isinstance(self.data[0], list):
+            orgShape = np.shape(self.data)
+            newShape = np.shape(data)
 
-                if len(data) != len(self.data):
+            if len(orgShape) == 3:
+                if np.shape(data)[1] != np.shape(self.data)[1] or np.shape(data)[2] != np.shape(self.data)[2]:
                     raise ValueError("Measurement Data can only be extended if the Data dimensions are the same.")
-
-                for n in range(len(data)):
-                    if len(self.data[n]) > self.MaxLength:
-                        self.data[n] = data[n][-self.MaxLength:]
-                    else:
-                        self.data[n].extend(data[n])
-
-                if len(self.data[0]) > self.MaxLength:
-                    for n in range(len(self.data)):
-                        self.data[n] = self.data[n][-self.MaxLength:]
-            else:
                 
-                if len(self.data) > self.MaxLength:
-                    self.data = data[-self.MaxLength:]
-                else:
-                    self.data.extend(data)
+                self.data = np.append(self.data, data, axis=0)
 
-                if len(data) > self.MaxLength:
-                    self.data = self.data[-self.MaxLength:]
+            elif len(orgShape) == 2:
+                newShape = (orgShape[0], orgShape[1] + newShape[1])
+                tempData = np.empty(newShape, dtype=float)
+                for m in range(orgShape[0]):
+                    tempData[m][0:orgShape[1]] = self.data[m]
+                    tempData[m][orgShape[1]:] = data[m]
+                self.data = tempData
+            else:
+                if np.shape(data)[0] > self.MaxLength:
+                    tempData = np.array(data[-self.MaxLength:])
+                elif (np.shape(self.data)[0] + np.shape(data)[0]) > self.MaxLength:
+                    self.data = np.delete(self.data, np.s_[:np.shape(self.data)[0]-(self.MaxLength-np.shape(data)[0])])
+                    newShape = orgShape[0] + newShape[0]
+                    tempData = np.empty(newShape, dtype=float)
+                    tempData[0:orgShape[0]] = self.data
+                    tempData[orgShape[0]:] = data
+                else:
+                    newShape = orgShape[0] + newShape[0]
+                    tempData = np.empty(newShape, dtype=float)
+                    tempData[0:orgShape[0]] = self.data
+                    tempData[orgShape[0]:] = data
+                
+                self.data = tempData
         else:
             if isinstance(MapCoordinates, list):
                 if MapCoordinates[0] != None and MapCoordinates[1] != None:

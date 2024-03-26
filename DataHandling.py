@@ -21,7 +21,7 @@ import copy as cp
 
 class Value:
 
-    def __init__(self, eChar, InputValue , Name, DoYield=False, Unit=None):
+    def __init__(self, eChar, InputValue , Name, Unit=None, DoYield=False):
         
         self.Name = Name
         self.average = ""
@@ -773,10 +773,16 @@ class Row:
         return float(self.FailCycleStdDev)
 
     def getValNames(self):
-        Names = []
+        names = []
         for val in self.ValueList:
-            Names.append(val.getName())
-        return Names
+            names.append(val.getName())
+        return names
+    
+    def getValUnits(self):
+        units = []
+        for val in self.ValueList:
+            units.append(val.getUnit())
+        return units
             
     def size(self):
         return len(self.ValueList)
@@ -879,55 +885,72 @@ class batch:
                     self.MatNormal = None
 
     def getNameLine(self):
-        
-        Names = []
+        names = []
+        units = []
         for row in self.rows:
-            Names.extend(row.getValNames())
+            for valN, valU in zip(row.getValNames(), row.getValUnits()): 
+                if not valN in names:
+                    names.append(valN)
+                    units.append(valU)
 
-        Names = list(set(Names))
-
-        return Names
-    
+        return {"Names": names, "Units": units}
+ 
+        
     def getNameString(self,avg=True,StdDev=True,Med=True,perc95=True,perc5=True,perc99=False,perc1=False,Max=False,Min=False):
         
-        Names = self.getNameLine()
-        Yield = self.getDidYield()
-        string = "NameValue"
+        (names, units) = self.getNameLine().values()
+        units = self.getNameLine()['Units']
+        yi = self.getDidYield()
+        stringName = "NameValue"
+        stringUnit = "UnitValue"
 
-        string = "%s,DieX,DieY" %(string)
-        string = "%s,DevX,DevY" %(string)
-        string = "%s,Mat. Normal, Mat. Bit" %(string)
+        stringName = "%s,DieX,DieY" %(stringName)
+        stringName = "%s,DevX,DevY" %(stringName)
+        stringName = "%s,Mat. Normal, Mat. Bit" %(stringName)
+        stringUnit = "%s,,,,,," %(stringUnit)
         
-        for name in Names:
+        for name, unit in zip(names, units):
             if avg:
-                string = "%s,Avg.%s" %(string,name)
+                stringName = "%s,Avg.%s" %(stringName,name)
+                stringUnit = "%s,%s" %(stringUnit,unit)
             if StdDev:
-                string = "%s,Std.Dev.%s" %(string,name)
+                stringName = "%s,Std.Dev.%s" %(stringName,name)
+                stringUnit = "%s,%s" %(stringUnit,unit)
             if Min: 
-                string = "%s,Min.%s" %(string,name)
+                stringName = "%s,Min.%s" %(stringName,name)
+                stringUnit = "%s,%s" %(stringUnit,unit)
             if Max:
-                string = "%s,Max.%s" %(string,name)
+                stringName = "%s,Max.%s" %(stringName,name)
+                stringUnit = "%s,%s" %(stringUnit,unit)
             if Med:
-                string = "%s,Med.%s" %(string,name)
+                stringName = "%s,Med.%s" %(stringName,name)
+                stringUnit = "%s,%s" %(stringUnit,unit)
             if perc95:
-                string = "%s,95th Perc.%s" %(string,name)
+                stringName = "%s,95th Perc.%s" %(stringName,name)
+                stringUnit = "%s,%s" %(stringUnit,unit)
             if perc5:
-                string = "%s,5th Perc.%s" %(string,name)
+                stringName = "%s,5th Perc.%s" %(stringName,name)
+                stringUnit = "%s,%s" %(stringUnit,unit)
             if perc99:
-                string = "%s,1th Perc.%s" %(string,name)
+                stringName = "%s,1th Perc.%s" %(stringName,name)
+                stringUnit = "%s,%s" %(stringUnit,unit)
             if perc1:
-                string = "%s,1th Perc.%s" %(string,name)
+                stringName = "%s,1th Perc.%s" %(stringName,name)
+                stringUnit = "%s,%s" %(stringUnit,unit)
             if self.ExpNames != None:
-                for Name in self.ExpNames:
+                for name in self.ExpNames:
                     None
         
-        if Yield:
-            string = "%s,Yield, Failed Cycle, Failed Cycle StdDev" %(string)
+        if yi:
+            stringName = "%s,Yield, Failed Cycle, Failed Cycle StdDev" %(stringName)
+            stringUnit = "%s,,," %(stringName)
 
-        string = "%s,Cycle Start,Cycle End" %(string)
-        string = "%s,Measurement Type" %(string)
 
-        return string
+        stringName = "%s,Cycle Start,Cycle End" %(stringName)
+        stringName = "%s,Measurement Type" %(stringName)
+        stringUnit = "%s,,," %(stringUnit)
+
+        return {"Name": stringName, "Unit":stringUnit}
 
     def getStringOutput(self,avg=True,StdDev=True,Med=True,perc95=True,perc5=True,perc99=False,perc1=False,Max=False,Min=False):
         
@@ -943,7 +966,10 @@ class batch:
                 argVal.append(values[x])
             n +=1
 
-        OutputList = [self.getNameString(avg,StdDev,Med,perc95,perc5,perc99,perc1,Max,Min)]
+        (names, units) = self.getNameString(avg,StdDev,Med,perc95,perc5,perc99,perc1,Max,Min).values()
+
+        OutputList = [names]
+        OutputList.append(units)
         Names = self.getNameLine()
 
         for row in self.rows:

@@ -739,22 +739,48 @@ class XY(plottingRoutine):
                 self.lines[0] = self.__Graph.plot(data)
 
         elif self.PlotType == 'XY':
-            for n in range(len(self.data)-1):
-                self.lines.append(None)
-                if self.yscale == 'log' and self.xscale == 'log':
-                    data1 = self.getAbsolute(self.data[0])
-                    data2 = self.getAbsolute(self.data[n+1])
-                    self.lines[n] = self.__Graph.loglog(data1, data2)
-                elif self.yscale == 'log':
-                    data = self.getAbsolute(self.data[n+1])
-                    self.lines[n] = self.__Graph.semilogy(self.data[0], data)
-                elif self.xscale == 'log':
-                    data = self.getAbsolute(self.data[0])
-                    self.lines[n] = self.__Graph.semilogx(data, self.data[n+1])
-                else:
-                    self.lines[n] = self.__Graph.plot(self.data[0], self.data[n+1])
-            if self.data[0][-1] < 0.1 and self.xscale=='lin':
-                self.__Graph.ticklabel_format(style='sci', axis='x', scilimits=(-1,1))
+            
+            # data in 3D array 
+            if len(np.shape(self.data)) == 3:
+                for n in range(np.shape(self.data)[0]):
+                    for m in range(np.shape(self.data)[1]):
+                        self.lines.append(None)
+                        if self.yscale == 'log' and self.xscale == 'log':
+                            data1 = self.getAbsolute(self.data[n][0])
+                            data2 = self.getAbsolute(self.data[n][m+1])
+                            self.lines[n] = self.__Graph.loglog(data1, data2)
+                        elif self.yscale == 'log':
+                            data = self.getAbsolute(self.data[n][m+1])
+                            self.lines[n] = self.__Graph.semilogy(self.data[n][0], data)
+                        elif self.xscale == 'log':
+                            data = self.getAbsolute(self.data[n][0])
+                            self.lines[n] = self.__Graph.semilogx(data, self.data[n][m+1])
+                        else:
+                            self.lines[n] = self.__Graph.plot(self.data[n][0], self.data[n][m+1])
+
+                if self.data[0][0][-1] < 0.1 and self.xscale=='lin':
+                    self.__Graph.ticklabel_format(style='sci', axis='x', scilimits=(-1,1))
+           
+            # data in 2D array
+            else: 
+                plotNum = np.shape(self.data)[0]-1 
+                for n in range(plotNum):
+                    self.lines.append(None)
+                    if self.yscale == 'log' and self.xscale == 'log':
+                        data1 = self.getAbsolute(self.data[0])
+                        data2 = self.getAbsolute(self.data[n+1])
+                        self.lines[n] = self.__Graph.loglog(data1, data2)
+                    elif self.yscale == 'log':
+                        data = self.getAbsolute(self.data[n+1])
+                        self.lines[n] = self.__Graph.semilogy(self.data[0], data)
+                    elif self.xscale == 'log':
+                        data = self.getAbsolute(self.data[0])
+                        self.lines[n] = self.__Graph.semilogx(data, self.data[n+1])
+                    else:
+                        self.lines[n] = self.__Graph.plot(self.data[0], self.data[n+1])
+                if self.data[0][-1] < 0.1 and self.xscale=='lin':
+                    self.__Graph.ticklabel_format(style='sci', axis='x', scilimits=(-1,1))
+
         elif self.PlotType == 'YY':
             for n in range(len(self.data)):
                 self.lines.append(None)
