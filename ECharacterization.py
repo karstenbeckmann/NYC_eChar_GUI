@@ -298,6 +298,11 @@ class ECharacterization:
         while not qu.empty():
             qu.get()
 
+    def prepareExecution(self):
+
+        self.emptyFinish()
+        self.emptySubProcessThread()
+            
     def updateConfiguration(self, Configuration):
 
         self.Configuration = Configuration
@@ -420,8 +425,8 @@ class ECharacterization:
 
         self.IVplotData.put(cp.deepcopy(data))
 
-    def dhValue(self, value, name, Unit=""):
-        return dh.Value(self, value, name, self.DoYield, Unit)
+    def dhValue(self, Value, Name, Unit=None):
+        return dh.Value(self, Value, Name, Unit, self.DoYield)
 
     def dhAddRow(self, values, typ, cycleStart=None, cycleStop=None):
         cycles = []
@@ -513,6 +518,10 @@ class ECharacterization:
     def emptyFinish(self):
         while not self.finished.empty():
             self.finished.get()
+
+    def emptySubProcessThread(self):
+        while not self.SubProcessThread.empty():
+            self.SubProcessThread.get()
 
     def executeMeasurement(self, folder, name, parameters):
         try:

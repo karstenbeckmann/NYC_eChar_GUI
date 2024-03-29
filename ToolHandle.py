@@ -861,6 +861,7 @@ class ToolHandle:
                 
             
             try:
+                ret = None
                 retQu = cmd['ReturnQueue']
                 command = cmd['Command']
                 inst = cmd['Instr']['Instrument']
@@ -895,15 +896,23 @@ class ToolHandle:
                 if command == "*STB?" and typ != "B1530A":
                     try:
                         stb = inst.instQuery("*STB?")
-                        
                         try:
                             stb = int(stb)
                         except ValueError:
-                            stb = int(stb.split(" ")[1].strip())                            
+                            stb = int(stb.split(" ")[1].strip())       
+                        if stb == 0:
+                            stb = inst.read_stb()
+                            try:
+                                stb = int(stb)
+                            except ValueError:
+                                try: 
+                                    stb = int(stb.split(" ")[1].strip())
+                                except Exception:
+                                    stb = 0
                     except (vs.VisaIOError, TypeError, ValueError):
                         try:
                             stb = inst.read_stb()
-                        except vs.VisaIOError:
+                        except (vs.VisaIOError, TypeError, AttributeError):
                             error = True
                             break
                     if error:
@@ -937,7 +946,8 @@ class ToolHandle:
                         ret = {"Command": command, "Instr": cmd['Instr'], "Return": None, "Error": True, "ErrorMsg": e}
                         errorQueue.put("Command Execution error - Instrument: %s, Command: %s, Error: %s." %(typ, command, e))
                 
-                retQu.put(ret)
+                if ret != None:
+                    retQu.put(ret)
 
             except KeyError:
                 errorQueue.put("ToolHandle: InstrumentCommand could not be interpreted - %s." %(cmd))

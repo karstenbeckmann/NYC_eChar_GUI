@@ -11,6 +11,7 @@ import threading as th
 import math as ma
 import numpy as np
 import queue as qu
+import traceback
 import copy as cp
 
 
@@ -34,7 +35,7 @@ def FEendurance(eChar, PulseChn, GroundChn, Vpulse, delay, tslope, twidth, tbase
     iterations:  Iteration of cycles
     finalMeas:  execute final measurment cycles
     initPulse:  execute initialization Pulse
-    Area:       Area of the device
+    Area:       Area of the device (in cm2)
     WriteHeader: Enable/Disable writing the header into overlaying summary output files
     DoYield:    perform Yield 
     """
@@ -60,8 +61,7 @@ def FEendurance(eChar, PulseChn, GroundChn, Vpulse, delay, tslope, twidth, tbase
     if measCycles  > maxNumberOfMeasCycles:
         raise B1500A_InputError("Ferroelectric Measurement: # of measurement cycles cannot be larger than %d." %())
 
-    waferInfo = (eChar.DieX, eChar.DieY, eChar.DevX, eChar.DevY)
-    eChar.threads.append(th.Thread(target = saveEnduranceData, args=(eChar, DoYield, waferInfo, eChar.MaxRowsPerFile, eChar.MaxDataPerPlot)))
+    eChar.threads.append(th.Thread(target = saveEnduranceData, args=(eChar, DoYield, eChar.MaxRowsPerFile, eChar.MaxDataPerPlot)))
     eChar.threads[-1].start()
 
     curCount = 0
@@ -200,7 +200,6 @@ def FEendurance(eChar, PulseChn, GroundChn, Vpulse, delay, tslope, twidth, tbase
             break
 
     if finalMeas:
-        print("measCycles", measCycles)
         eChar.wgfmu.clearLibrary()
         if twidth > 0:
             eChar.wgfmu.programRectangularPulse(PulseChn, twidth, tslope, tslope, tbase, Vpulse, 0, measure=True, mPoints=MeasPoints, mStartTime=tmstart, mEndTime=tmend, AddSequence=False, Name="posInit", WriteHeader=False)
@@ -238,10 +237,11 @@ def FEendurance(eChar, PulseChn, GroundChn, Vpulse, delay, tslope, twidth, tbase
 
     eChar.finished.put(True)
 
+    entry = None
     while True:
         tm.sleep(0.1)
         try:
-            entry = eChar.SubProcessThread.get(block=True, timeout=1)
+            entry = eChar.SubProcessThread.get(timeout=1)
         except qu.Empty:
             entry = None
             
@@ -260,9 +260,8 @@ def FEendurance(eChar, PulseChn, GroundChn, Vpulse, delay, tslope, twidth, tbase
 
     return True 
 
-def saveEnduranceData(eChar, DoYield, waferInfo, MaxRowsPerFile, MaxDataPerPlot):
+def saveEnduranceData(eChar, DoYield, MaxRowsPerFile, MaxDataPerPlot):
 
-    (dieX, dieY, devX, devY) = waferInfo
     #seperate data until Endurance measurement is finished
     first = True
     Typ = "Endurance"
@@ -286,9 +285,10 @@ def saveEnduranceData(eChar, DoYield, waferInfo, MaxRowsPerFile, MaxDataPerPlot)
     header = []
 
     while not finished or not eChar.rawData.empty():
-                
+        
         while not eChar.finished.empty():
             finished = eChar.finished.get()
+        eChar.finished.put(finished)
         
         #print("finished: ", finished, eChar.rawData.empty())
         tm.sleep(0.5)
@@ -319,23 +319,23 @@ def saveEnduranceData(eChar, DoYield, waferInfo, MaxRowsPerFile, MaxDataPerPlot)
                 PupTemp.append(entry['Scalar']['Pup'])
                 PdownTemp.append(entry['Scalar']['Pdown'])
 
-                maxVoltUp = dh.Value(eChar, [max(entry['Vup'])], 'max. Vup', DoYield=False, Unit='V')
-                maxVoltDown = dh.Value(eChar, [min(entry['Vdown'])], 'max. Vdown', DoYield=False, Unit='V')
-                maxCurUp = dh.Value(eChar, [max(entry['dIup'])], 'max. Iup', DoYield=False, Unit='A')
-                maxCurDown = dh.Value(eChar, [min(entry['dIdown'])], 'max. Idown', DoYield=False, Unit='A')
-                maxCurDenUp = dh.Value(eChar, [max(entry['dJup'])], 'max. Jup', DoYield=False, Unit='A/m2')
-                maxCurDenDown = dh.Value(eChar, [min(entry['dJdown'])], 'max. Jdown', DoYield=False, Unit='A/m2')
-                valPup = dh.Value(eChar, [entry['Scalar']['Pup']], 'Pup', DoYield=False, Unit='C/m2')
-                valPdown = dh.Value(eChar, [entry['Scalar']['Pdown']], 'Pdown', DoYield=False, Unit='C/m2')
-                row = dh.Row([maxVoltUp, maxVoltDown, maxCurUp, maxCurDown, maxCurDenUp, maxCurDenDown, valPup, valPdown],dieX,dieY,devX,devY,MeasType,cycStart+n,cycStart+n)
-                eChar.StatOutValues.addRow(row)
+                maxVoltUp = eChar.dhValue([max(entry['Vup'])], 'Vup', Unit='V')
+                maxVoltDown = eChar.dhValue([min(entry['Vdown'])], 'Vdown', Unit='V')
+                maxCurUp = eChar.dhValue([max(entry['dIup'])], 'max. Iup', Unit='A')
+                maxCurDown = eChar.dhValue([min(entry['dIdown'])], 'max. Idown', Unit='A')
+                maxCurDenUp = eChar.dhValue([max(entry['dJup'])], 'max. Jup', Unit='A/m2')
+                maxCurDenDown = eChar.dhValue([min(entry['dJdown'])], 'max. Jdown', Unit='A/m2')
+                valPup = eChar.dhValue([entry['Scalar']['Pup']], 'Pup', Unit='uC/cm2')
+                valPdown = eChar.dhValue([entry['Scalar']['Pdown']], 'Pdown', Unit='uC/cm2')
+                eChar.dhAddRow([maxVoltUp, maxVoltDown, maxCurUp, maxCurDown, maxCurDenUp, maxCurDenDown, valPup, valPdown],MeasType,cycleStart=cycStart+n,cycleStop=cycStart+n)
+
 
                 PTemp.append([])
                 for x in entry['Pup']:
-                    PTemp[-1].append(x*100)
+                    PTemp[-1].append(x)
                     
                 for x in entry['Pdown']:
-                    PTemp[-1].append(x*100)
+                    PTemp[-1].append(x)
 
                 JTemp.append([])
                 JTemp[-1].extend(entry['dJup'])
@@ -353,7 +353,7 @@ def saveEnduranceData(eChar, DoYield, waferInfo, MaxRowsPerFile, MaxDataPerPlot)
             Pup.extend(PupTemp)
             Pdown.extend(PdownTemp)
 
-            eChar.LogData.put("%s: Pr+=%s, Pr-=%s" %(MeasType, Pup,Pdown))
+            eChar.LogData.put("%s: Pr+=%s uC/cm2, Pr-=%s uC/cm2" %(MeasType, Pup,Pdown))
 
             Trac = []
             for n in range(len(VTemp)):
@@ -363,6 +363,7 @@ def saveEnduranceData(eChar, DoYield, waferInfo, MaxRowsPerFile, MaxDataPerPlot)
             Trac = []
             for n in range(len(VTemp)):
                 Trac.append([VTemp[n],PTemp[n]])
+
             eChar.plotIVData({"Add": True, "lineStyle": '-', "lineWidth":1, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': True, 'Xlabel': "Voltage (V)", "Ylabel": 'Polarization (uC/cm2)', 'Title': "P-V", "MeasurementType": MeasType, "ValueName": 'P-V'})
             
             Trac = []
@@ -389,10 +390,11 @@ def saveEnduranceData(eChar, DoYield, waferInfo, MaxRowsPerFile, MaxDataPerPlot)
 
             Trac = [[],[],[]]
             for n in range(len(PupTemp)):
-                Trac[0] = cycStart+n
-                Trac[1] = PupTemp[n]
-                Trac[2] = PdownTemp[n]
-            eChar.plotIVData({"Add": True, "lineStyle": 'o', "lineWidth":1, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': True, 'Xlabel': '# of cycles', "Ylabel": 'Polarization (uC/cm2)', 'Title': "P", "MeasurementType": MeasType, "ValueName": 'P'})
+                Trac[0].append(cycStart+n)
+                Trac[1].append(PupTemp[n])
+                Trac[2].append(PdownTemp[n])
+            legend = ["Pup", "Pdown"]
+            eChar.plotIVData({"Add": True, "lineStyle": 'o', "lineWidth":1, 'Yscale': 'lin',"Legend":legend, "Traces":Trac, 'Xaxis': True, 'Xlabel': '# of cycles', "Ylabel": 'Polarization (uC/cm2)', 'Title': "P", "MeasurementType": MeasType, "ValueName": 'P'})
             
 
             newline = [None]*3
@@ -415,7 +417,7 @@ def saveEnduranceData(eChar, DoYield, waferInfo, MaxRowsPerFile, MaxDataPerPlot)
                         elif key[0:1] == "dJ":
                             unit = "A/m2"
                         elif key[0] == "P":
-                            unit = "C/m2"                    
+                            unit = "uC/m2"                    
                         newline[1] = '%s,%s' %(newline[1], unit)
                         newline[2] = '%s,%d' %(newline[2],len(value))
                 n = n+1
@@ -432,8 +434,6 @@ def saveEnduranceData(eChar, DoYield, waferInfo, MaxRowsPerFile, MaxDataPerPlot)
         except (TypeError, ValueError, IndexError, NameError, qu.Empty) as e:
             eChar.ErrorQueue.put("E-Char FE Endurance Data Analysis, Queue Empty: %s, Finished %s, Error %s" %(eChar.rawData.empty(), finished, e))
 
-    
-    
     eChar.SubProcessThread.put({'Finished': True})
     eChar.LogData.put("FE Endurance: Finished Data Storage.")
 
@@ -495,26 +495,34 @@ def calculateFEdata(eChar, ret, tslope, twidth, MeasPoints, initPulse, area):
         Q3 = dt*sum(In3)
         Q4 = dt*sum(In4)
 
-        dIup = np.subtract(In1, In2)*(-1)
-        dIdown = np.subtract(In3, In4)*(-1)
+        dIup = np.multiply(np.subtract(In1, In2),-1)
+        dIdown = np.multiply(np.subtract(In3, In4),-1)
         
-        dJup = np.array(dIup)/area
-        dJdown = np.array(dIdown)/area
-        Pup = np.add.accumulate(np.array(dJup)*dt)
-        Pdown = np.add.accumulate(np.array(dJdown)*dt)
+        dJup = np.divide(np.array(dIup),area)
+        dJdown = np.divide(np.array(dIdown),area)
+        Pup = np.add.accumulate(np.multiply(np.array(dJup),dt))
+        Pdown = np.add.accumulate(np.multiply(np.array(dJdown),dt))
+        
+        #move from C/cm2 to uC/cm2
+        Pup = np.multiply(Pup,1000000)
+        Pdown = np.multiply(Pdown,1000000)
 
         PupMax = np.max(Pup)
         PupMin = np.min(Pup)
 
         PupMove = PupMax-(PupMax-PupMin)/2
-        Pup = np.array(Pup) - PupMove
+        Pup = np.subtract(Pup, PupMove)
 
-        Pdown = np.array(Pdown)+ (-Pdown[0] + Pup[-1])
+        Pdown = np.array(Pdown) + (-Pdown[0] + Pup[-1])
 
-        dPup = np.absolute(np.subtract(Q1,Q2))/area
-        dPdown = np.absolute(np.subtract(Q3,Q4))/area
+        dPup = np.divide(np.absolute(np.subtract(Q1,Q2)),area)
+        dPdown = np.divide(np.absolute(np.subtract(Q3,Q4)),area)
 
-        time = np.array(tn1) - tn1[0]
+        #move from C/cm2 to uC/cm2
+        dPup = np.multiply(dPup,1000000)
+        dPdown = np.multiply(dPdown,1000000)
+
+        time = np.subtract(np.array(tn1),tn1[0])
         
         ret.append({"t": time, "Vup": Vn1, "Vdown": Vn3, "dIup": dIup, "dIdown": dIdown, "dJup": dJup, "dJdown": dJdown, "Pup": Pup, "Pdown": Pdown, "Scalar": {"Pup": dPup, "Pdown": dPdown}})
         

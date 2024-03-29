@@ -61,6 +61,7 @@ class ResultHandling():
         self.linecolor = self.Configuration.getValue("ResultGraphColor")
         self.Xscale = 'lin'
         self.Yscale = 'lin'
+        self.legend = None
         self.Live = True
         self.ID = 1
         self.useDumping = True
@@ -332,7 +333,6 @@ class ResultHandling():
                 if int(self.CurDevY) == int(Ydev):
                     addDevY = True
 
-            print(self.CurMeas.strip() == Meas, self.CurMeas.strip(), Meas)
             if self.CurMeas == '': 
                 addMeas = True
             else:
@@ -544,8 +544,9 @@ class ResultHandling():
                 except:
                     linestyle = self.linestyle
 
+                
                 try:
-                    legend = data['legend']
+                    legend = data['Legend']
                 except:
                     legend = None
 
@@ -580,7 +581,7 @@ class ResultHandling():
                     data['Traces'] = [data['Traces']]
 
                 Result = MeasurementResult(data['Traces'], X, MapCoordinates=MapCoordinates, DieX=DieX, DieY=DieY, DevX=DevX, DevY=DevY,  Xlabel=Xlabel, Ylabel=Ylabel, Clabel=Clabel, linestyle=linestyle, 
-                                    linewidth=linewidth, color=linecolor, Measurement=dataMeas, ValueName=dataValName, 
+                                    linewidth=linewidth, color=linecolor, legend=legend, Measurement=dataMeas, ValueName=dataValName, 
                                     WindowTitle=dataWT, Xscale=Xscale, Yscale=Yscale, Folder=Folder)
                   
                 self.Results.append(Result)
@@ -703,20 +704,16 @@ class ResultHandling():
             tm.sleep(0.2)
 
     def updateCurGraphProp(self, res):
-        
         if res != None:
             self.ResultWindow.Updates.put({"Figure": res.createGraphProp()})
 
     def updateCurData(self, res):
-        
         if res != None:
-            #print("crData", res.getData())
             self.ResultWindow.Updates.put({"Data": res.getData()})
 
     def updateCurFile(self, res):
         
         if res != None:
-            
             folder = res.getFolder()
             fileName = res.getFileName()
             self.ResultWindow.Updates.put({'fileName': fileName, "folder":folder})
@@ -724,7 +721,7 @@ class ResultHandling():
 
 class MeasurementResult():
 
-    def __init__(self, data, X, MaxLength=2.5e5, DieX='X', DieY='Y', DevX='X', DevY='Y',  Xlabel="", MapCoordinates=[None,None], Folder='', Clabel='', Xscale="lin", Ylabel="", Yscale="lin", linestyle='o', linewidth='1', color='b', Measurement='', ValueName='', WindowTitle='XY Plot'):
+    def __init__(self, data, X, MaxLength=2.5e5, DieX='X', DieY='Y', DevX='X', DevY='Y',  Xlabel="", MapCoordinates=[None,None], Folder='', Clabel='', Xscale="lin", Ylabel="", Yscale="lin", legend=None, linestyle='o', linewidth='1', color='b', Measurement='', ValueName='', WindowTitle='XY Plot'):
         
         self.DieX = DieX
         self.DieY = DieY
@@ -743,6 +740,7 @@ class MeasurementResult():
         self.Yscale = Yscale
         self.linestyle = linestyle
         self.linewidth = linewidth
+        self.legend = legend
         self.color = color
         self.ValueName = ValueName
         self.dumpFile = ""
@@ -833,6 +831,7 @@ class MeasurementResult():
         ret['xLabel'] = self.Xlabel
         ret['yLabel'] = self.Ylabel
         ret['cLabel'] = self.Clabel
+        ret['legend'] = self.legend
         ret['title'] = self.WindowTitle
         ret['x'] = self.X
         ret['map'] = self.Map
@@ -875,6 +874,9 @@ class MeasurementResult():
 
     def getYscale(self):
         return self.Yscale
+
+    def getLegend(self):
+        return self.legend
 
     def getXscale(self):
         return self.Xscale

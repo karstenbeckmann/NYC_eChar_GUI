@@ -7,6 +7,7 @@ import PlottingRoutines as PR
 import threading as th
 import queue as qu 
 import time as tm
+import traceback
 import StdDefinitions as std
 import copy as dp
 import os as os
@@ -61,6 +62,7 @@ class ResultWindow(QtWidgets.QMainWindow):
         self.GraphProp['xLabel'] = "Voltage (V)"
         self.GraphProp['yLabel'] = "Current (A)"
         self.GraphProp['cLabel'] = "Resistance ($\Omega$)"
+        self.GraphProp['legend'] = None
         self.GraphProp['title'] = ""
         self.GraphProp['x'] = True
         self.GraphProp['map'] = False

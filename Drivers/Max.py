@@ -859,7 +859,7 @@ def ImageWrite8x8_SPERO(eChar, MatrixFile, SetChn, GNDChn, GateChn, Vset, Vread,
     eChar.threads[len(eChar.threads)-1].start()
     
     R = dh.Value(eChar, statVal, 'Rset', DoYield=eChar.DoYield, Unit='ohm')
-    row = dh.Row([R],eChar.DieX,eChar.DieY,eChar.DevX,eChar.DevY,Typ,eChar.curCycle+1)
+    row = dh.Row([R],eChar.DieX,eChar.DieY,eChar.DevX,eChar.DevY,MeasType=Typ,StCycle=eChar.curCycle+1)
 
     eChar.StatOutValues.addRow(row)
 

@@ -348,11 +348,9 @@ class Configuration:
             if key.find('$ToolRank$_') != -1:
                 vars(self)[key] = value
             if key.find('$B1530A$_') == 0:
-                print(key, value)
                 try:
                     vars(self)[key] = int(value)
                 except ValueError:
-                    print("error")
                     None
             if key == "InititalMeasurement":
                 vars(self)[key] = str(value)

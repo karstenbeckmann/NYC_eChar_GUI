@@ -160,7 +160,8 @@ class Value:
                 self.addValues(InputValue)
 
         self.NumOfDevices = 1
-        if not Unit == None:
+        if Unit != None:
+            print(Unit)
             self.Unit = Unit
 
     def addValues(self, values):
@@ -186,6 +187,9 @@ class Value:
 
     def getName(self):
         return self.Name
+
+    def getUnit(self):
+        return self.Unit
 
     def get95thPercentile(self):
         if self.ValOverFlow:
@@ -451,8 +455,8 @@ class Value:
 
 class Row:
 
-    def __init__(self,ValueList=[],DieX=None,DieY=None,DeviceX=None,DeviceY=None, MatNormal=None, MatBit=None,MeasType=None,StCycle=None,EndCycle=None):
-        
+    def __init__(self,ValueList=[],DieX=None,DieY=None,DeviceX=None,DeviceY=None, MatNormal=None, MatBit=None, MeasType=None,StCycle=None,EndCycle=None):
+    
         self.ValueList = cp.deepcopy(ValueList)
         self.DieX = DieX
         self.DieY = DieY
@@ -508,7 +512,6 @@ class Row:
         return dY
 
     def CombineRow(self, addRow, MultDev=False):
-        #print("empty: ", self.empty)
 
         if MultDev:
             self.NumOfDevices = self.NumOfDevices + 1
@@ -899,7 +902,7 @@ class batch:
     def getNameString(self,avg=True,StdDev=True,Med=True,perc95=True,perc5=True,perc99=False,perc1=False,Max=False,Min=False):
         
         (names, units) = self.getNameLine().values()
-        units = self.getNameLine()['Units']
+        print(names, units)
         yi = self.getDidYield()
         stringName = "NameValue"
         stringUnit = "UnitValue"
@@ -994,8 +997,7 @@ class batch:
             else:
                 Line = "%s," %(Line)
 
-            
-            for Name in Names:
+            for Name in Names["Names"]:
                 ValSt = row.getListValString(avg,StdDev,Med,perc95,perc5,perc99,perc1,Max,Min)
                 NameList = ValSt['Name']
                 StringList = ValSt['StringList']

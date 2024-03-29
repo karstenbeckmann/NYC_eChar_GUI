@@ -62,13 +62,12 @@ def C_SpotMeas(eChar, CMU, freq, Vac, Vdc, SMUs, VorI, Val, Compl, delay):
     eChar.writeDataToFile(header, data, eChar.getFolder(), eChar.getFilename(Typ, 0, 1))
     
     resis = [None]*4
-    resis[0] = dh.Value(eChar, out['Data'][0][0], out['Name'][0], DoYield=eChar.DoYield, Unit=out['Unit'][0])
-    resis[1] = dh.Value(eChar, out['Data'][1][0], out['Name'][1], DoYield=eChar.DoYield, Unit=out['Unit'][1])
-    resis[2] = dh.Value(eChar, out['Data'][2][0], "Osc. Level", DoYield=eChar.DoYield, Unit="V")
-    resis[3] = dh.Value(eChar, out['Data'][3][0], "DC bias", DoYield=eChar.DoYield, Unit="V")
+    resis[0] = eChar.dhValue(out['Data'][0][0], out['Name'][0], Unit=out['Unit'][0])
+    resis[1] = eChar.dhValue(out['Data'][1][0], out['Name'][1], Unit=out['Unit'][1])
+    resis[2] = eChar.dhValue(out['Data'][2][0], "Osc. Level", Unit="V")
+    resis[3] = eChar.dhValue(out['Data'][3][0], "DC bias", Unit="V")
 
-    row = dh.Row(resis,eChar.DieX,eChar.DieY,eChar.DevX,eChar.DevY,Typ)
-    eChar.StatOutValues.addRow(row)
+    row = eChar.dhAddRow(resis,Typ)
 
 def CVsweep(eChar, CMU, freq, Vac, start, stop, steps, Double, Log, hold, delay, DCSMUs, DCVorI, DCval, DCCompl):
 
@@ -153,10 +152,9 @@ def CVsweep(eChar, CMU, freq, Vac, start, stop, steps, Double, Log, hold, delay,
             name = "I@%.2eV" %(out['Data'][-1][n])
         else:
             name = "V@%.2eA" %(out['Data'][-1][n])
-        resis = dh.Value(eChar, out['Data'][0][n], name, DoYield=eChar.DoYield, Unit='ohm')
+        resis = eChar.dhValue(out['Data'][0][n], name, Unit='ohm')
 
-    row = dh.Row([resis],eChar.DieX,eChar.DieY,eChar.DevX,eChar.DevY,Typ)
-    eChar.StatOutValues.addRow(row)
+    row = eChar.dhAddRow([resis],Typ)
 
 ###########################################################################################################################
 
@@ -266,10 +264,9 @@ def CFsweep(eChar, CMU, fStart, fStop, steps, Double, Log, Vac, Vdc, hold, delay
             name = "I@%.2eV" %(out['Data'][-1][n])
         else:
             name = "V@%.2eA" %(out['Data'][-1][n])
-        resis = dh.Value(eChar, out['Data'][0][n], name, DoYield=eChar.DoYield, Unit='ohm')
+        resis = eChar.dhValue( out['Data'][0][n], name, Unit='ohm')
 
-    row = dh.Row([resis],eChar.DieX,eChar.DieY,eChar.DevX,eChar.DevY,Typ)
-    eChar.StatOutValues.addRow(row)
+    row = eChar.dhAddRow([resis],Typ)
     
 
 ###########################################################################################################################

@@ -531,7 +531,6 @@ class Agilent_B1530A:
             while True:
                 Status = None
                 Status = self.getStatus()
-                print(Status)
 
                 self.ElapsedTime.put(Status['ElapsedTime'])
                 self.TotalTime.put('TotalTime')
@@ -564,7 +563,7 @@ class Agilent_B1530A:
             ret = 0
         else:
             ret = "Execute can only be performed if the tool is online."
-        print("ret", ret, Status)
+        
         return ret
     
     def exportASCII(self, fname):
@@ -1280,7 +1279,6 @@ class Agilent_B1530A:
                         tdata = dataOutput['Time']
                         IVdata = dataOutput['MeasValue']
 
-                        print(n, length)
                         ret.append({'Name': tname, 'Channel': chns[n], 'Length': length, 'Data': tdata})
                         ret.append({'Name': Name, 'Channel': chns[n], 'Length': length, 'Data': IVdata})
             

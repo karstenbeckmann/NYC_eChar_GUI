@@ -42,16 +42,16 @@ class Agilent_B1500A():
     SMUtype = ['MP']*4
     VR = [5, 50, 20, 200, 400, 1000, 2000, -5, -50, -20, -200, -400, -1000, -2000, 0]
     IR = [8,9,10,11,12,13,14,15,16,17,18,19,20,-8,-9,-10,-11,-12,-13,-14,-15,-16,-17,-18,-19,-20, 0]
-    VRval = dict()
-    VRval['HRSMU/ASU'] = [1e-12, 1e-11, 1e-10, 1e-9, 1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, None, 1e-12, 1e-11, 1e-10, 1e-9, 1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, None, 1e-1]
-    VRval['HRSMU'] = [None, 1e-11, 1e-10, 1e-9, 1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, None, 1e-12, 1e-11, 1e-10, 1e-9, 1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, None, 1e-1]
-    VRval['MPSMU'] = [None,None,None, 1e-9, 1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, None, 1e-12, 1e-11, 1e-10, 1e-9, 1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, None, 1e-1]
-    VRval['HPSMU'] = [None,None,None, 1e-9, 1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 1, 1e-12, 1e-11, 1e-10, 1e-9, 1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 1, 1]
     IRval = dict()
-    IRval['HRSMU/ASU'] = [0.5, 5, 2, 20, 40, 100, None, 0.5, 5, 2, 20, 40, 100, None, 100]
-    IRval['HRSMU'] = [0.5, 5, 2, 20, 40, 100, None, 0.5, 5, 2, 20, 40, 100, None, 100]
-    IRval['MRSMU'] = [0.5, 5, 2, 20, 40, 100, None, 0.5, 5, 2, 20, 40, 100, None, 100]
-    IRval['HPSMU'] = [None, None, 2, 20, 40, 100, 200, 0.5, 5, 2, 20, 40, 100, 200, 200]
+    IRval['HRSMU/ASU'] = [1e-12, 1e-11, 1e-10, 1e-9, 1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, None, 1e-12, 1e-11, 1e-10, 1e-9, 1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, None, 1e-1]
+    IRval['HRSMU'] = [None, 1e-11, 1e-10, 1e-9, 1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, None, 1e-12, 1e-11, 1e-10, 1e-9, 1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, None, 1e-1]
+    IRval['MPSMU'] = [None,None,None, 1e-9, 1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, None, 1e-12, 1e-11, 1e-10, 1e-9, 1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, None, 1e-1]
+    IRval['HPSMU'] = [None,None,None, 1e-9, 1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 1, 1e-12, 1e-11, 1e-10, 1e-9, 1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 1, 1]
+    VRval = dict()
+    VRval['HRSMU/ASU'] = [0.5, 5, 2, 20, 40, 100, None, 0.5, 5, 2, 20, 40, 100, None, 100]
+    VRval['HRSMU'] = [0.5, 5, 2, 20, 40, 100, None, 0.5, 5, 2, 20, 40, 100, None, 100]
+    VRval['MPSMU'] = [0.5, 5, 2, 20, 40, 100, None, 0.5, 5, 2, 20, 40, 100, None, 100]
+    VRval['HPSMU'] = [None, None, 2, 20, 40, 100, 200, 0.5, 5, 2, 20, 40, 100, 200, 200]
     RIlabel = cp.deepcopy(VRval)
     RVlabel = cp.deepcopy(IRval)
     for value in RIlabel.values():
@@ -221,6 +221,10 @@ class Agilent_B1500A():
         self.instWrite('FMT 1,1')
         self.inst.timeout=150000
         self.session = self.inst.session
+
+    def read_stb():
+        stb = self.inst.read_stb()
+        return stb
 
     def finishMeasurement(self):
         None
@@ -629,8 +633,6 @@ class Agilent_B1500A():
         VR = self.VR
         IR = self.IR
         
-        modDesc = self.getModuleDescription()
-
         for n, element in enumerate(Val):
             if VorI[n]:    
                 modDesc = self.getModuleDescription(Chns[n])
@@ -683,12 +685,6 @@ class Agilent_B1500A():
         n=0
         VR = self.VR
         IR = self.IR
-        
-        #if np.any(IComp) == 0:
-        #    raise B1500A_InputError("Current Compliance can't be 0")
-        #if np.any(VComp) == 0:
-        #    raise B1500A_InputError("Voltage Compliance can't be 0")
-
         
         #VR = [5, 50, 20, 200, 400, 1000, 2000, -5, -50, -20, -200, -400, -1000, -2000, 0]
         #IR = [8,9,10,11,12,13,14,15,16,17,18,19,20,-8,-9,-10,-11,-12,-13,-14,-15,-16,-17,-18,-19,-20, 0]
@@ -778,7 +774,7 @@ class Agilent_B1500A():
                         raise B1500A_InputError("Selected Voltage Compliance for Current range %d in Channel %d using %s is not less than or equal to %f A." %(RI[n], Chns[n], modDesc, vcompFin))
 
 
-    def getModuleDescription(chn):
+    def getModuleDescription(self, chn):
         return self.ModuleDesc[chn]
 
     # check the filter that can be applied to each SMU

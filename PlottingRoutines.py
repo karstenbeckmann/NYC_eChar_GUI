@@ -107,11 +107,9 @@ class plottingRoutine:
         
     def SaveToFile(self, filename=None, folder=None):
         
-        print(filename)
         filename = filename.replace(r"/", "-")
         filename = filename.replace(r'\\\\', "-")
         filename = filename.replace(r"\\", "-")
-        print(filename)
 
         filename = filename.split(".")[0]
         fig = self.getFigure()
@@ -564,11 +562,7 @@ class WaferMapValues(plottingRoutine):
 
         self.__Graph.text(xDie-self.xlow-1.35, yDie-self.ylow-0.6, str(EngValue), fontdict={'size': 9})
 
-
-
 #class ResistiveStates(plottingRoutine):
-
-
 
 class XY(plottingRoutine):
 
@@ -589,6 +583,7 @@ class XY(plottingRoutine):
 
         self.xscale = GraphProperties['xScale']
         self.yscale = GraphProperties['yScale']
+        self.legend = GraphProperties['legend']
 
         self.linestyle = self.adjustInput(GraphProperties['lineStyle'])
         self.linewidth = self.adjustInput(GraphProperties['lineSize'])
@@ -612,23 +607,27 @@ class XY(plottingRoutine):
 
     def adjustInput(self, Input):
         if not isinstance(Input, list):
-            if not self.data == None:
+            if isinstance(self.data, (list, np.ndarray)):
                 if self.PlotType == "Y":
                     return [Input]
                 elif self.PlotType == "XY":
-                    return [Input]*(len(self.data)-1)
+                    if len(np.shape(self.data)) == 3:
+                        return [Input]*(len(self.data))
+                    elif len(np.shape(self.data)) == 2:
+                        return [Input]*(len(self.data)-1)
+                    else:
+                        return [Input]
                 elif self.PlotType == "YY":
                     return [Input]*(len(self.data))
             else:
                 return [Input]
         else:
-            Input
+            return Input
 
     def checkData(self, data):
-        if not isinstance(data, list):
+        if not isinstance(data, (list, np.ndarray)):
             raise ValueError("Data must be a one or more dimensional list of int/float.")
-            
-        if not isinstance(data[0], (list, type(np.array))):
+        if not isinstance(data[0], (list, np.ndarray)):
             self.PlotType='Y'
         else:
             if self.Map:
@@ -662,6 +661,9 @@ class XY(plottingRoutine):
         self.xscale = GraphProperties['xScale']
         self.yscale = GraphProperties['yScale']
         self.cbarlabel = GraphProperties['cLabel']
+        self.legend = GraphProperties['legend']
+        if not isinstance(self.legend, list) and self.legend != None:
+            self.legend = [self.legend]
 
         self.linestyle = GraphProperties['lineStyle']
         self.linewidth = GraphProperties['lineSize']
@@ -685,7 +687,12 @@ class XY(plottingRoutine):
         if self.xscale == 'lin':
             self.__Graph.ticklabel_format(style='sci', axis='x', scilimits=(-1,1))
         
-        
+        if self.legend != None:
+            for line, label in zip(self.lines,self.legend):
+                line.set_label(label)
+            self.__Graph.legend(loc="upper right", prop={"size":8})
+            #self.__Graph.legend(handles=self.lines, self.legend, loc="upper right")
+
         if self.Map:
             if len(self.__Graph.figure.axes) < 2:
                 #formatter = LogFormatter(10, labelOnlyBase=False)
@@ -705,7 +712,7 @@ class XY(plottingRoutine):
         
         self.__Graph.set_xlabel(GraphProperties['xLabel'])
         self.__Graph.set_ylabel(GraphProperties['yLabel'])
-
+            
         if not GraphProperties['title'].strip() == "":
             self.__Graph.set_title(GraphProperties['title'], fontweight='bold')
         self.__Figure.tight_layout()
@@ -724,39 +731,41 @@ class XY(plottingRoutine):
         temp = np.absolute(data)
         return temp
 
+
+
     def __update(self):
         self.lines = []
         if self.PlotType == 'Y':
             self.lines.append(None)
             data = self.getAbsolute(self.data)
             if self.yscale == 'log' and self.xscale == 'log':
-                self.lines[0] = self.__Graph.loglog(data)
+                self.lines[0], = self.__Graph.loglog(data)
             elif self.yscale == 'log':
-                self.lines[0] = self.__Graph.semilogy(data)
+                self.lines[0], = self.__Graph.semilogy(data)
             elif self.xscale == 'log':
-                self.lines[0] = self.__Graph.semilogx(data)
+                self.lines[0], = self.__Graph.semilogx(data)
             else:
-                self.lines[0] = self.__Graph.plot(data)
+                self.lines[0], = self.__Graph.plot(data)
 
         elif self.PlotType == 'XY':
             
             # data in 3D array 
             if len(np.shape(self.data)) == 3:
                 for n in range(np.shape(self.data)[0]):
-                    for m in range(np.shape(self.data)[1]):
-                        self.lines.append(None)
-                        if self.yscale == 'log' and self.xscale == 'log':
-                            data1 = self.getAbsolute(self.data[n][0])
-                            data2 = self.getAbsolute(self.data[n][m+1])
-                            self.lines[n] = self.__Graph.loglog(data1, data2)
-                        elif self.yscale == 'log':
-                            data = self.getAbsolute(self.data[n][m+1])
-                            self.lines[n] = self.__Graph.semilogy(self.data[n][0], data)
-                        elif self.xscale == 'log':
-                            data = self.getAbsolute(self.data[n][0])
-                            self.lines[n] = self.__Graph.semilogx(data, self.data[n][m+1])
-                        else:
-                            self.lines[n] = self.__Graph.plot(self.data[n][0], self.data[n][m+1])
+                    #print("data", self.data[n][0], self.data[n][1])
+                    self.lines.append(None)
+                    if self.yscale == 'log' and self.xscale == 'log':
+                        data1 = self.getAbsolute(self.data[n][0])
+                        data2 = self.getAbsolute(self.data[n][1])
+                        self.lines[n], = self.__Graph.loglog(data1, data2)
+                    elif self.yscale == 'log':
+                        data = self.getAbsolute(self.data[n][0])
+                        self.lines[n], = self.__Graph.semilogy(self.data[n][2], data)
+                    elif self.xscale == 'log':
+                        data = self.getAbsolute(self.data[n][0])
+                        self.lines[n], = self.__Graph.semilogx(data, self.data[n][1])
+                    else:
+                        self.lines[n], = self.__Graph.plot(self.data[n][0], self.data[n][1])
 
                 if self.data[0][0][-1] < 0.1 and self.xscale=='lin':
                     self.__Graph.ticklabel_format(style='sci', axis='x', scilimits=(-1,1))
@@ -769,15 +778,15 @@ class XY(plottingRoutine):
                     if self.yscale == 'log' and self.xscale == 'log':
                         data1 = self.getAbsolute(self.data[0])
                         data2 = self.getAbsolute(self.data[n+1])
-                        self.lines[n] = self.__Graph.loglog(data1, data2)
+                        self.lines[n], = self.__Graph.loglog(data1, data2)
                     elif self.yscale == 'log':
                         data = self.getAbsolute(self.data[n+1])
-                        self.lines[n] = self.__Graph.semilogy(self.data[0], data)
+                        self.lines[n], = self.__Graph.semilogy(self.data[0], data)
                     elif self.xscale == 'log':
                         data = self.getAbsolute(self.data[0])
-                        self.lines[n] = self.__Graph.semilogx(data, self.data[n+1])
+                        self.lines[n], = self.__Graph.semilogx(data, self.data[n+1])
                     else:
-                        self.lines[n] = self.__Graph.plot(self.data[0], self.data[n+1])
+                        self.lines[n], = self.__Graph.plot(self.data[0], self.data[n+1])
                 if self.data[0][-1] < 0.1 and self.xscale=='lin':
                     self.__Graph.ticklabel_format(style='sci', axis='x', scilimits=(-1,1))
 
@@ -786,14 +795,14 @@ class XY(plottingRoutine):
                 self.lines.append(None)
                 if self.yscale == 'log' and self.xscale == 'log':
                     data = self.getAbsolute(self.data[n])
-                    self.lines[n] = self.__Graph.loglog(data)
+                    self.lines[n], = self.__Graph.loglog(data)
                 elif self.yscale == 'log':
                     data = self.getAbsolute(self.data[n])
-                    self.lines[n] = self.__Graph.semilogy(data)
+                    self.lines[n], = self.__Graph.semilogy(data)
                 elif self.xscale == 'log':
-                    self.lines[n] = self.__Graph.semilogx(self.data[n])
+                    self.lines[n], = self.__Graph.semilogx(self.data[n])
                 else:
-                    self.lines[n] = self.__Graph.plot(self.data[n])
+                    self.lines[n], = self.__Graph.plot(self.data[n])
             try:
                 size = len(self.data[0])
             except:
@@ -812,17 +821,17 @@ class XY(plottingRoutine):
         if self.PlotType != 'Map':
             for n in range(len(self.lines)):
                 if self.color[n] != None:
-                    self.lines[n][0].set_color(self.color[n])
+                    self.lines[n].set_color(self.color[n])
                 if self.linestyle[n] in mks.MarkerStyle.markers.keys():
                     if self.linewidth[n] != None:
-                        self.lines[n][0].set_markersize(self.linewidth[n])
+                        self.lines[n].set_markersize(self.linewidth[n])
                     if self.linestyle[n] != None:
-                        self.lines[n][0].set_marker(self.linestyle[n])
+                        self.lines[n].set_marker(self.linestyle[n])
                 else:
                     if self.linewidth[n] != None:
-                        self.lines[n][0].set_linewidth(self.linewidth[n])
-                    if self.linestyle[n] != None:
-                        self.lines[n][0].set_linestyle(self.linestyle[n])
+                        self.lines[n].set_linewidth(self.linewidth[n])
+                    if self.linestyle != None:
+                        self.lines[n].set_linestyle(self.linestyle[n])
 
     def extend(self, newData):
 

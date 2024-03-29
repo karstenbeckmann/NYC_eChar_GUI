@@ -711,7 +711,6 @@ class MainUI(QtWidgets.QMainWindow):
             
         while not self.eChar.ErrorQueue.empty():
             error = self.eChar.ErrorQueue.get()
-            print("err", error)
             self.Configuration.addElementErrorList(error)
             self.updateErrorFrames(error)
         

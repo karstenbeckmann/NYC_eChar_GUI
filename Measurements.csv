@@ -180,7 +180,7 @@ Name, FEendurance
 Folder, Ferroelectric
 Tools, B1530A
 VariableName, Pulse Channel, Ground Channel, Pulse Voltage, Delay, Pulse Slope, Pulse Width, Base Time, Meas. Points, # of Cycles, # of Meas. Cycles, Iterations, final Meas., init. Pulse, Area (cm2)
-Default, 201, 202, 2.5, 1e-4, 1e-5, 1e-5, 1e-5, 50, 100, 100, 1, False, True, 1e-7
+Default, 101, 102, 2.5, 1e-5, 1e-5, 1e-5, 1e-5, 50, 10, 10, 1, False, True, 1e-7
 Datatype, WGFMUChannel, WGFMUChannel, float, float, float, float, float, int, int, int, int, bool, bool, float
 #####################
 Name, WriteString8x8

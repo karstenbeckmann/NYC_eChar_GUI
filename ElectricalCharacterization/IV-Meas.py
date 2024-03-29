@@ -642,14 +642,12 @@ def RepeatSpotMeas(eChar, SMUs, VorI, Val, Compl, delay, sleep, numOfReapeats):
 
         lat = data[0][-1]
 
-        eChar.({"Add": True, 'Yscale': 'log',  "Traces": lat, 'Xlabel': Xlab, "Ylabel": Ylab, 'Title': title, "MeasurementType": Typ, "ValueName": title})
+        eChar.plotIVData({"Add": True, 'Yscale': 'log',  "Traces": lat, 'Xlabel': Xlab, "Ylabel": Ylab, 'Title': title, "MeasurementType": Typ, "ValueName": title})
         if eChar.checkStop():
             break
 
     try: 
-
         header = out['Header']
-        
         header.insert(0,"TestParameter,Measurement.Type,%s" %(Typ))
         header.append("Measurement,Device,%s" %(eChar.device))
         header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))

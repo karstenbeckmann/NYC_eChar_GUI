@@ -210,6 +210,8 @@ def MesurementExecutionPS(deviceCharacterization, eChar, Configuration, threads,
     ExpParNames = []
     ExpParameter = []
 
+    eChar.prepareExecution()
+
     if len(Instruments.getInstrumentsByType('B1530A')) != 0: 
         if Instruments.getInstrumentsByType('B1530A')[0]["Instrument"] != None:
             Instruments.getInstrumentsByType('B1530A')[0]["Instrument"].startLog()

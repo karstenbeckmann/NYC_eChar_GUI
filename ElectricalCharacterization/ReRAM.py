@@ -165,9 +165,9 @@ def SetDCE5274A(eChar, SweepSMU, GNDSMU, GateSMU, Vset, Vgate, steps, Compl, Gat
     eChar.writeDataToFile(header, data, Typ=Typ, startCyc=CycStart, endCyc=eChar.curCycle-1)
            
     #resis = []
-    #resis.append(dh.Value(eChar, calcRes, name, DoYield=eChar.DoYield, Unit='ohm'))
+    #resis.append(eChar.dhValue(calcRes, name, DoYield=eChar.DoYield, Unit='ohm'))
 
-    #row = dh.Row(resis,eChar.DieX,eChar.DieY,eChar.DevX,eChar.DevY,Typ)
+    #row = eChar.dhAddRow(resis,eChar.DieX,eChar.DieY,eChar.DevX,eChar.DevY,Typ)
     #eChar.StatOutValues.addRow(row)
 
 def ResetDCE5274A(eChar, SweepSMU, GNDSMU, GateSMU, Vreset, Vgate, steps, Compl, GateCompl, hold, delay, DCSMUs, Vdc, DCcompl):
@@ -434,10 +434,9 @@ def SetDC(eChar, SweepSMU, GNDSMU, GateSMU, Vset, Vgate, steps, Compl, GateCompl
     eChar.writeDataToFile(header, data, Typ=Typ, startCyc=CycStart, endCyc=eChar.curCycle-1)
            
     #resis = []
-    #resis.append(dh.Value(eChar, calcRes, name, DoYield=eChar.DoYield, Unit='ohm'))
+    #resis.append(eChar.dhValue(calcRes, name, DoYield=eChar.DoYield, Unit='ohm'))
 
-    #row = dh.Row(resis,eChar.DieX,eChar.DieY,eChar.DevX,eChar.DevY,Typ)
-    #eChar.StatOutValues.addRow(row)
+    #row = eChar.dhAddRow(resis,Typ)
 
 def ResetDC(eChar, SweepSMU, GNDSMU, GateSMU, Vreset, Vgate, steps, Compl, GateCompl, hold, delay, DCSMUs, Vdc, DCcompl):
 
@@ -627,10 +626,9 @@ def PulseRead(eChar, PulseChn, GroundChn, Vread, delay, tread, tbase, WriteHeade
     eChar.Results.append(res)
 
 
-    resis = dh.Value(eChar, resistance, 'Resistance', DoYield=eChar.DoYield, Unit='ohm')
-    row = dh.Row([resis],eChar.DieX,eChar.DieY,eChar.DevX,eChar.DevY,MeasType,eChar.curCycle,eChar.curCycle)
+    resis = eChar.dhValue(resistance, 'Resistance', Unit='ohm')
+    row = eChar.dhAddRow([resis],MeasType,eChar.curCycle,eChar.curCycle)
 
-    eChar.StatOutValues.addRow(row)
 
     eChar.curCycle = eChar.curCycle+1
     return res
@@ -759,13 +757,12 @@ def PulseForming(eChar, PulseChn, GroundChn, Vform, delay, trise, tfall, twidth,
         Trac = [SepData['IVdata'][3],SepData['IVdata'][1]] 
         
     eChar.plotIVData({"Traces":Trac, 'Xaxis': True, 'Xlabel': 'Voltage (V)', "Ylabel": 'Current (A)', 'Title': "Forming", "MeasurementType": Typ, "ValueName": 'IV'})
-    HRS = dh.Value(eChar, SepData['HRS'][0], 'FirstHRS', DoYield=False, Unit='ohm')
-    LRS = dh.Value(eChar, SepData['LRS'][0], 'FirstLRS', DoYield=False, Unit='ohm')
-    ImaxForm = dh.Value(eChar, SepData['ImaxSet'][0], 'ImaxForm', DoYield=eChar.DoYield, Unit='A')
-    Vform = dh.Value(eChar, SepData['Vset'][0], 'Vform', DoYield=eChar.DoYield, Unit='V')
-    row = dh.Row([HRS,LRS,ImaxForm,Vform],eChar.DieX,eChar.DieY,eChar.DevX,eChar.DevY,'PulseForming',eChar.curCycle,eChar.curCycle)
-
-    eChar.StatOutValues.addRow(row)
+    HRS = eChar.dhValue(eChar, SepData['HRS'][0], 'FirstHRS', Unit='ohm')
+    LRS = eChar.dhValue(eChar, SepData['LRS'][0], 'FirstLRS', Unit='ohm')
+    ImaxForm = eChar.dhValue(eChar, SepData['ImaxSet'][0], 'ImaxForm', Unit='A')
+    Vform = eChar.dhValue(eChar, SepData['Vset'][0], 'Vform', Unit='V')
+    
+    row = eChar.dhAddRow([HRS,LRS,ImaxForm,Vform],'PulseForming',eChar.curCycle,eChar.curCycle)
 
     eChar.curCycle = eChar.curCycle+1
     return res
@@ -889,17 +886,15 @@ def PulseSet(eChar, PulseChn, GroundChn, Vform, delay, trise, tfall, twidth, tba
         Trac = [SepData['IVdata'][3],SepData['IVdata'][1]] 
     eChar.plotIVData({"Traces":Trac, 'Xaxis': True, 'Xlabel': 'Voltage (V)', "Ylabel": 'Current (A)', 'Title': "Set", "MeasurementType": Typ, "ValueName": 'IV'})
 
-    LRS = dh.Value(eChar, SepData['LRS'][0], 'LRS', DoYield=eChar.DoYield, Unit='ohm')
-    ImaxSet = dh.Value(eChar, SepData['ImaxSet'][0], 'ImaxSet', DoYield=eChar.DoYield, Unit='A')
-    Vset = dh.Value(eChar, SepData['Vset'][0], 'Vset', DoYield=eChar.DoYield, Unit='V')
+    LRS = eChar.dhValue(SepData['LRS'][0], 'LRS', Unit='ohm')
+    ImaxSet = eChar.dhValue(SepData['ImaxSet'][0], 'ImaxSet', Unit='A')
+    Vset = eChar.dhValue(SepData['Vset'][0], 'Vset', Unit='V')
 
     if initialRead:
-        HRS = dh.Value(eChar, SepData['HRS'][0], 'HRS', DoYield=eChar.DoYield, Unit='ohm')
-        row = dh.Row([HRS,LRS,ImaxSet,Vset],eChar.DieX,eChar.DieY,eChar.DevX,eChar.DevY,'PulseSet',eChar.curCycle,eChar.curCycle)
+        HRS = eChar.dhValue(SepData['HRS'][0], 'HRS', Unit='ohm')
+        row = eChar.dhAddRow([HRS,LRS,ImaxSet,Vset],'PulseSet',eChar.curCycle,eChar.curCycle)
     else:
-        row = dh.Row([LRS,ImaxSet,Vset],eChar.DieX,eChar.DieY,eChar.DevX,eChar.DevY,'PulseSet',eChar.curCycle,eChar.curCycle)
-
-    eChar.StatOutValues.addRow(row)
+        row = eChar.dhAddRow([LRS,ImaxSet,Vset],'PulseSet',eChar.curCycle,eChar.curCycle)
 
     eChar.curCycle = eChar.curCycle+1
 
@@ -1033,18 +1028,15 @@ def PulseReset(eChar, PulseChn, GroundChn, Vform, delay, trise, tfall, twidth, t
     Trac = [SepData['IVdata'][2],SepData['IVdata'][3]]
     eChar.plotIVData({"Traces":Trac, 'Xaxis': True, 'Xlabel': 'Time (s)', "Ylabel": 'Current (A)', 'Title': "Reset: t-I", "MeasurementType": Typ, "ValueName": 'tI'})
     
-    HRS = dh.Value(eChar, SepData['HRS'][0], 'HRS', DoYield=eChar.DoYield, Unit='ohm')
-    ImaxReset = dh.Value(eChar, SepData['ImaxReset'][0], 'ImaxReset', DoYield=eChar.DoYield, Unit='A')
-    Vreset = dh.Value(eChar, SepData['Vreset'][0], 'Vreset', DoYield=eChar.DoYield, Unit='V')
+    HRS = eChar.dhValue(SepData['HRS'][0], 'HRS', Unit='ohm')
+    ImaxReset = eChar.dhValue(SepData['ImaxReset'][0], 'ImaxReset', Unit='A')
+    Vreset = eChar.dhValue(SepData['Vreset'][0], 'Vreset', Unit='V')
 
     if initialRead:
-        LRS = dh.Value(eChar, SepData['LRS'][0], 'LRS', DoYield=eChar.DoYield, Unit='ohm')
-        row = dh.Row([HRS,LRS,ImaxReset,Vreset],eChar.DieX,eChar.DieY,eChar.DevX,eChar.DevY,'PulseReset',eChar.curCycle,eChar.curCycle)
+        LRS = eChar.dhValue(SepData['LRS'][0], 'LRS', Unit='ohm')
+        row = eChar.dhAddRow([HRS,LRS,ImaxReset,Vreset],'PulseReset',eChar.curCycle,eChar.curCycle)
     else:
-        row = dh.Row([HRS,ImaxReset,Vreset],eChar.DieX,eChar.DieY,eChar.DevX,eChar.DevY,'PulseReset',eChar.curCycle,eChar.curCycle)
-        
-    eChar.StatOutValues.addRow(row)
-
+        row = eChar.dhAddRow([HRS,ImaxReset,Vreset],'PulseReset',eChar.curCycle,eChar.curCycle)
     eChar.curCycle = eChar.curCycle+1
 
     return res
@@ -1230,16 +1222,14 @@ def PulseIV(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tfallS, twi
     eChar.Results.append(res)
 
     if Primary:
-        HRS = dh.Value(eChar, SepData['HRS'], 'HRS', DoYield=eChar.DoYield, Unit='ohm')
-        LRS = dh.Value(eChar, SepData['LRS'], 'LRS', DoYield=eChar.DoYield, Unit='ohm')
-        ImaxReset = dh.Value(eChar, SepData['ImaxReset'], 'ImaxReset', DoYield=eChar.DoYield, Unit='A')
-        ImaxSet = dh.Value(eChar, SepData['ImaxSet'], 'ImaxSet', DoYield=eChar.DoYield, Unit='A')
-        Vreset = dh.Value(eChar, SepData['Vreset'], 'Vreset', DoYield=eChar.DoYield, Unit='V')
-        Vset = dh.Value(eChar, SepData['Vset'], 'Vset', DoYield=eChar.DoYield, Unit='V')
+        HRS = eChar.dhValue(SepData['HRS'], 'HRS', Unit='ohm')
+        LRS = eChar.dhValue(SepData['LRS'], 'LRS', Unit='ohm')
+        ImaxReset = eChar.dhValue(SepData['ImaxReset'], 'ImaxReset', Unit='A')
+        ImaxSet = eChar.dhValue(SepData['ImaxSet'], 'ImaxSet', Unit='A')
+        Vreset = eChar.dhValue(SepData['Vreset'], 'Vreset', Unit='V')
+        Vset = eChar.dhValue(SepData['Vset'], 'Vset', Unit='V')
 
-        row = dh.Row([HRS,LRS,ImaxReset,ImaxSet,Vreset,Vset],eChar.DieX,eChar.DieY,eChar.DevX,eChar.DevY,'PulseIV',eChar.curCycle,eChar.curCycle+count-1)
-
-        eChar.StatOutValues.addRow(row)
+        row = eChar.dhAddRow([HRS,LRS,ImaxReset,ImaxSet,Vreset,Vset],'PulseIV',eChar.curCycle,eChar.curCycle+count-1)
 
     eChar.curCycle = eChar.curCycle+count
 
@@ -1615,10 +1605,8 @@ def RetentionTest(eChar, PulseChn, GroundChn, Vread, delay, tread,  tbase, t_tot
     res = {'Header':header, 'Rtdata':[times,resistances], 'Type': MeasType}
     eChar.Results.append(res)
 
-    resis = dh.Value(eChar, resistances, 'Resistance', DoYield=eChar.DoYield, Unit='ohm')
-    row = dh.Row([resis],eChar.DieX,eChar.DieY,eChar.DevX,eChar.DevY,MeasType,eChar.curCycle,eChar.curCycle)
-
-    eChar.StatOutValues.addRow(row)
+    resis = eChar.dhValue(resistances, 'Resistance', Unit='ohm')
+    row = eChar.dhAddRow([resis],MeasType,eChar.curCycle,eChar.curCycle)
 
     eChar.curCycle = eChar.curCycle+1
     return res
@@ -1987,12 +1975,12 @@ def saveDataEndurance(eChar, WriteHeader, DoYield, MaxRowsPerFile, MaxDataPerPlo
     if DoYield:
         DoYield = eChar.DoYield      
 
-    HRSVal = dh.Value(eChar, [], 'HRS', DoYield=DoYield, Unit='ohm')
-    LRSVal = dh.Value(eChar, [], 'LRS', DoYield=DoYield, Unit='ohm')
-    ImaxResetVal = dh.Value(eChar, [], 'ImaxReset', DoYield=DoYield, Unit='A')
-    ImaxSetVal = dh.Value(eChar, [], 'ImaxSet', DoYield=DoYield, Unit='A')
-    VresetVal = dh.Value(eChar, [], 'Vreset', DoYield=DoYield, Unit='V')
-    VsetVal = dh.Value(eChar, [], 'Vset', DoYield=DoYield, Unit='V')
+    HRSVal = eChar.dhValue([], 'HRS', Unit='ohm')
+    LRSVal = eChar.dhValue([], 'LRS', Unit='ohm')
+    ImaxResetVal = eChar.dhValue([], 'ImaxReset', Unit='A')
+    ImaxSetVal = eChar.dhValue([], 'ImaxSet', Unit='A')
+    VresetVal = eChar.dhValue([], 'Vreset', Unit='V')
+    VsetVal = eChar.dhValue([], 'Vset', Unit='V')
 
     OutputStart = True
     RDcycStartOutput = 1
@@ -2158,11 +2146,9 @@ def saveDataEndurance(eChar, WriteHeader, DoYield, MaxRowsPerFile, MaxDataPerPlo
         
     RDcycStop = eChar.curCycle
     if usedPulsedIV:
-        row = dh.Row([HRSVal,LRSVal,ImaxResetVal,ImaxSetVal,VresetVal,VsetVal],eChar.DieX,eChar.DieY,eChar.DevX,eChar.DevY,'Endurance',RDcycStart,RDcycStop)
+        row = eChar.dhAddRow([HRSVal,LRSVal,ImaxResetVal,ImaxSetVal,VresetVal,VsetVal],'Endurance',RDcycStart,RDcycStop)
     else:
-        row = dh.Row([HRSVal,LRSVal],eChar.DieX,eChar.DieY,eChar.DevX,eChar.DevY,'Endurance',RDcycStart,RDcycStop)
-
-    eChar.StatOutValues.addRow(row)
+        row = eChar.dhAddRow([HRSVal,LRSVal],'Endurance',RDcycStart,RDcycStop)
 
     eChar.SubProcessThread.put({'Finished': True})
     eChar.LogData.put("Endurance: Finished Data Storage.")
@@ -3530,10 +3516,10 @@ def AnalogRetention(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent, V
     Typ2 = "Compl_%s" %(Typ)
     eChar.writeDataToFile(header, OutputData, Typ=Typ2, startCyc=CycStart, endCyc=eChar.curCycle-1)
     
-    AvgLRS = dh.Value(eChar, [], 'FirstHRS', DoYield=False, Unit='ohm')
-    AvgHRS = dh.Value(eChar, [], 'FirstLRS', DoYield=False, Unit='ohm')
-    AvgRret = dh.Value(eChar, [], 'Rret', DoYield=False, Unit='ohm')
-    Avgtfail = dh.Value(eChar, [], 'tfail', DoYield=False, Unit='ohm')
+    AvgLRS = eChar.dhValue([], 'FirstHRS', Unit='ohm')
+    AvgHRS = eChar.dhValue([], 'FirstLRS', Unit='ohm')
+    AvgRret = eChar.dhValue([], 'Rret', Unit='ohm')
+    Avgtfail = eChar.dhValue([], 'tfail', Unit='ohm')
     
     for n in range(RunRep-1):
         if len(Rreset) > n: 
@@ -3551,9 +3537,8 @@ def AnalogRetention(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent, V
             None
         AvgRret.extend(Rret[n])
 
-    row = dh.Row([AvgLRS,AvgHRS,AvgRret, Avgtfail],eChar.DieX,eChar.DieY,eChar.DevX,eChar.DevY,'AnalogRetention')
+    row = eChar.dhAddRow([AvgLRS,AvgHRS,AvgRret, Avgtfail],'AnalogRetention')
 
-    eChar.StatOutValues.addRow(row)
 
 ###########################################################################################################################
 def IncrementalSwitching(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent, Vset, Vreset, twidthSet, twidthReset, Vread, tread, RstepSet, RstepReset, MaxResistance, MaxPulsesPerStepSet, MaxPulsesPerStepReset, Round, Repetition, PowerSplitter, WriteHeader=True):
@@ -4638,8 +4623,8 @@ def IncrementalSwitching(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurre
         Rdelta.append(r[-1]-s[-1])
 
 
-    AvgSetPul = dh.Value(eChar, [], 'FirstHRS', DoYield=False, Unit='ohm')
-    AvgResetPul = dh.Value(eChar, [], 'FirstLRS', DoYield=False, Unit='ohm')
+    AvgSetPul = eChar.dhValue([], 'FirstHRS', Unit='ohm')
+    AvgResetPul = eChar.dhValue([], 'FirstLRS', Unit='ohm')
 
     for n in nSet:
         AvgSetPul.extend(n)
@@ -4647,11 +4632,8 @@ def IncrementalSwitching(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurre
     for n in nReset:
         AvgResetPul.extend(n)
 
-    AvgRratio = dh.Value(eChar, Rdelta, 'ImaxForm', DoYield=eChar.DoYield, Unit='A')
-    row = dh.Row([AvgSetPul,AvgResetPul,AvgRratio],eChar.DieX,eChar.DieY,eChar.DevX,eChar.DevY,'PulseForming',eChar.curCycle,eChar.curCycle)
-
-    eChar.StatOutValues.addRow(row)
-    
+    AvgRratio = eChar.dhValue(Rdelta, 'ImaxForm', Unit='A')
+    row = eChar.dhAddRow([AvgSetPul,AvgResetPul,AvgRratio],'PulseForming',eChar.curCycle,eChar.curCycle)    
     
 
 ###########################################################################################################################
