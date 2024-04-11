@@ -39,11 +39,7 @@ class MainButtons(QtWidgets.QWidget):
         self.Configuration = self.MainGI.Configuration
         self.Complete = 0
         self.Instruments = self.MainGI.Instruments
-        AvailMeasTypes = ["Full Wafer"]
 
-        self.__MeasurementType = stdObj.ComboBox(self, self.MainGI, "CurrentMeasurementType", list(AvailMeasTypes), command=self.callMeasTypes, width=15)
-        self.__MeasurementType.setMinimumWidth(int(0.2*self.width))
-        self.layout.addWidget(self.__MeasurementType)
         
         ChuckTemp = "--"
         if self.Instruments.getProberInstrument() != None:
@@ -72,7 +68,7 @@ class MainButtons(QtWidgets.QWidget):
         self.layout.addSpacing(1)
 
        
-        self.TxTempDisp = stdObj.Label("%s ℃ " %(ChuckTemp), self, alignment=QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
+        self.TxTempDisp = stdObj.Label("%s ℃ " %(ChuckTemp), self, alignment=QtCore.Qt.AlignCenter|QtCore.Qt.AlignVCenter)
 
         self.layout.addWidget(self.TxTempDisp)
 
@@ -91,10 +87,8 @@ class MainButtons(QtWidgets.QWidget):
 
     def update(self):
         if self.MainGI.isRunning():
-            self.__MeasurementType.setEnabled(False)
             self.__StartButton.setEnabled(False)
         else:
-            self.__MeasurementType.setEnabled(True)
             self.__StartButton.setEnabled(True)
 
             self.TxTempDisp.setText("%s ℃ " %(self.Instruments.getChuckTemperature()))
@@ -129,7 +123,7 @@ class MainButtons(QtWidgets.QWidget):
             ret = int(msgBox.exec())
         
             if ret == 16384: 
-                self.MainGI.startExecution(self.__MeasurementType.getVariable())
+                self.MainGI.startExecution()
                 self.__ContinueButton.setDisabled(True)
             else:
                 self.MainGI.running = False

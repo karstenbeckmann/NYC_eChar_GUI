@@ -27,12 +27,7 @@ def Meas_8x81T1RForm_UTK(eChar, test1):
     # if we're setting a current, what will it be?
     # what is the compliance current?
     IComp = [1e-3,1e-3,1e-3, 1e-3, 1e-3, 1e-3, 1e-3]
-    # what's the measurement type?
-    Typ = 'SpotMeas'
     
-    #what's the name of this program?
-    MeasType = '8x81T1RForming_UTK'
-
     #this sets up the parameter analyzer
     ret1 = eChar.E5274A.SpotMeasurement(Chns, VorI, Val, IComp=IComp)
 
@@ -65,19 +60,14 @@ def Meas_8x81T1RForm_UTK(eChar, test1):
 
         #update the plots  A-Gnd, B-form/gate2, C-gate1, D-set, E-rd, F-gate3, G-reset 
         Trac = ret[-1][0:7]
-        eChar.IVplotData.put({"Add": True, "lineStyle": 'o', 'legend': ['Iprog(GND)','Iform', 'Ipin(Reset)', 'Ipin(Read)','IDDH','Iprog(3.3V)','Ignd', 'Resistance'], "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': "Matrix Iteration", "Ylabel": 'Current (A)', 'Title': "input current", "MeasurementType": Typ, "ValueName": 'Current'})
+        eChar.IVplotData.put({"Add": True, "lineStyle": 'o', 'legend': ['Iprog(GND)','Iform', 'Ipin(Reset)', 'Ipin(Read)','IDDH','Iprog(3.3V)','Ignd', 'Resistance'], "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': "Matrix Iteration", "Ylabel": 'Current (A)', 'Title': "input current", "ValueName": 'Current'})
 
         Trac = ret[-1][0]
-        eChar.IVplotData.put({"Add": True, "lineStyle": 'o', "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Matrix Iteration', "Ylabel": 'current (A)', 'Title': "output current", "MeasurementType": Typ, "ValueName": 'Current'})
+        eChar.IVplotData.put({"Add": True, "lineStyle": 'o', "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Matrix Iteration', "Ylabel": 'current (A)', 'Title': "output current", "ValueName": 'Current'})
         n = n+1
 
     # write a header to our output file
     header = out['Header']
-    
-    header.insert(0,"TestParameter,Measurement.Type,%s" %(MeasType))
-    header.append("Measurement,Device,%s" %(eChar.device))
-    header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
-    
     header.append('DataName, Iprog(GND), Iform, Ipin(Reset), Ipin(Read), IDDH, Iprog(3.3V), Ignd, Resistance')
     header.append('Dimension, %d, %d, %d, %d, %d, %d, %d, %d' %(n,n,n,n,n,n,n,n))
 
@@ -97,7 +87,7 @@ def Meas_8x81T1RForm_UTK(eChar, test1):
         out.append(add)
         
     #pass the data in RAM to a process which will write it out
-    eChar.threads.append(th.Thread(target = std.writeDataToFile , args=(header, out, eChar.getFolder(), eChar.getFilename(Typ))))
+    eChar.threads.append(th.Thread(target = std.writeDataToFile , args=(cp.deepcopy(header), out, eChar.getFolder(), eChar.getFilename())))
     eChar.threads[len(eChar.threads)-1].start()
 
 def Meas_8x81T1RNeuron_Test1a(eChar, test1):
@@ -113,11 +103,6 @@ def Meas_8x81T1RNeuron_Test1a(eChar, test1):
     # if we're setting a current, what will it be?
     # what is the compliance current?
     #IComp = [1e-3,1e-3,1e-3,1e-3,1e-3,1e-3]
-    # what's the measurement type?
-    Typ = 'SpotMeas'
-    
-    #what's the name of this program?
-    MeasType = 'Neuron_Test1a'
 
     #this sets up the parameter analyzer
     #ret1 = eChar.E5274A.SpotMeasurement(Chns, VorI, Val, IComp=IComp)
@@ -153,18 +138,14 @@ def Meas_8x81T1RNeuron_Test1a(eChar, test1):
 
         #update the plots  A-Gnd, B-form/gate2, C-gate1, D-set, E-rd, F-gate3, G-reset 
         Trac = ret[-1][0:7]
-        eChar.IVplotData.put({"Add": True, "lineStyle": 'o', 'legend': ['Iprog(GND)','Iform', 'Ipin(Reset)', 'Ipin(Read)','IDDH'], "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': "Matrix Iteration", "Ylabel": 'Current (A)', 'Title': "input current", "MeasurementType": Typ, "ValueName": 'Current'})
+        eChar.IVplotData.put({"Add": True, "lineStyle": 'o', 'legend': ['Iprog(GND)','Iform', 'Ipin(Reset)', 'Ipin(Read)','IDDH'], "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': "Matrix Iteration", "Ylabel": 'Current (A)', 'Title': "input current", "ValueName": 'Current'})
 
         Trac = ret[-1][0]
-        eChar.IVplotData.put({"Add": True, "lineStyle": 'o', "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Matrix Iteration', "Ylabel": 'current (A)', 'Title': "output current", "MeasurementType": Typ, "ValueName": 'Current'})
+        eChar.IVplotData.put({"Add": True, "lineStyle": 'o', "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Matrix Iteration', "Ylabel": 'current (A)', 'Title': "output current", "ValueName": 'Current'})
         n = n+1
 
     # write a header to our output file
     header = out['Header']
-    
-    header.insert(0,"TestParameter,Measurement.Type,%s" %(MeasType))
-    header.append("Measurement,Device,%s" %(eChar.device))
-    header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
     
     header.append('DataName, Ilow, Ihigh, IDomlow, IDomhigh, IFpost(GND), VFpost(GND), IMR(Midrail 0.6V)')
     header.append('Dimension, %d, %d, %d, %d, %d, %d, %d' %(n,n,n,n,n,n,n))
@@ -185,7 +166,7 @@ def Meas_8x81T1RNeuron_Test1a(eChar, test1):
         out.append(add)
         
     #pass the data in RAM to a process which will write it out
-    eChar.threads.append(th.Thread(target = std.writeDataToFile , args=(header, out, eChar.getFolder(), eChar.getFilename(Typ))))
+    eChar.threads.append(th.Thread(target = std.writeDataToFile , args=(cp.deepcopy(header), out, eChar.getFolder(), eChar.getFilename())))
     eChar.threads[len(eChar.threads)-1].start()
 
 
@@ -202,12 +183,7 @@ def Meas_UTKDCNeuron_Test_Sagar(eChar, test1):
     # if we're setting a current, what will it be?
     # what is the compliance current?
     #IComp = [1e-3,1e-3,1e-3,1e-3,1e-3,1e-3]
-    # what's the measurement type?
-    Typ = 'SpotMeas'
     
-    #what's the name of this program?
-    MeasType = 'Neuron_Test1a'
-
     #this sets up the parameter analyzer
     #ret1 = eChar.E5274A.SpotMeasurement(Chns, VorI, Val, IComp=IComp)
     ret1 = eChar.E5274A.SpotMeasurement(Chns, VorI, Val)
@@ -242,19 +218,14 @@ def Meas_UTKDCNeuron_Test_Sagar(eChar, test1):
 
         #update the plots  A-Gnd, B-form/gate2, C-gate1, D-set, E-rd, F-gate3, G-reset 
         Trac = ret[-1][0:7]
-        eChar.IVplotData.put({"Add": True, "lineStyle": 'o', 'legend': ['Iprog(GND)','Iform', 'Ipin(Reset)', 'Ipin(Read)','IDDH'], "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': "Matrix Iteration", "Ylabel": 'Current (A)', 'Title': "input current", "MeasurementType": Typ, "ValueName": 'Current'})
+        eChar.IVplotData.put({"Add": True, "lineStyle": 'o', 'legend': ['Iprog(GND)','Iform', 'Ipin(Reset)', 'Ipin(Read)','IDDH'], "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': "Matrix Iteration", "Ylabel": 'Current (A)', 'Title': "input current", "ValueName": 'Current'})
 
         Trac = ret[-1][0]
-        eChar.IVplotData.put({"Add": True, "lineStyle": 'o', "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Matrix Iteration', "Ylabel": 'current (A)', 'Title': "output current", "MeasurementType": Typ, "ValueName": 'Current'})
+        eChar.IVplotData.put({"Add": True, "lineStyle": 'o', "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Matrix Iteration', "Ylabel": 'current (A)', 'Title': "output current", "ValueName": 'Current'})
         n = n+1
 
     # write a header to our output file
     header = out['Header']
-    
-    header.insert(0,"TestParameter,Measurement.Type,%s" %(MeasType))
-    header.append("Measurement,Device,%s" %(eChar.device))
-    header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
-    
     header.append('DataName, Ilow, IVSS_0.2(0.4V), IMR(Midrail 0.6V), IVDD_0.2(0.8V), Ihigh(1.2V), VOutput1, VOutput2, VOutput3')
     header.append('Dimension, %d, %d, %d, %d, %d, %d, %d' %(n,n,n,n,n,n,n))
 
@@ -274,7 +245,7 @@ def Meas_UTKDCNeuron_Test_Sagar(eChar, test1):
         out.append(add)
         
     #pass the data in RAM to a process which will write it out
-    eChar.threads.append(th.Thread(target = std.writeDataToFile , args=(header, out, eChar.getFolder(), eChar.getFilename(Typ))))
+    eChar.threads.append(th.Thread(target = std.writeDataToFile , args=(cp.deepcopy(header), out, eChar.getFolder(), eChar.getFilename())))
     eChar.threads[len(eChar.threads)-1].start()
 
 def Meas_UTKDCNeuron_Test_Sagar_3Voltages(eChar, test1):
@@ -290,12 +261,7 @@ def Meas_UTKDCNeuron_Test_Sagar_3Voltages(eChar, test1):
     # if we're setting a current, what will it be?
     # what is the compliance current?
     #IComp = [1e-3,1e-3,1e-3,1e-3,1e-3,1e-3]
-    # what's the measurement type?
-    Typ = 'SpotMeas'
     
-    #what's the name of this program?
-    MeasType = 'Neuron_Test1a'
-
     #this sets up the parameter analyzer
     #ret1 = eChar.E5274A.SpotMeasurement(Chns, VorI, Val, IComp=IComp)
     ret1 = eChar.E5274A.SpotMeasurement(Chns, VorI, Val)
@@ -330,18 +296,14 @@ def Meas_UTKDCNeuron_Test_Sagar_3Voltages(eChar, test1):
 
         #update the plots  A-Gnd, B-form/gate2, C-gate1, D-set, E-rd, F-gate3, G-reset 
         Trac = ret[-1][0:7]
-        eChar.IVplotData.put({"Add": True, "lineStyle": 'o', 'legend': ['Iprog(GND)','Iform', 'Ipin(Reset)', 'Ipin(Read)','IDDH'], "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': "Matrix Iteration", "Ylabel": 'Current (A)', 'Title': "input current", "MeasurementType": Typ, "ValueName": 'Current'})
+        eChar.IVplotData.put({"Add": True, "lineStyle": 'o', 'legend': ['Iprog(GND)','Iform', 'Ipin(Reset)', 'Ipin(Read)','IDDH'], "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': "Matrix Iteration", "Ylabel": 'Current (A)', 'Title': "input current", "ValueName": 'Current'})
 
         Trac = ret[-1][0]
-        eChar.IVplotData.put({"Add": True, "lineStyle": 'o', "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Matrix Iteration', "Ylabel": 'current (A)', 'Title': "output current", "MeasurementType": Typ, "ValueName": 'Current'})
+        eChar.IVplotData.put({"Add": True, "lineStyle": 'o', "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Matrix Iteration', "Ylabel": 'current (A)', 'Title': "output current", "ValueName": 'Current'})
         n = n+1
 
     # write a header to our output file
     header = out['Header']
-    
-    header.insert(0,"TestParameter,Measurement.Type,%s" %(MeasType))
-    header.append("Measurement,Device,%s" %(eChar.device))
-    header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
     
     header.append('DataName, Ilow, IMR(Midrail 0.6V), Ihigh(1.2V), VOutput1, VOutput2, VOutput3, VOutput4')
     header.append('Dimension, %d, %d, %d, %d, %d, %d, %d' %(n,n,n,n,n,n,n))
@@ -362,7 +324,7 @@ def Meas_UTKDCNeuron_Test_Sagar_3Voltages(eChar, test1):
         out.append(add)
         
     #pass the data in RAM to a process which will write it out
-    eChar.threads.append(th.Thread(target = std.writeDataToFile , args=(header, out, eChar.getFolder(), eChar.getFilename(Typ))))
+    eChar.threads.append(th.Thread(target = std.writeDataToFile , args=(cp.deepcopy(header), out, eChar.getFolder(), eChar.getFilename())))
     eChar.threads[len(eChar.threads)-1].start()
 
 def Meas_UTKDCNeuron_Test_Sam(eChar, test1):
@@ -378,12 +340,6 @@ def Meas_UTKDCNeuron_Test_Sam(eChar, test1):
     # if we're setting a current, what will it be?
     # what is the compliance current?
     #IComp = [1e-3,1e-3,1e-3,1e-3,1e-3,1e-3]
-    # what's the measurement type?
-    Typ = 'SpotMeas'
-    
-    #what's the name of this program?
-    MeasType = 'Neuron_Test1a'
-
     #this sets up the parameter analyzer
     #ret1 = eChar.E5274A.SpotMeasurement(Chns, VorI, Val, IComp=IComp)
     ret1 = eChar.E5274A.SpotMeasurement(Chns, VorI, Val)
@@ -418,19 +374,14 @@ def Meas_UTKDCNeuron_Test_Sam(eChar, test1):
 
         #update the plots  A-Gnd, B-form/gate2, C-gate1, D-set, E-rd, F-gate3, G-reset 
         Trac = ret[-1][0:7]
-        eChar.IVplotData.put({"Add": True, "lineStyle": 'o', 'legend': ['Iprog(GND)','Iform', 'Ipin(Reset)', 'Ipin(Read)','IDDH'], "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': "Matrix Iteration", "Ylabel": 'Current (A)', 'Title': "input current", "MeasurementType": Typ, "ValueName": 'Current'})
+        eChar.IVplotData.put({"Add": True, "lineStyle": 'o', 'legend': ['Iprog(GND)','Iform', 'Ipin(Reset)', 'Ipin(Read)','IDDH'], "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': "Matrix Iteration", "Ylabel": 'Current (A)', 'Title': "input current", "ValueName": 'Current'})
 
         Trac = ret[-1][0]
-        eChar.IVplotData.put({"Add": True, "lineStyle": 'o', "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Matrix Iteration', "Ylabel": 'current (A)', 'Title': "output current", "MeasurementType": Typ, "ValueName": 'Current'})
+        eChar.IVplotData.put({"Add": True, "lineStyle": 'o', "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Matrix Iteration', "Ylabel": 'current (A)', 'Title': "output current", "ValueName": 'Current'})
         n = n+1
 
     # write a header to our output file
-    header = out['Header']
-    
-    header.insert(0,"TestParameter,Measurement.Type,%s" %(MeasType))
-    header.append("Measurement,Device,%s" %(eChar.device))
-    header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
-    
+    header = out['Header']    
     header.append('DataName, Ilow, IMR(Midrail 0.6V), Ihigh(1.2V), VOutput1, VOutput2, VOutput3, Vth1(0.55V)')
     header.append('Dimension, %d, %d, %d, %d, %d, %d, %d' %(n,n,n,n,n,n,n))
 
@@ -450,7 +401,7 @@ def Meas_UTKDCNeuron_Test_Sam(eChar, test1):
         out.append(add)
         
     #pass the data in RAM to a process which will write it out
-    eChar.threads.append(th.Thread(target = std.writeDataToFile , args=(header, out, eChar.getFolder(), eChar.getFilename(Typ))))
+    eChar.threads.append(th.Thread(target = std.writeDataToFile , args=(cp.deepcopy(header), out, eChar.getFolder(), eChar.getFilename())))
     eChar.threads[len(eChar.threads)-1].start()
 
 
@@ -467,11 +418,6 @@ def Meas_UTK_Adnan(eChar, test1):
     # if we're setting a current, what will it be?
     # what is the compliance current?
     #IComp = [1e-3,1e-3,1e-3,1e-3,1e-3,1e-3]
-    # what's the measurement type?
-    Typ = 'SpotMeas'
-    
-    #what's the name of this program?
-    MeasType = 'Neuron_Test1a'
 
     #this sets up the parameter analyzer
     #ret1 = eChar.E5274A.SpotMeasurement(Chns, VorI, Val, IComp=IComp)
@@ -507,18 +453,14 @@ def Meas_UTK_Adnan(eChar, test1):
 
         #update the plots  A-Gnd, B-form/gate2, C-gate1, D-set, E-rd, F-gate3, G-reset 
         Trac = ret[-1][0:7]
-        eChar.IVplotData.put({"Add": True, "lineStyle": 'o', 'legend': ['Iprog(GND)','Iform', 'Ipin(Reset)', 'Ipin(Read)','IDDH'], "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': "Matrix Iteration", "Ylabel": 'Current (A)', 'Title': "input current", "MeasurementType": Typ, "ValueName": 'Current'})
+        eChar.IVplotData.put({"Add": True, "lineStyle": 'o', 'legend': ['Iprog(GND)','Iform', 'Ipin(Reset)', 'Ipin(Read)','IDDH'], "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': "Matrix Iteration", "Ylabel": 'Current (A)', 'Title': "input current", "ValueName": 'Current'})
 
         Trac = ret[-1][0]
-        eChar.IVplotData.put({"Add": True, "lineStyle": 'o', "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Matrix Iteration', "Ylabel": 'current (A)', 'Title': "output current", "MeasurementType": Typ, "ValueName": 'Current'})
+        eChar.IVplotData.put({"Add": True, "lineStyle": 'o', "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Matrix Iteration', "Ylabel": 'current (A)', 'Title': "output current", "ValueName": 'Current'})
         n = n+1
 
     # write a header to our output file
     header = out['Header']
-    
-    header.insert(0,"TestParameter,Measurement.Type,%s" %(MeasType))
-    header.append("Measurement,Device,%s" %(eChar.device))
-    header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
     
     header.append('DataName, Ilow, IMR(Midrail 0.6V), Ihigh(1.2V), VOutput1, VOutput2, VOutput3, Vth1(0.55V)')
     header.append('Dimension, %d, %d, %d, %d, %d, %d, %d' %(n,n,n,n,n,n,n))
@@ -539,7 +481,7 @@ def Meas_UTK_Adnan(eChar, test1):
         out.append(add)
         
     #pass the data in RAM to a process which will write it out
-    eChar.threads.append(th.Thread(target = std.writeDataToFile , args=(header, out, eChar.getFolder(), eChar.getFilename(Typ))))
+    eChar.threads.append(th.Thread(target = std.writeDataToFile , args=(cp.deepcopy(header), out, eChar.getFolder(), eChar.getFilename())))
     eChar.threads[len(eChar.threads)-1].start()
 
 def Meas_SPERO_VMM_Test(eChar, Vgate):
@@ -556,13 +498,6 @@ def Meas_SPERO_VMM_Test(eChar, Vgate):
     # if we're setting a current, what will it be?
     # what is the compliance current?
     #IComp = [1e-3,1e-3,1e-3,1e-3,1e-3,1e-3]
-    # what's the measurement type?
-    Typ = 'SpotMeas'
-
-    
-    #what's the name of this program?
-    MeasType = 'Neuron_Test1a'
-
     #this sets up the parameter analyzer
     #ret1 = eChar.E5274A.SpotMeasurement(Chns, VorI, Val, IComp=IComp)
     ret1 = eChar.E5274A.SpotMeasurement(Chns, VorI, Val)
@@ -597,18 +532,14 @@ def Meas_SPERO_VMM_Test(eChar, Vgate):
 
         #update the plots  A-Gnd, B-form/gate2, C-gate1, D-set, E-rd, F-gate3, G-reset 
         Trac = ret[-1][0:7]
-        eChar.IVplotData.put({"Add": True, "lineStyle": 'o', 'legend': ['Iprog(GND)','Iform', 'Ipin(Reset)', 'Ipin(Read)','IDDH'], "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': "Matrix Iteration", "Ylabel": 'Current (A)', 'Title': "input current", "MeasurementType": Typ, "ValueName": 'Current'})
+        eChar.IVplotData.put({"Add": True, "lineStyle": 'o', 'legend': ['Iprog(GND)','Iform', 'Ipin(Reset)', 'Ipin(Read)','IDDH'], "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': "Matrix Iteration", "Ylabel": 'Current (A)', 'Title': "input current", "ValueName": 'Current'})
 
         Trac = ret[-1][0]
-        eChar.IVplotData.put({"Add": True, "lineStyle": 'o', "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Matrix Iteration', "Ylabel": 'current (A)', 'Title': "output current", "MeasurementType": Typ, "ValueName": 'Current'})
+        eChar.IVplotData.put({"Add": True, "lineStyle": 'o', "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Matrix Iteration', "Ylabel": 'current (A)', 'Title': "output current", "ValueName": 'Current'})
         n = n+1
 
     # write a header to our output file
     header = out['Header']
-    
-    header.insert(0,"TestParameter,Measurement.Type,%s" %(MeasType))
-    header.append("Measurement,Device,%s" %(eChar.device))
-    header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
     
     header.append('DataName, Igate, IOutput, IC, ID, IE, IF, IG')
     header.append('Dimension, %d, %d, %d, %d, %d, %d, %d' %(n,n,n,n,n,n,n))
@@ -629,7 +560,7 @@ def Meas_SPERO_VMM_Test(eChar, Vgate):
         out.append(add)
         
     #pass the data in RAM to a process which will write it out
-    eChar.threads.append(th.Thread(target = std.writeDataToFile , args=(header, out, eChar.getFolder(), eChar.getFilename(Typ))))
+    eChar.threads.append(th.Thread(target = std.writeDataToFile , args=(cp.deepcopy(header), out, eChar.getFolder(), eChar.getFilename())))
     eChar.threads[len(eChar.threads)-1].start()
 
 def Meas_8x81T1R_SPERO(eChar, Vgate1, Vgate2, Vset, Vreset):
@@ -644,11 +575,6 @@ def Meas_8x81T1R_SPERO(eChar, Vgate1, Vgate2, Vset, Vreset):
     # if we're setting a current, what will it be?
     # what is the compliance current?
     #IComp = [1e-3,1e-3,1e-3, 1e-3, 1e-3,1e-3,1e-3]
-    # what's the measurement type?
-    Typ = 'SpotMeas'
-    
-    #what's the name of this program?
-    MeasType = '8x81T1RComputing'
 
     #this sets up the parameter analyzer
     ret1 = eChar.E5274A.SpotMeasurement(Chns, VorI, Val)
@@ -682,18 +608,14 @@ def Meas_8x81T1R_SPERO(eChar, Vgate1, Vgate2, Vset, Vreset):
 
         #update the plots  A-Gnd, B-form/gate2, C-gate1, D-set, E-rd, F-gate3, G-reset 
         Trac = ret[-1][0:7]
-        eChar.IVplotData.put({"Add": True, "lineStyle": 'o', 'legend': ['Ignd','Ivg1(1.3V)', 'Ivg2(1.9V)', 'Iset','Iread','Ireset','Ignd2'], "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': "Matrix Iteration", "Ylabel": 'Current (A)', 'Title': "input current", "MeasurementType": Typ, "ValueName": 'Current'})
+        eChar.IVplotData.put({"Add": True, "lineStyle": 'o', 'legend': ['Ignd','Ivg1(1.3V)', 'Ivg2(1.9V)', 'Iset','Iread','Ireset','Ignd2'], "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': "Matrix Iteration", "Ylabel": 'Current (A)', 'Title': "input current", "ValueName": 'Current'})
 
         Trac = ret[-1][0]
-        eChar.IVplotData.put({"Add": True, "lineStyle": 'o', "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Matrix Iteration', "Ylabel": 'current (A)', 'Title': "output current", "MeasurementType": Typ, "ValueName": 'Current'})
+        eChar.IVplotData.put({"Add": True, "lineStyle": 'o', "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Matrix Iteration', "Ylabel": 'current (A)', 'Title': "output current", "ValueName": 'Current'})
         n = n+1
 
     # write a header to our output file
     header = out['Header']
-    
-    header.insert(0,"TestParameter,Measurement.Type,%s" %(MeasType))
-    header.append("Measurement,Device,%s" %(eChar.device))
-    header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
     
     header.append('DataName, Ignd (Output), Ivg1(1.3V), Ivg2(1.9V), Iset, Iread, Ireset, Ignd2')
     header.append('Dimension, %d, %d, %d, %d, %d, %d, %d' %(n,n,n,n,n,n,n))
@@ -714,14 +636,12 @@ def Meas_8x81T1R_SPERO(eChar, Vgate1, Vgate2, Vset, Vreset):
         out.append(add)
         
     #pass the data in RAM to a process which will write it out
-    eChar.threads.append(th.Thread(target = std.writeDataToFile , args=(header, out, eChar.getFolder(), eChar.getFilename(Typ))))
+    eChar.threads.append(th.Thread(target = std.writeDataToFile , args=(cp.deepcopy(header), out, eChar.getFolder(), eChar.getFilename())))
     eChar.threads[len(eChar.threads)-1].start()
 
 ##########################################################################################################################
 
 def ImageWrite8x8_SPERO(eChar, MatrixFile, SetChn, GNDChn, GateChn, Vset, Vread, Vgatelow, Vgatehigh, tset, tread):
-
-    Typ = 'ImageWrite_8x8_SPERO'
 
     Chns = [SetChn, GNDChn, GateChn]
     PulseChn = SetChn
@@ -815,8 +735,8 @@ def ImageWrite8x8_SPERO(eChar, MatrixFile, SetChn, GNDChn, GateChn, Vset, Vread,
         ReadVal.append(cp.deepcopy(add))
         Coordinates.append([n+1,m+1])
 
-        eChar.IVplotData.put({"Add": True, "lineStyle": 'o', 'legend': ['GND', 'Vlow', 'Vhigh'], "lineWidth":0.5, 'Yscale': 'log',  "Traces": ResRead, 'Xaxis': False, 'Xlabel': "Array Device", "Ylabel": 'Resistance ($\Omega$)', 'Title': "Array Resistance", "MeasurementType": Typ, "ValueName": 'Resistance'})
-        eChar.IVplotData.put({"Add": True, 'Yscale': 'lin',  "Traces": ResRead, 'Map': [n,m], 'Xlabel': 'X Position', "Ylabel": 'Y Position', "Clabel": 'Resistance ($\Omega$)', 'Title': "Array Resistance", "MeasurementType": Typ, "ValueName": 'Resistance Map'})
+        eChar.IVplotData.put({"Add": True, "lineStyle": 'o', 'legend': ['GND', 'Vlow', 'Vhigh'], "lineWidth":0.5, 'Yscale': 'log',  "Traces": ResRead, 'Xaxis': False, 'Xlabel': "Array Device", "Ylabel": 'Resistance ($\Omega$)', 'Title': "Array Resistance", "ValueName": 'Resistance'})
+        eChar.IVplotData.put({"Add": True, 'Yscale': 'lin',  "Traces": ResRead, 'Map': [n,m], 'Xlabel': 'X Position', "Ylabel": 'Y Position', "Clabel": 'Resistance ($\Omega$)', 'Title': "Array Resistance", "ValueName": 'Resistance Map'})
         eChar.LogData.put("Forming 8x8: Device %sx%s: Resistance: %s ohm." %(n+1,m+1, ResRead))
         
         n = n+1
@@ -828,11 +748,6 @@ def ImageWrite8x8_SPERO(eChar, MatrixFile, SetChn, GNDChn, GateChn, Vset, Vread,
 
     try: 
         header = out['Header']
-        
-        header.insert(0,"TestParameter,Measurement.Type,%s" %(Typ))
-        header.append("Measurement,Device,%s" %(eChar.device))
-        header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
-        
         header.append('SetHeader--------------')
         header.extend(FormingHeader)
         header.append('ReadHeader-----------------')
@@ -855,20 +770,17 @@ def ImageWrite8x8_SPERO(eChar, MatrixFile, SetChn, GNDChn, GateChn, Vset, Vread,
         data.append(line)
 
 
-    eChar.threads.append(th.Thread(target = std.writeDataToFile , args=(header, data, eChar.getFolder(), eChar.getFilename(Typ, 0, 1))))
+    eChar.threads.append(th.Thread(target = std.writeDataToFile , args=(cp.deepcopy(header), data, eChar.getFolder(), eChar.getFilename(0, 1))))
     eChar.threads[len(eChar.threads)-1].start()
     
-    R = dh.Value(eChar, statVal, 'Rset', DoYield=eChar.DoYield, Unit='ohm')
-    row = dh.Row([R],eChar.DieX,eChar.DieY,eChar.DevX,eChar.DevY,MeasType=Typ,StCycle=eChar.curCycle+1)
+    R = eChar.dhValue(eChar, statVal, 'Rset', DoYield=eChar.DoYield, Unit='ohm')
+    row = eChar.dhAddRow([R], StCycle=eChar.curCycle+1)
 
-    eChar.StatOutValues.addRow(row)
 
 
 ##########################################################################################################################
 
 def ImageWrite8x8_SPERO_Single_Row(eChar, MatrixFile, SetChn, GNDChn, GateChn, Vset, Vread, Vgatelow, Vgatehigh, tset, tread):
-
-    Typ = 'ImageWrite_8x8_SPERO'
 
     Chns = [SetChn, GNDChn, GateChn]
     PulseChn = SetChn
@@ -977,8 +889,8 @@ def ImageWrite8x8_SPERO_Single_Row(eChar, MatrixFile, SetChn, GNDChn, GateChn, V
         ReadVal.append(cp.deepcopy(add))
         Coordinates.append([n+1,m+1])
 
-        eChar.IVplotData.put({"Add": True, "lineStyle": 'o', 'legend': ['GND', 'Vlow', 'Vhigh'], "lineWidth":0.5, 'Yscale': 'log',  "Traces": ResRead, 'Xaxis': False, 'Xlabel': "Array Device", "Ylabel": 'Resistance ($\Omega$)', 'Title': "Array Resistance", "MeasurementType": Typ, "ValueName": 'Resistance'})
-        eChar.IVplotData.put({"Add": True, 'Yscale': 'lin',  "Traces": ResRead, 'Map': [n,m], 'Xlabel': 'X Position', "Ylabel": 'Y Position', "Clabel": 'Resistance ($\Omega$)', 'Title': "Array Resistance", "MeasurementType": Typ, "ValueName": 'Resistance Map'})
+        eChar.IVplotData.put({"Add": True, "lineStyle": 'o', 'legend': ['GND', 'Vlow', 'Vhigh'], "lineWidth":0.5, 'Yscale': 'log',  "Traces": ResRead, 'Xaxis': False, 'Xlabel': "Array Device", "Ylabel": 'Resistance ($\Omega$)', 'Title': "Array Resistance", "ValueName": 'Resistance'})
+        eChar.IVplotData.put({"Add": True, 'Yscale': 'lin',  "Traces": ResRead, 'Map': [n,m], 'Xlabel': 'X Position', "Ylabel": 'Y Position', "Clabel": 'Resistance ($\Omega$)', 'Title': "Array Resistance", "ValueName": 'Resistance Map'})
         eChar.LogData.put("Forming 8x8: Device %sx%s: Resistance: %s ohm." %(n+1,m+1, ResRead))
         
         print(n)
@@ -992,12 +904,7 @@ def ImageWrite8x8_SPERO_Single_Row(eChar, MatrixFile, SetChn, GNDChn, GateChn, V
     n = len(ReadVal)
 
     try: 
-        header = out['Header']
-        
-        header.insert(0,"TestParameter,Measurement.Type,%s" %(Typ))
-        header.append("Measurement,Device,%s" %(eChar.device))
-        header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
-        
+        header = out['Header']        
         header.append('SetHeader--------------')
         header.extend(FormingHeader)
         header.append('ReadHeader-----------------')
@@ -1020,14 +927,11 @@ def ImageWrite8x8_SPERO_Single_Row(eChar, MatrixFile, SetChn, GNDChn, GateChn, V
         data.append(line)
 
 
-    eChar.threads.append(th.Thread(target = std.writeDataToFile , args=(header, data, eChar.getFolder(), eChar.getFilename(Typ, 0, 1))))
+    eChar.threads.append(th.Thread(target = std.writeDataToFile , args=(cp.deepcopy(header), data, eChar.getFolder(), eChar.getFilename(0, 1))))
     eChar.threads[len(eChar.threads)-1].start()
     
-    R = dh.Value(eChar, statVal, 'Rset', DoYield=eChar.DoYield, Unit='ohm')
-    row = dh.Row([R],eChar.DieX,eChar.DieY,eChar.DevX,eChar.DevY,Typ,eChar.curCycle+1)
-
-    eChar.StatOutValues.addRow(row)
-
+    R = eChar.dhValue(eChar, statVal, 'Rset', DoYield=eChar.DoYield, Unit='ohm')
+    row = eChar.dhAddRow([R],eChar.curCycle+1)
 
     ################################################################################################
     
@@ -1089,18 +993,10 @@ def Meas_SPERO_VMM_Test1111111111(eChar, test1):
     # if we're setting a current, what will it be?
     # what is the compliance current?
     #IComp = [1e-3,1e-3,1e-3,1e-3,1e-3,1e-3]
-    # what's the measurement type?
-    Typ = 'SpotMeas'
-
     
     #if len(Vinput) != 8:
     #    print("Vinput is not the correct length!")
     #else:
-        
-
-    
-    #what's the name of this program?
-    MeasType = 'Neuron_Test1a'
 
     #this sets up the parameter analyzer
     #ret1 = eChar.E5274A.SpotMeasurement(Chns, VorI, Val, IComp=IComp)
@@ -1136,19 +1032,14 @@ def Meas_SPERO_VMM_Test1111111111(eChar, test1):
 
         #update the plots  A-Gnd, B-form/gate2, C-gate1, D-set, E-rd, F-gate3, G-reset 
         Trac = ret[-1][0:7]
-        eChar.IVplotData.put({"Add": True, "lineStyle": 'o', 'legend': ['Iprog(GND)','Iform', 'Ipin(Reset)', 'Ipin(Read)','IDDH'], "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': "Matrix Iteration", "Ylabel": 'Current (A)', 'Title': "input current", "MeasurementType": Typ, "ValueName": 'Current'})
+        eChar.IVplotData.put({"Add": True, "lineStyle": 'o', 'legend': ['Iprog(GND)','Iform', 'Ipin(Reset)', 'Ipin(Read)','IDDH'], "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': "Matrix Iteration", "Ylabel": 'Current (A)', 'Title': "input current", "ValueName": 'Current'})
 
         Trac = ret[-1][0]
-        eChar.IVplotData.put({"Add": True, "lineStyle": 'o', "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Matrix Iteration', "Ylabel": 'current (A)', 'Title': "output current", "MeasurementType": Typ, "ValueName": 'Current'})
+        eChar.IVplotData.put({"Add": True, "lineStyle": 'o', "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Matrix Iteration', "Ylabel": 'current (A)', 'Title': "output current", "ValueName": 'Current'})
         n = n+1
 
     # write a header to our output file
-    header = out['Header']
-    
-    header.insert(0,"TestParameter,Measurement.Type,%s" %(MeasType))
-    header.append("Measurement,Device,%s" %(eChar.device))
-    header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
-    
+    header = out['Header']   
     header.append('DataName, Ilow, IMR(Midrail 0.6V), Ihigh(1.2V), VOutput1, VOutput2, VOutput3, Vth1(0.55V)')
     header.append('Dimension, %d, %d, %d, %d, %d, %d, %d' %(n,n,n,n,n,n,n))
 
@@ -1168,7 +1059,7 @@ def Meas_SPERO_VMM_Test1111111111(eChar, test1):
         out.append(add)
         
     #pass the data in RAM to a process which will write it out
-    eChar.threads.append(th.Thread(target = std.writeDataToFile , args=(header, out, eChar.getFolder(), eChar.getFilename(Typ))))
+    eChar.threads.append(th.Thread(target = std.writeDataToFile , args=(cp.deepcopy(header), out, eChar.getFolder(), eChar.getFilename())))
     eChar.threads[len(eChar.threads)-1].start()
 
 
@@ -1186,11 +1077,6 @@ def Meas_OnChipPulse(eChar, Vinput, Iinput, RRAMinput):
     # if we're setting a current, what will it be?
     # what is the compliance current?
     #IComp = [1e-3,1e-3,1e-3, 1e-3, 1e-3,1e-3,1e-3]
-    # what's the measurement type?
-    Typ = 'SpotMeas'
-    
-    #what's the name of this program?
-    MeasType = '8x81T1RComputing'
 
     #this sets up the parameter analyzer
     ret1 = eChar.E5274A.SpotMeasurement(Chns, VorI, Val)
@@ -1224,19 +1110,14 @@ def Meas_OnChipPulse(eChar, Vinput, Iinput, RRAMinput):
 
         #update the plots  A-Gnd, B-form/gate2, C-gate1, D-set, E-rd, F-gate3, G-reset 
         Trac = ret[-1][0:7]
-        eChar.IVplotData.put({"Add": True, "lineStyle": 'o', 'legend': ['Ignd','Ivg1(1.3V)', 'Ivg2(1.9V)', 'Iset','Iread','Ireset','Ignd2'], "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': "Matrix Iteration", "Ylabel": 'Current (A)', 'Title': "input current", "MeasurementType": Typ, "ValueName": 'Current'})
+        eChar.IVplotData.put({"Add": True, "lineStyle": 'o', 'legend': ['Ignd','Ivg1(1.3V)', 'Ivg2(1.9V)', 'Iset','Iread','Ireset','Ignd2'], "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': "Matrix Iteration", "Ylabel": 'Current (A)', 'Title': "input current", "ValueName": 'Current'})
 
         Trac = ret[-1][0]
-        eChar.IVplotData.put({"Add": True, "lineStyle": 'o', "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Matrix Iteration', "Ylabel": 'current (A)', 'Title': "output current", "MeasurementType": Typ, "ValueName": 'Current'})
+        eChar.IVplotData.put({"Add": True, "lineStyle": 'o', "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Matrix Iteration', "Ylabel": 'current (A)', 'Title': "output current", "ValueName": 'Current'})
         n = n+1
 
     # write a header to our output file
-    header = out['Header']
-    
-    header.insert(0,"TestParameter,Measurement.Type,%s" %(MeasType))
-    header.append("Measurement,Device,%s" %(eChar.device))
-    header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
-    
+    header = out['Header']    
     header.append('DataName, IHigh (3.3V), ILow(1.2V), Ignd(0V)/Vgnd(OA)**, Ig(Varied), Vref(Varied), IRRAM (Varied)')
     header.append('Dimension, %d, %d, %d, %d, %d, %d' %(n,n,n,n,n,n))
 
@@ -1256,7 +1137,7 @@ def Meas_OnChipPulse(eChar, Vinput, Iinput, RRAMinput):
         out.append(add)
         
     #pass the data in RAM to a process which will write it out
-    eChar.threads.append(th.Thread(target = std.writeDataToFile , args=(header, out, eChar.getFolder(), eChar.getFilename(Typ))))
+    eChar.threads.append(th.Thread(target = std.writeDataToFile , args=(cp.deepcopy(header), out, eChar.getFolder(), eChar.getFilename())))
     eChar.threads[len(eChar.threads)-1].start()
 
 ##########################################################################################################################
@@ -1266,11 +1147,6 @@ def Meas_OnChipPulse(eChar, Vinput, Iinput, RRAMinput):
 def ImageSimilaritySearchSPERO_1(eChar, MatrixFile, VMMFile, Numberofpics, LRSComparison, Sigma_LRS, NumCycles, SetChn, GNDChn, GateChn, Vgate, Vset, Vreset, Vread, VMMVgate, posVMMVoltage, negVMMVoltage, tset, treset, SingleLRS, SingleHRS):
 
     # LRSComparison can be (1-LRS/LRS Comparison 2-MultiLRS/HRS Comparison 3-Single Case Using Array of Values Seen below Other-Single Case using values put in program)
-
-    Typ = 'ImageSimilaritySearchSPERO_1'
-
-    TypR = 'ImageSimilaritySearchSPERO_1_reset'
-    TypS = 'ImageSimilaritySearchSPERO_1_set'
     
     Chns = [SetChn, GNDChn, GateChn]
     PulseChn = SetChn
@@ -1294,17 +1170,17 @@ def ImageSimilaritySearchSPERO_1(eChar, MatrixFile, VMMFile, Numberofpics, LRSCo
     Val2 = [VMMVgate, 0, posVMMVoltage, negVMMVoltage, 0]
 
 
-    Rs = dh.Value(eChar, [], 'Rset', DoYield=eChar.DoYield, Unit='ohm')
-    Rr = dh.Value(eChar, [], 'Rreset', DoYield=eChar.DoYield, Unit='ohm')
-    Cycamnt = dh.Value(eChar, [], 'Num. of Switches', DoYield=eChar.DoYield, Unit='ohm')
-    VMM1 = dh.Value(eChar, [], 'IVMM1', DoYield=eChar.DoYield, Unit='Amps')
-    VMM2 = dh.Value(eChar, [], 'IVMM2', DoYield=eChar.DoYield, Unit='Amps')
-    VMM3 = dh.Value(eChar, [], 'IVMM3', DoYield=eChar.DoYield, Unit='Amps')
-    VMM4 = dh.Value(eChar, [], 'IVMM4', DoYield=eChar.DoYield, Unit='Amps')
-    VMM5 = dh.Value(eChar, [], 'IVMM5', DoYield=eChar.DoYield, Unit='Amps')
-    VMM6 = dh.Value(eChar, [], 'IVMM6', DoYield=eChar.DoYield, Unit='Amps')
-    VMM7 = dh.Value(eChar, [], 'IVMM7', DoYield=eChar.DoYield, Unit='Amps')
-    VMM8 = dh.Value(eChar, [], 'IVMM8', DoYield=eChar.DoYield, Unit='Amps')
+    Rs = eChar.dhValue(eChar, [], 'Rset', DoYield=eChar.DoYield, Unit='ohm')
+    Rr = eChar.dhValue(eChar, [], 'Rreset', DoYield=eChar.DoYield, Unit='ohm')
+    Cycamnt = eChar.dhValue(eChar, [], 'Num. of Switches', DoYield=eChar.DoYield, Unit='ohm')
+    VMM1 = eChar.dhValue(eChar, [], 'IVMM1', DoYield=eChar.DoYield, Unit='Amps')
+    VMM2 = eChar.dhValue(eChar, [], 'IVMM2', DoYield=eChar.DoYield, Unit='Amps')
+    VMM3 = eChar.dhValue(eChar, [], 'IVMM3', DoYield=eChar.DoYield, Unit='Amps')
+    VMM4 = eChar.dhValue(eChar, [], 'IVMM4', DoYield=eChar.DoYield, Unit='Amps')
+    VMM5 = eChar.dhValue(eChar, [], 'IVMM5', DoYield=eChar.DoYield, Unit='Amps')
+    VMM6 = eChar.dhValue(eChar, [], 'IVMM6', DoYield=eChar.DoYield, Unit='Amps')
+    VMM7 = eChar.dhValue(eChar, [], 'IVMM7', DoYield=eChar.DoYield, Unit='Amps')
+    VMM8 = eChar.dhValue(eChar, [], 'IVMM8', DoYield=eChar.DoYield, Unit='Amps')
 
     '''
     # Values from Analyzed Data
@@ -1535,8 +1411,8 @@ def ImageSimilaritySearchSPERO_1(eChar, MatrixFile, VMMFile, Numberofpics, LRSCo
             Rr.extend(ResRead[0])
             Coordinates.append([m+1,n+1])
 
-            #eChar.plotIVData({"Add": True, "lineStyle": 'o', 'legend': ['GND', 'Vlow', 'Vhigh'], "lineWidth":0.5, 'Yscale': 'log',  "Traces":ResRead, 'Xaxis': False, 'Xlabel': "Array Device", "Ylabel": 'Resistance ($\Omega$)', 'Title': "Array Resistance", "MeasurementType": TypR, "ValueName": 'Resistance'})
-            eChar.plotIVData({"Add": True, 'Yscale': 'lin',  "Traces": ResRead, 'Map': [m,n], 'Xlabel': 'X Position', "Ylabel": 'Y Position', "Clabel": 'Resistance ($\Omega$)', 'Title': "Array Resistance", "MeasurementType": TypR, "ValueName": 'Resistance Map'})
+            #eChar.plotIVData({"Add": True, "lineStyle": 'o', 'legend': ['GND', 'Vlow', 'Vhigh'], "lineWidth":0.5, 'Yscale': 'log',  "Traces":ResRead, 'Xaxis': False, 'Xlabel': "Array Device", "Ylabel": 'Resistance ($\Omega$)', 'Title': "Array Resistance", "ValueName": 'Reset Resistance'})
+            eChar.plotIVData({"Add": True, 'Yscale': 'lin',  "Traces": ResRead, 'Map': [m,n], 'Xlabel': 'X Position', "Ylabel": 'Y Position', "Clabel": 'Resistance ($\Omega$)', 'Title': "Array Resistance", "ValueName": 'Reset Resistance Map'})
             
             eChar.LogData.put("Image Similarity RRAM (Reset): Device %sx%s: Resistance: %s ohm." %(m+1,n+1, ResRead))
             
@@ -1949,8 +1825,8 @@ def ImageSimilaritySearchSPERO_1(eChar, MatrixFile, VMMFile, Numberofpics, LRSCo
             Rs.extend(ResRead[0])
             Coordinates.append([m+1,n+1])
 
-            #eChar.plotIVData({"Add": True, "lineStyle": 'o', 'legend': ['GND', 'Vlow', 'Vhigh'], "lineWidth":0.5, 'Yscale': 'log',  "Traces":ResRead, 'Xaxis': False, 'Xlabel': "Array Device", "Ylabel": 'Resistance ($\Omega$)', 'Title': "Array Resistance", "MeasurementType": TypS, "ValueName": 'Resistance'})
-            eChar.plotIVData({"Add": True, 'Yscale': 'lin',  "Traces": ResRead, 'Map': [m,n], 'Xlabel': 'X Position', "Ylabel": 'Y Position', "Clabel": 'Resistance ($\Omega$)', 'Title': "Array Resistance", "MeasurementType": TypS, "ValueName": 'Resistance Map'})
+            #eChar.plotIVData({"Add": True, "lineStyle": 'o', 'legend': ['GND', 'Vlow', 'Vhigh'], "lineWidth":0.5, 'Yscale': 'log',  "Traces":ResRead, 'Xaxis': False, 'Xlabel': "Array Device", "Ylabel": 'Resistance ($\Omega$)', 'Title': "Array Resistance", "ValueName": 'Resistance'})
+            eChar.plotIVData({"Add": True, 'Yscale': 'lin',  "Traces": ResRead, 'Map': [m,n], 'Xlabel': 'X Position', "Ylabel": 'Y Position', "Clabel": 'Resistance ($\Omega$)', 'Title': "Array Resistance", "ValueName": 'Set Resistance Map'})
             eChar.LogData.put("Image Similarity RRAM (Set): Device %sx%s: Resistance: %s ohm." %(m+1,n+1, ResRead[0]))
 
             
@@ -2087,12 +1963,7 @@ def ImageSimilaritySearchSPERO_1(eChar, MatrixFile, VMMFile, Numberofpics, LRSCo
     print("ReadVal Length: ", n)
 
     try: 
-        header = out['Header']
-        
-        header.insert(0,"TestParameter,Measurement.Type,%s" %(Typ))
-        header.append("Measurement,Device,%s" %(eChar.device))
-        header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
-        
+        header = out['Header']       
         header.append('DataName, Ignd, Irram, Igate, R')
         header.append('Dimension, %d, %d, %d, %d' %(n,n,n,n))
         header.append('SetHeader--------------')
@@ -2136,13 +2007,12 @@ def ImageSimilaritySearchSPERO_1(eChar, MatrixFile, VMMFile, Numberofpics, LRSCo
                 line = "%s, %s" %(line, ent)
         data.append(line)
 
-    eChar.threads.append(th.Thread(target = std.writeDataToFile , args=(header, data, eChar.getFolder(), eChar.getFilename(Typ, eChar.curCycle, eChar.curCycle+1))))
+    eChar.threads.append(th.Thread(target = std.writeDataToFile , args=(cp.deepcopy(header), data, eChar.getFolder(), eChar.getFilename(eChar.curCycle, eChar.curCycle+1))))
     eChar.threads[len(eChar.threads)-1].start()
     
 
-    row = dh.Row([Rs,Cycamnt],eChar.DieX,eChar.DieY,eChar.DevX,eChar.DevY,Typ,eChar.curCycle,eChar.curCycle+NumofCycles)
+    row = eChar.dhAddRow([Rs,Cycamnt], eChar.curCycle,eChar.curCycle+NumofCycles)
 
-    eChar.StatOutValues.addRow(row)
     eChar.curCycle = eChar.curCycle + NumofCycles
 
 
@@ -2324,7 +2194,7 @@ def ImageSimilaritySearchSPERO_1(eChar, MatrixFile, VMMFile, Numberofpics, LRSCo
     if Numberofpics == 1:
         #CurrPlotVal4.append({'I1': ICurr[f*Numberofpics], 'I2': ICurr[(f*Numberofpics)+1], 'I3': ICurr[(f*Numberofpics)+2], 'I4': ICurr[(f*Numberofpics)+3]})
         Trac = [CurrPlotVal1]
-        eChar.plotIVData({"Add": True, "lineStyle": 'o', 'legend': ['Picture2','Picture3','Picture4','Picture5'], "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': "VMM Iteration", "Ylabel": 'Current (A)', 'Title': "Output Current", "MeasurementType": Typ, "ValueName": 'Current'})
+        eChar.plotIVData({"Add": True, "lineStyle": 'o', 'legend': ['Picture2','Picture3','Picture4','Picture5'], "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': "VMM Iteration", "Ylabel": 'Current (A)', 'Title': "Output Current", "ValueName": 'Current'})
 
 
         #header.append('Current Values, %d, %d, %d, %d' %(2,3,4,5))
@@ -2361,31 +2231,29 @@ def ImageSimilaritySearchSPERO_1(eChar, MatrixFile, VMMFile, Numberofpics, LRSCo
 
         
 
-        eChar.threads.append(th.Thread(target = std.writeDataToFile , args=(header, data, eChar.getFolder(), eChar.getFilename(Typ, eChar.curCycle, eChar.curCycle+1))))
+        eChar.threads.append(th.Thread(target = std.writeDataToFile , args=(cp.deepcopy(header), data, eChar.getFolder(), eChar.getFilename(eChar.curCycle, eChar.curCycle+1))))
         eChar.threads[len(eChar.threads)-1].start()
         
-        #row = dh.Row([CurrPlotVal1,CurrPlotVal2,CurrPlotVal3,CurrPlotVal4])
-        row = dh.Row([VMM1],eChar.DieX,eChar.DieY,eChar.DevX,eChar.DevY,Typ,eChar.curCycle,eChar.curCycle+NumofCycles)
-        
-        eChar.StatOutValues.addRow(row)
+        #row = eChar.dhAddRow([CurrPlotVal1,CurrPlotVal2,CurrPlotVal3,CurrPlotVal4])
+        row = eChar.dhAddRow([VMM1], eChar.curCycle,eChar.curCycle+NumofCycles)
         eChar.curCycle = eChar.curCycle + NumofCycles
 
     elif Numberofpics == 2:
         #CurrPlotVal2.append({'I1': ICurr[f*Numberofpics], 'I2': ICurr[(f*Numberofpics)+1]})
         Trac = ['I1','I2']
-        eChar.plotIVData({"Add": True, "lineStyle": 'o', 'legend': ['Picture2','Picture3'], "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': "VMM Iteration", "Ylabel": 'Current (A)', 'Title': "Output Current", "MeasurementType": Typ, "ValueName": 'Current'})
+        eChar.plotIVData({"Add": True, "lineStyle": 'o', 'legend': ['Picture2','Picture3'], "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': "VMM Iteration", "Ylabel": 'Current (A)', 'Title': "Output Current", "ValueName": 'Current'})
 
 
     elif Numberofpics == 3:
         #CurrPlotVal3.append({'I1': ICurr[f*Numberofpics], 'I2': ICurr[(f*Numberofpics)+1], 'I3': ICurr[(f*Numberofpics)+2]})
         Trac = ['I1','I2','I3']
-        eChar.plotIVData({"Add": True, "lineStyle": 'o', 'legend': ['Picture2','Picture3','Picture4'], "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': "VMM Iteration", "Ylabel": 'Current (A)', 'Title': "Output Current", "MeasurementType": Typ, "ValueName": 'Current'})
+        eChar.plotIVData({"Add": True, "lineStyle": 'o', 'legend': ['Picture2','Picture3','Picture4'], "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': "VMM Iteration", "Ylabel": 'Current (A)', 'Title': "Output Current", "ValueName": 'Current'})
 
 
     elif Numberofpics == 4:
         #CurrPlotVal4.append({'I1': ICurr[f*Numberofpics], 'I2': ICurr[(f*Numberofpics)+1], 'I3': ICurr[(f*Numberofpics)+2], 'I4': ICurr[(f*Numberofpics)+3]})
         Trac = [CurrPlotVal1,CurrPlotVal2,CurrPlotVal3,CurrPlotVal4]
-        eChar.plotIVData({"Add": True, "lineStyle": 'o', 'legend': ['Picture2','Picture3','Picture4','Picture5'], "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': "VMM Iteration", "Ylabel": 'Current (A)', 'Title': "Output Current", "MeasurementType": Typ, "ValueName": 'Current'})
+        eChar.plotIVData({"Add": True, "lineStyle": 'o', 'legend': ['Picture2','Picture3','Picture4','Picture5'], "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': "VMM Iteration", "Ylabel": 'Current (A)', 'Title': "Output Current", "ValueName": 'Current'})
 
 
         #header.append('Current Values, %d, %d, %d, %d' %(2,3,4,5))
@@ -2425,20 +2293,19 @@ def ImageSimilaritySearchSPERO_1(eChar, MatrixFile, VMMFile, Numberofpics, LRSCo
 
         
 
-        eChar.threads.append(th.Thread(target = std.writeDataToFile , args=(header, data, eChar.getFolder(), eChar.getFilename(Typ, eChar.curCycle, eChar.curCycle+1))))
+        eChar.threads.append(th.Thread(target = std.writeDataToFile , args=(cp.deepcopy(header), data, eChar.getFolder(), eChar.getFilename(eChar.curCycle, eChar.curCycle+1))))
         eChar.threads[len(eChar.threads)-1].start()
         
-        #row = dh.Row([CurrPlotVal1,CurrPlotVal2,CurrPlotVal3,CurrPlotVal4])
-        row = dh.Row([VMM1,VMM2,VMM3,VMM4],eChar.DieX,eChar.DieY,eChar.DevX,eChar.DevY,Typ,eChar.curCycle,eChar.curCycle+NumofCycles)
+        #row = eChar.dhAddRow([CurrPlotVal1,CurrPlotVal2,CurrPlotVal3,CurrPlotVal4])
+        row = eChar.dhAddRow([VMM1,VMM2,VMM3,VMM4],eChar.curCycle,eChar.curCycle+NumofCycles)
         
-        eChar.StatOutValues.addRow(row)
         eChar.curCycle = eChar.curCycle + NumofCycles
 
 
     elif Numberofpics == 5:
          #CurrPlotVal4.append({'I1': ICurr[f*Numberofpics], 'I2': ICurr[(f*Numberofpics)+1], 'I3': ICurr[(f*Numberofpics)+2], 'I4': ICurr[(f*Numberofpics)+3]})
         Trac = [CurrPlotVal1,CurrPlotVal2,CurrPlotVal3,CurrPlotVal4,CurrPlotVal5]
-        eChar.plotIVData({"Add": True, "lineStyle": 'o', 'legend': ['Picture2','Picture3','Picture4','Picture5','Picture6'], "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': "VMM Iteration", "Ylabel": 'Current (A)', 'Title': "Output Current", "MeasurementType": Typ, "ValueName": 'Current'})
+        eChar.plotIVData({"Add": True, "lineStyle": 'o', 'legend': ['Picture2','Picture3','Picture4','Picture5','Picture6'], "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': "VMM Iteration", "Ylabel": 'Current (A)', 'Title': "Output Current", "ValueName": 'Current'})
 
 
         #header.append('Current Values, %d, %d, %d, %d' %(2,3,4,5))
@@ -2480,31 +2347,30 @@ def ImageSimilaritySearchSPERO_1(eChar, MatrixFile, VMMFile, Numberofpics, LRSCo
 
         
 
-        eChar.threads.append(th.Thread(target = std.writeDataToFile , args=(header, data, eChar.getFolder(), eChar.getFilename(Typ, eChar.curCycle, eChar.curCycle+1))))
+        eChar.threads.append(th.Thread(target = std.writeDataToFile , args=(cp.deepcopy(header), data, eChar.getFolder(), eChar.getFilename(eChar.curCycle, eChar.curCycle+1))))
         eChar.threads[len(eChar.threads)-1].start()
         
-        #row = dh.Row([CurrPlotVal1,CurrPlotVal2,CurrPlotVal3,CurrPlotVal4])
-        row = dh.Row([VMM1,VMM2,VMM3,VMM4,VMM5],eChar.DieX,eChar.DieY,eChar.DevX,eChar.DevY,Typ,eChar.curCycle,eChar.curCycle+NumofCycles)
+        #row = eChar.dhAddRow([CurrPlotVal1,CurrPlotVal2,CurrPlotVal3,CurrPlotVal4])
+        row = eChar.dhAddRow([VMM1,VMM2,VMM3,VMM4,VMM5], eChar.curCycle,eChar.curCycle+NumofCycles)
         
-        eChar.StatOutValues.addRow(row)
         eChar.curCycle = eChar.curCycle + NumofCycles
 
     elif Numberofpics == 6:
         #CurrPlotVal6.append({'I1': ICurr[f*Numberofpics], 'I2': ICurr[(f*Numberofpics)+1], 'I3': ICurr[(f*Numberofpics)+2], 'I4': ICurr[(f*Numberofpics)+3], 'I5': ICurr[(f*Numberofpics)+4], 'I6': ICurr[(f*Numberofpics)+5]})
         Trac = ['I1','I2','I3','I4','I5','I6']
-        eChar.plotIVData({"Add": True, "lineStyle": 'o', 'legend': ['Picture2','Picture3','Picture4','Picture5','Picture6','Picture7'], "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': "VMM Iteration", "Ylabel": 'Current (A)', 'Title': "Output Current", "MeasurementType": Typ, "ValueName": 'Current'})
+        eChar.plotIVData({"Add": True, "lineStyle": 'o', 'legend': ['Picture2','Picture3','Picture4','Picture5','Picture6','Picture7'], "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': "VMM Iteration", "Ylabel": 'Current (A)', 'Title': "Output Current", "ValueName": 'Current'})
 
 
     elif Numberofpics == 7:
         CurrPlotVal7.append({'I1': ICurr[f*Numberofpics], 'I2': ICurr[(f*Numberofpics)+1], 'I3': ICurr[(f*Numberofpics)+2], 'I4': ICurr[(f*Numberofpics)+3], 'I5': ICurr[(f*Numberofpics)+4], 'I6': ICurr[(f*Numberofpics)+5], 'I7': ICurr[(f*Numberofpics)+6]})
         Trac = ['I1','I2','I3','I4','I5','I6','I7']
-        eChar.plotIVData({"Add": True, "lineStyle": 'o', 'legend': ['Picture2','Picture3','Picture4','Picture5','Picture6','Picture7','Picture8'], "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': "VMM Iteration", "Ylabel": 'Current (A)', 'Title': "Output Current", "MeasurementType": Typ, "ValueName": 'Current'})
+        eChar.plotIVData({"Add": True, "lineStyle": 'o', 'legend': ['Picture2','Picture3','Picture4','Picture5','Picture6','Picture7','Picture8'], "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': "VMM Iteration", "Ylabel": 'Current (A)', 'Title': "Output Current", "ValueName": 'Current'})
 
 
     elif Numberofpics == 8:
          #CurrPlotVal4.append({'I1': ICurr[f*Numberofpics], 'I2': ICurr[(f*Numberofpics)+1], 'I3': ICurr[(f*Numberofpics)+2], 'I4': ICurr[(f*Numberofpics)+3]})
         Trac = [CurrPlotVal1,CurrPlotVal2,CurrPlotVal3,CurrPlotVal4,CurrPlotVal5,CurrPlotVal6,CurrPlotVal7,CurrPlotVal8]
-        eChar.plotIVData({"Add": True, "lineStyle": 'o', 'legend': ['Picture2','Picture3','Picture4','Picture5','Picture6','Picture7','Picture8'], "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': "VMM Iteration", "Ylabel": 'Current (A)', 'Title': "Output Current", "MeasurementType": Typ, "ValueName": 'Current'})
+        eChar.plotIVData({"Add": True, "lineStyle": 'o', 'legend': ['Picture2','Picture3','Picture4','Picture5','Picture6','Picture7','Picture8'], "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': "VMM Iteration", "Ylabel": 'Current (A)', 'Title': "Output Current", "ValueName": 'Current'})
 
 
         #header.append('Current Values, %d, %d, %d, %d' %(2,3,4,5))
@@ -2549,13 +2415,11 @@ def ImageSimilaritySearchSPERO_1(eChar, MatrixFile, VMMFile, Numberofpics, LRSCo
 
         
 
-        eChar.threads.append(th.Thread(target = std.writeDataToFile , args=(header, data, eChar.getFolder(), eChar.getFilename(Typ, eChar.curCycle, eChar.curCycle+1))))
+        eChar.threads.append(th.Thread(target = std.writeDataToFile , args=(cp.deepcopy(header), data, eChar.getFolder(), eChar.getFilename(eChar.curCycle, eChar.curCycle+1))))
         eChar.threads[len(eChar.threads)-1].start()
         
-        #row = dh.Row([CurrPlotVal1,CurrPlotVal2,CurrPlotVal3,CurrPlotVal4])
-        row = dh.Row([VMM1,VMM2,VMM3,VMM4,VMM5,VMM6,VMM7,VMM8],eChar.DieX,eChar.DieY,eChar.DevX,eChar.DevY,Typ,eChar.curCycle,eChar.curCycle+NumofCycles)
-        
-        eChar.StatOutValues.addRow(row)
+        #row = eChar.dhAddRow([CurrPlotVal1,CurrPlotVal2,CurrPlotVal3,CurrPlotVal4])
+        row = eChar.dhAddRow([VMM1,VMM2,VMM3,VMM4,VMM5,VMM6,VMM7,VMM8],eChar.curCycle,eChar.curCycle+NumofCycles)
         eChar.curCycle = eChar.curCycle + NumofCycles
     else:
         raise ValueError("Must have a correct number of pics for this 8x8 matrix (Max 8)")
@@ -2681,12 +2545,6 @@ def UTK_Forming_Circuit_2(eChar, VDD, Vreset, Vread, Cycle):
     # if we're setting a current, what will it be?
     # what is the compliance current?
     #IComp = [1e-3,1e-3,1e-3,1e-3,1e-3,1e-3]
-    # what's the measurement type?
-    Typ = 'SpotMeas'
-    
-    #what's the name of this program?
-    MeasType = 'UTK_Forming_Circuit_2'
-
     #if Vreset < 0:
        # raise ValueError("Vreset must be positive to work in this circuit!")
 
@@ -2733,10 +2591,10 @@ def UTK_Forming_Circuit_2(eChar, VDD, Vreset, Vread, Cycle):
 
             #update the plots  A-Gnd, B-form/gate2, C-gate1, D-set, E-rd, F-gate3, G-reset 
             Trac = ret[-1][0:7]
-            eChar.IVplotData.put({"Add": True, "lineStyle": 'o', 'legend': ['IVDD(3.3V)','IGND(0V)', 'Ipin(reset)', 'Iread(Vn output)','Iread(Vpo Input)','Iform/Iprog(3.3V)','Iother(0V)'], "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': "Matrix Iteration", "Ylabel": 'Current (A)', 'Title': "input current", "MeasurementType": Typ, "ValueName": 'Current'})
+            eChar.IVplotData.put({"Add": True, "lineStyle": 'o', 'legend': ['IVDD(3.3V)','IGND(0V)', 'Ipin(reset)', 'Iread(Vn output)','Iread(Vpo Input)','Iform/Iprog(3.3V)','Iother(0V)'], "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': "Matrix Iteration", "Ylabel": 'Current (A)', 'Title': "input current", "ValueName": 'Current'})
 
             Trac = ret[-1][0]
-            eChar.IVplotData.put({"Add": True, "lineStyle": 'o', "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Matrix Iteration', "Ylabel": 'current (A)', 'Title': "output current", "MeasurementType": Typ, "ValueName": 'Current'})
+            eChar.IVplotData.put({"Add": True, "lineStyle": 'o', "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Matrix Iteration', "Ylabel": 'current (A)', 'Title': "output current", "ValueName": 'Current'})
             n = n+1
         
         print("CurCycle = ", CurCycle)
@@ -2748,12 +2606,7 @@ def UTK_Forming_Circuit_2(eChar, VDD, Vreset, Vread, Cycle):
 
 
     # write a header to our output file
-    header = out['Header']
-    
-    header.insert(0,"TestParameter,Measurement.Type,%s" %(MeasType))
-    header.append("Measurement,Device,%s" %(eChar.device))
-    header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
-    
+    header = out['Header']    
     header.append('DataName, IVDD(3.3V), GND(0V), Ipin(reset), Iread(Vn output), Iread(Vpo Input), Iform/Iprog(3.3V), Iother(0V)')
     header.append('Dimension, %d, %d, %d, %d, %d, %d, %d' %(n,n,n,n,n,n,n))
 
@@ -2773,5 +2626,5 @@ def UTK_Forming_Circuit_2(eChar, VDD, Vreset, Vread, Cycle):
         out.append(add)
         
     #pass the data in RAM to a process which will write it out
-    eChar.threads.append(th.Thread(target = std.writeDataToFile , args=(header, out, eChar.getFolder(), eChar.getFilename(Typ))))
+    eChar.threads.append(th.Thread(target = std.writeDataToFile , args=(cp.deepcopy(header), out, eChar.getFolder(), eChar.getFilename())))
     eChar.threads[len(eChar.threads)-1].start()

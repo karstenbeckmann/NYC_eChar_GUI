@@ -21,6 +21,7 @@ from matplotlib import colors
 from PyQt5 import QtWidgets, QtCore, QtGui
 import Qt_stdObjects as stdObj
 import pickle as pk
+import traceback
 import numpy as np
 
 
@@ -39,10 +40,10 @@ class ResultHandling():
         self.CurVal = ''
         self.CurNum = 'Live'
 
-        self.DieXValues = ['']
-        self.DieYValues = ['']
-        self.DevXValues = ['']
-        self.DevYValues = ['']
+        self.dieXValues = ['']
+        self.dieYValues = ['']
+        self.devXValues = ['']
+        self.devYValues = ['']
         self.MeasValues = ['']
         self.VarValues = ['']
         self.NumValues = ['Live']
@@ -52,15 +53,14 @@ class ResultHandling():
 
         self.MainGI = MainGI
         self.changed = False
-        self.ErrorQu = qu.Queue()
         self.CurResult = None
-        self.subResultsID = []
+        self.subResultsID = {}
         self.Configuration = MainGI.Configuration
         self.linestyle = self.Configuration.getValue("ResultGraphStyle")
         self.linewidth  = self.Configuration.getValue("ResultGraphWidth")
         self.linecolor = self.Configuration.getValue("ResultGraphColor")
-        self.Xscale = 'lin'
-        self.Yscale = 'lin'
+        self.xScale = 'lin'
+        self.yScale = 'lin'
         self.legend = None
         self.Live = True
         self.ID = 1
@@ -104,17 +104,12 @@ class ResultHandling():
     def setCurNum(self, val):
         self.CurNum = val
         if str(val).strip().lower() == 'live':
-            if len(self.subResultsID) > 0:
-                self.CurResult = self.subResultsID[-1]
+            if len(list(self.subResultsID.keys())) > 0:
+                self.CurResult = self.subResultsID['Live']
         else:
             disCont = False
-            try:
-                val = int(val)
-                disCont = False
-            except:
-                disCont = True
-            if not disCont and len(self.subResultsID) > 0:
-                self.CurResult = self.subResultsID[val-1]
+            if not disCont and len(list(self.subResultsID.keys())) > 0:
+                self.CurResult = self.subResultsID[val]
         
     def setCurVal(self, val):
         self.CurVal = val
@@ -144,7 +139,7 @@ class ResultHandling():
         if self.CurResult == None:
             return None
         else:
-            return self.Results[self.CurResult]
+            return self.Results[self.CurResult-1]
 
     def getTraceData(self):
         None
@@ -153,31 +148,31 @@ class ResultHandling():
         None
 
     def getResultSize(self):
-        return len(self.subResultsID)
+        return len(list(self.subResultsID.keys()))
 
     def updateDieX(self):
         Xar = []
         for res in self.Results:
-            X = res.getDieX()
-            if not X in Xar:
+            X = res['DieX']
+            if not X in [int(x) for x in Xar]:
                 Xar.append(X)
         
         Xar.sort()
         Xar.insert(0,'')
 
-        self.DieXValues = Xar
+        self.dieXValues = Xar
         return Xar
 
     def updateDieY(self):
         Yar = []
         for res in self.Results:
-            Y = res.getDieY()
-            if not Y in Yar:
+            Y = res['DieY']
+            if not int(Y) in [int(y) for y in Yar]:
                 Yar.append(Y)
 
         Yar.sort()
         Yar.insert(0,'')
-        self.DieYValues = Yar
+        self.dieYValues = Yar
         return Yar
 
     def updateDevX(self):
@@ -185,10 +180,10 @@ class ResultHandling():
         Xar = []
         for res in self.Results:
 
-            Xdie = res.getDieX()
-            Ydie = res.getDieY()
+            Xdie = res['DieX']
+            Ydie = res['DieY']
 
-            X = res.getDevX()
+            Xdev = res['DevX']
             addX = False
             addY = False
             if self.CurDieX == '':
@@ -202,22 +197,23 @@ class ResultHandling():
                 if int(self.CurDieY) == int(Ydie):
                     addY = True
             
-            if not X in Xar and addX and addY:
-                Xar.append(X)
+            if not int(Xdev) in [int(x) for x in Xar] and addX and addY:
+                Xar.append(Xdev)
 
         Xar.sort()
         Xar.insert(0,'')
-        self.DevXValues = Xar
+        self.devXValues = Xar
         return Xar
 
     def updateDevY(self):
         
         Yar = []
         for res in self.Results:
-            Xdie = res.getDieX()
-            Ydie = res.getDieY()
+            Xdie = res['DieX']
+            Ydie = res['DieY']
 
-            Y = res.getDevY()
+            Xdev = res['DevX']
+            Ydev = res['DevY']
             addX = False
             addY = False
 
@@ -230,27 +226,27 @@ class ResultHandling():
             if self.CurDieY == '':
                     addY = True
             else:
-                if int(self.CurDieX) == int(Ydie):
+                if int(self.CurDieY) == int(Ydie):
                     addY = True
-            
-            if not Y in Yar and addX and addY:
-                Yar.append(Y)
+                    
+            if not (int(Ydev) in [int(y) for y in Yar]) and addX and addY:
+                Yar.append(Ydev)
 
         Yar.sort()
         Yar.insert(0,'')
-        self.DevYValues = Yar
+        self.devYValues = Yar
         return Yar
 
     def updateMeasurements(self):
         
         Meas = []
         for res in self.Results:
-            M = res.getMeasurement()
+            M = res['Result'].getMeasurements()
 
-            Xdie = res.getDieX()
-            Ydie = res.getDieY()
-            Xdev = res.getDevX()
-            Ydev = res.getDevY()
+            Xdie = res['DieX']
+            Ydie = res['DieY']
+            Xdev = res['DevX']
+            Ydev = res['DevY']
 
             addDieX = False
             addDieY = False
@@ -282,7 +278,7 @@ class ResultHandling():
                     addDevY = True
 
             if not M in Meas and addDieX and addDieY and addDevX and addDevY:
-                Meas.append(M)
+                Meas.extend(M)
 
         Meas.sort()
         Meas.insert(0,'')
@@ -291,17 +287,17 @@ class ResultHandling():
     
     def updateValue(self):
         Val = []
-        del self.subResultsID
-        self.subResultsID = []
-        n = 0
+        #del self.subResultsID
+        #self.subResultsID = {}
+        n = 1
         for res in self.Results:
-            V = res.getValueName()
+            V = res['Result'].getValueNames()
+            M = res['Result'].getMeasurements()
 
-            Xdie = res.getDieX()
-            Ydie = res.getDieY()
-            Xdev = res.getDevX()
-            Ydev = res.getDevY()
-            Meas = res.getMeasurement()
+            Xdie = res['DieX']
+            Ydie = res['DieY']
+            Xdev = res['DevX']
+            Ydev = res['DevY']
 
             addDieX = False
             addDieY = False
@@ -336,14 +332,13 @@ class ResultHandling():
             if self.CurMeas == '': 
                 addMeas = True
             else:
-                if self.CurMeas.strip() == Meas:
+                if self.CurMeas.strip() in [m.strip() for m in M]:
                     addMeas = True
 
             if addDieX and addDieY and addDevX and addDevY and addMeas:
-                if not V in Val:
-                    Val.append(V)
+                Val.extend(V)
                     
-                self.subResultsID.append(n)
+                #self.subResultsID.append(n)
                 
             n = n+1
 
@@ -355,17 +350,17 @@ class ResultHandling():
 
         Num = []
         del self.subResultsID
-        self.subResultsID = []
-        n = 0
+        self.subResultsID = {}
+        n = 1
         for res in self.Results:
-            V = res.getValueName()
 
-            Xdie = res.getDieX()
-            Ydie = res.getDieY()
-            Xdev = res.getDevX()
-            Ydev = res.getDevY()
-            Meas = res.getMeasurement()
-            Val = res.getValueName()
+            V = res['Result'].getValueNames()
+            M = res['Result'].getMeasurements()
+
+            Xdie = res['DieX']
+            Ydie = res['DieY']
+            Xdev = res['DevX']
+            Ydev = res['DevY']
 
             addDieX = False
             addDieY = False
@@ -377,44 +372,47 @@ class ResultHandling():
             if self.CurDieX == '':
                 addDieX = True
             else:
-                if self.CurDieX == Xdie:
+                if int(self.CurDieX) == int(Xdie):
                     addDieX = True
 
             if self.CurDieY == '':
                 addDieY = True
             else:
-                if self.CurDieY == Ydie:
+                if int(self.CurDieY) == int(Ydie):
                     addDieY = True
             
             if self.CurDevX == '':
                 addDevX = True
             else:
-                if self.CurDevX == Xdev:
+                if int(self.CurDevX) == int(Xdev):
                     addDevX = True
 
             if self.CurDevY == '':
                 addDevY = True
             else:
-                if self.CurDevY == Ydev:
+                if int(self.CurDevY) == int(Ydev):
                     addDevY = True
 
             if self.CurMeas == '': 
                 addMeas = True
             else:
-                if self.CurMeas.strip() == Meas:
+                if self.CurMeas.strip().lower() in [m.strip().lower() for m in M]:
                     addMeas = True
 
             if self.CurVal == '': 
                 addVal = True
             else:
-                if self.CurVal.strip() == Val:
+                if self.CurVal.strip().lower() in [v.strip().lower() for v in V]:
                     addVal = True
 
-
             if addDieX and addDieY and addDevX and addDevY and addMeas and addVal:
-                Num.append(n)
-                self.subResultsID.append(n)
+                txt = "Die X%d-Y%d, Dev X%d-Y%d, %d" %(Xdie, Ydie, Xdev, Ydev, n)
+                #txt = n
+                Num.append(txt)
+                self.subResultsID[txt] = n
+
             n = n+1
+        self.subResultsID['Live'] = 0
 
         Num.insert(0,'Live')
         self.NumValues = Num
@@ -424,11 +422,11 @@ class ResultHandling():
         self.Results = []
         self.ID = 0
         self.setLive()
-  
-        self.DieXValues = ['']
-        self.DieYValues = ['']
-        self.DevXValues = ['']
-        self.DevYValues = ['']
+    
+        self.dieXValues = ['']
+        self.dieYValues = ['']
+        self.devXValues = ['']
+        self.devYValues = ['']
         self.MeasValues = ['']
         self.VarValues = ['']
         self.NumValues = ['Live']
@@ -441,15 +439,15 @@ class ResultHandling():
         self.CurVal = ''
         self.CurNum = 'Live'
 
-        upd = {'DieX': self.DieXValues}
-        upd['DieY'] = self.DieYValues
-        upd['DevX'] = self.DevXValues
-        upd['DevY'] = self.DevYValues
+        upd = {'DieX': self.dieXValues}
+        upd['DieY'] = self.dieYValues
+        upd['DevX'] = self.devXValues
+        upd['DevY'] = self.devYValues
         upd['Meas'] = self.MeasValues
         upd['Var'] = self.VarValues
         upd['Num'] = self.NumValues
 
-        self.ResultWindow.Updates.put(upd)
+        self.ResultWindow.updates.put(upd)
         
         mydir = r"TempFiles/"
 
@@ -466,146 +464,182 @@ class ResultHandling():
     def setLive(self):
         self.Live = True
 
+    def filterData(self, data):
+        newData = {}
+
+        supportedKeys = ['DieX', 'DieY', "DevX", 'DevY', 'Folder', 'Row', 'Column', 'Rowspan', 'Colspan', 'Xscale', 'Yscale', 'X', 
+                            'Measurement', 'ValueName', 'Add', 'Traces', 'Xlabel', 'Ylabel', 'Xunit', 'Yunit', "Clabel", 'Title', 'Map', 'Style', 
+                            'LineStyle', 'ScatterStyle', 'LineWidth', 'Size', 'ScatterSize', 'Legend', 'LabelSize']
+
+        equivKeys = {}
+        equivKeys['Column'] = ['col']
+        equivKeys['Colspan'] = ['columnspan']
+        equivKeys['Measurement'] = ['measurementtype', 'type']
+        equivKeys['WindowTitle'] = ['title']
+        equivKeys['X'] = ['xaxis']
+        equivKeys['MapCoordinates'] = ['map']
+        equivKeys['ValueName'] = ['vname', "name"]
+        equivKeys['Xlabel'] = ["xlab"]
+        equivKeys['Ylabel'] = ["ylab", 'label', "lab"]
+        equivKeys['Traces'] = ["trac", 'trace']
+        equivKeys['Add'] = ['extend', "ext"]
+        equivKeys['LineWidth'] = ['width']
+        equivKeys['ScatterSize'] = ['size']
+        equivKeys['Yunit'] = ['unit', 'units']
+        equivKeys['Xunit'] = ['unit', 'units']
+
+        for key, value in data.items():
+            for supKey in supportedKeys:
+                equivKey = []
+                if supKey in list(equivKeys.keys()):
+                    equivKey = equivKeys[supKey]
+                if key.lower() == supKey.lower() or key.lower() in equivKey:
+                    newData[supKey] = value
+
+        return newData
+
     def retrieveData(self):
         ret = False
+        res = None
         Result = None
         eChar = self.MainGI.geteChar()
         
-        while not self.MainGI.geteChar().IVplotData.empty():
-
+        while not eChar.IVplotData.empty():
+            res = None
             ret = True
+            data = cp.deepcopy(eChar.IVplotData.get())
+
+            data = self.filterData(data)
             
-            data = cp.deepcopy(self.MainGI.geteChar().IVplotData.get())
+            kwargs = {}
+            necKeys = ['DieX', 'DieY', "DevX", 'DevY', 'Folder', 'Measurement', 'ValueName']
+
+            for key in necKeys:
+                if key in data.keys():
+                    kwargs[key] = data[key]
             
-            DieX = data['DieX']
-            DieY = data['DieY']
-            DevX = data['DevX']
-            DevY = data['DevY']
-            Folder = data['Folder']
-            
-            typ = data["MeasurementType"]
-            ValueName = data["ValueName"]
-            create = True
-            
+            addedKeys = ['Row', 'Column', 'Rowspan', 'Colspan']
+            stdValues = [-2,-2,1,1]
+            for key, value in zip(addedKeys, stdValues):
+                kwargs[key] = value
+                if key in data.keys():
+                    kwargs[key] = data[key]
+
+            row = kwargs['Row']
+            column = kwargs['Column']
+
+            extendGraph = False
             if 'Add' in data.keys():
                 if data['Add'] == True:
                     for Result in self.Results:
-                        if Result.checkID(DieX, DieY, DevX, DevY, typ, ValueName):
-                            create = False
+                        #check if a graph exists that can be extended
+                        if Result["Result"].compareDevice(row=row, column=column, **kwargs):
+                            extendGraph = True
                             break
-                    if not create:
+                    if extendGraph:
                         if not isinstance(data['Traces'], list):
                             data['Traces'] = [data['Traces']]
-                        if 'Map' in data.keys():
-                            Result.extend(data['Traces'], data['Map'])
+                        if 'MapCoordinates' in data.keys():
+                            Result["Result"].extend(data['Traces'], data['MapCoordinates'], row=row, column=column, valueName=data['ValueName'])
                         else:
-                            Result.extend(data['Traces'])
-
-            if create:
-
+                            Result["Result"].extend(data['Traces'], row=row, column=column, valueName=data['ValueName'])
+                        res = Result
+                                        
+            if not extendGraph:
+                
                 if self.useDumping:
-                    if DieX != self.CurMeasDieX or DieY != self.CurMeasDieY or DevX != self.CurMeasDevX or DevY != self.CurMeasDevY:
-                        for entry in self.Results:
-                            entry.dumpData()
-                        self.CurMeasDieX = DieX
-                        self.CurMeasDieY = DieY
-                        self.CurMeasDevX = DevX
-                        self.CurMeasDevY = DevY
-
-                dataMeas = data['MeasurementType']
-                dataValName = data['ValueName']
-
-                Xlabel = ""
-                if 'Xlabel' in data:
-                    Xlabel = data['Xlabel']
-
-                Ylabel = ''
-                if 'Ylabel' in data:
-                    Ylabel = data['Ylabel']
-                Clabel = ''
-                if 'Clabel' in data:
-                    Clabel = data['Clabel']
-                X = False
-                if 'Xaxis' in data:
-                    X = data['Xaxis']
+                    #dump data to HDD if it is not the current Device
+                    checks = ["CurMeasDieX", "CurMeasDieY", "CurMeasDevX", "CurMeasDevY"]
+                    keys = ['DieX', 'DieY', "DevX", 'DevY']
+                    for entry in self.Results:
+                        if not all([entry[key]==check for check, key in zip([getattr(self, c) for c in checks],keys)]):
+                            entry['Result'].dumpData()
+                    for check, key in zip(checks, keys):
+                        setattr(self, check, kwargs[key])
                 
-                dataWT = 'Measurement Data'
-                if 'Title' in data:
-                    dataWT = data['Title']
+                necKeys = ['Xlabel', 'Ylabel', "Clabel", "LabelSize", "Title", "MapCoordinates", "X", 'ScatterSize', 'LineWidth', 'Legend']
+                defaultVal = ['', '', "", None, 'Measurement Data', [None,None], False, None, None, None]
+                defaultType = [str, str, str, float, str, None, bool, int, float, str]
+                n = 0
+                for key, default in zip(necKeys,defaultVal):
+                    if key in data.keys():
+                        kwargs[key] = data[key]
+                    else: 
+                        if default != None:
+                            if defaultType[n] != None:
+                                try:
+                                    kwargs[key] = defaultType[n](default)
+                                except ValueError:
+                                    pass
+                            else:
+                                kwargs[key] = default
+                    n +=1
+                                
+                key = 'LineStyle'
+                if key in data:
+                    kwargs[key] = data[key]
+                    kwargs["Style"] = "Line"
+                    style = 'Line'
 
-                MapCoordinates = [None,None]
-                if 'Map' in data:
-                    MapCoordinates = data['Map']
+                if 'LineWidth' in kwargs:
+                    try:
+                        kwargs['LineWidth'] = int(data[key])
+                    except ValueError:
+                        pass
 
-                try:
-                    linestyle = data['lineStyle']
-                    if not linestyle in lines.lineStyles.keys() and not linestyle in markers.MarkerStyle.markers.keys():
-                        linestyle = self.linestyle
-                except:
-                    linestyle = self.linestyle
-
+                key = 'ScatterStyle'
+                if key in data:
+                    kwargs[key] = data[key]
+                    kwargs["Style"] = "Scatter"
                 
                 try:
-                    legend = data['Legend']
+                    kwargs['Xscale'] = data['Xscale']
+                    if not data['Xscale'] in ['lin', "log"]:
+                        kwargs['Xscale'] = self.xScale
                 except:
-                    legend = None
-
-                try:
-                    linewidth = data['lineWidth']
-                    if not isinstance(linewidth, (int,float)):
-                        linewidth = self.linewidth
-                except:
-                    linewidth = self.linewidth
-                try:
-                    linecolor = data['lineColor']
-                    if not linecolor in colors.cnames.keys():
-                        linecolor = self.linecolor
-                except:
-                    linecolor = self.linecolor
-                    
-                try:
-                    Xscale = data['Xscale']
-                    if not Xscale in ['lin', "log"]:
-                        Xscale = self.Xscale
-                except:
-                     Xscale = self.Xscale
+                    kwargs['Xscale'] = self.xScale
                      
                 try:
-                    Yscale = data['Yscale']
-                    if not Yscale in ['lin', "log"]:
-                        Yscale = self.Yscale
+                    kwargs['Yscale'] = data['Yscale']
+                    if not data['Yscale'] in ['lin', "log"]:
+                        kwargs['Yscale'] = self.yScale
                 except:
-                     Yscale = self.Yscale
+                    kwargs['Yscale'] = self.yScale
 
                 if not isinstance(data['Traces'], list):
                     data['Traces'] = [data['Traces']]
 
-                Result = MeasurementResult(data['Traces'], X, MapCoordinates=MapCoordinates, DieX=DieX, DieY=DieY, DevX=DevX, DevY=DevY,  Xlabel=Xlabel, Ylabel=Ylabel, Clabel=Clabel, linestyle=linestyle, 
-                                    linewidth=linewidth, color=linecolor, legend=legend, Measurement=dataMeas, ValueName=dataValName, 
-                                    WindowTitle=dataWT, Xscale=Xscale, Yscale=Yscale, Folder=Folder)
-                  
-                self.Results.append(Result)
-                self.updateCurFile(Result)
+                for key, value in data.items():
+                    if key != "Traces" and not (key in kwargs.keys()):
+                        kwargs[key] = data[key]
 
+                if row == -2 or column == -2 or len(self.Results) == 0:
+                    res = {'DieX': kwargs['DieX'], 'DieY': kwargs['DieY'], "DevX": kwargs['DevX'], 'DevY': kwargs['DevY'], "Result": MeasurementResult(data['Traces'], self.ErrorQu, **kwargs)}
+                    self.Results.append(res)
+                else:
+                    sucAdd = self.Results[-1]['Result'].add(data['Traces'], row, column, **kwargs)
+                    if not sucAdd:
+                        res = {'DieX': kwargs['DieX'], 'DieY': kwargs['DieY'], "DevX": kwargs['DevX'], 'DevY': kwargs['DevY'], "Result": MeasurementResult(data['Traces'], self.ErrorQu, **kwargs)}
+                        self.Results.append(res)
+                
+                self.updateCurFile(res)
 
-                DieX = self.updateDieX()
-                DieY = self.updateDieY()
-                DevX = self.updateDevX()
-                DevY = self.updateDevY()
-                Meas = self.updateMeasurements()
-                Num = self.updateNum()
-                Val = self.updateValue()
-                upd = {"DieX": DieX, "DieY": DieY,"DevX": DevX,"DevY": DevY,"Meas": Meas, "Num": Num, "Val": Val}
-                self.ResultWindow.Updates.put(upd)
+                updKwargs = {}
+                necKeys = ['DieX', 'DieY', "DevX", 'DevY']
+                upds = [self.updateDieX, self.updateDieY, self.updateDevX, self.updateDevY]
+                for key, upd in zip(necKeys, upds):
+                    updKwargs[key] = upd()
+                updKwargs['Meas'] = self.updateMeasurements()
+                updKwargs['Num'] = self.updateNum()
+                updKwargs['Val'] = self.updateValue()
+                self.ResultWindow.updates.put(updKwargs)
 
-            self.ResultWindow.Updates.put({"Show": True})
+            self.ResultWindow.updates.put({"Show": True})
 
-            if self.Live and Result != None:
-                self.updateCurGraphProp(Result)
-                self.updateCurData(Result)
+            if self.Live and res != None:
+                self.updateResultWindowGraph(res['Result'])
                
         return ret
-
 
     def close(self):
         self.__close.put(True)
@@ -630,43 +664,43 @@ class ResultHandling():
                     upd = None
                     if key == "DieX":
                         self.setCurDieX(item)
-                        DieY = self.updateDieY()
-                        DevX = self.updateDevX()
-                        DevY = self.updateDevY()
-                        Meas = self.updateMeasurements()
-                        Num = self.updateNum()
-                        Val = self.updateValue()
-                        upd = {"DieY": DieY,"DevX": DevX,"DevY": DevY,"Meas": Meas, "Num": Num, "Val": Val}
+                        dieY = self.updateDieY()
+                        devX = self.updateDevX()
+                        devY = self.updateDevY()
+                        meas = self.updateMeasurements()
+                        num = self.updateNum()
+                        val = self.updateValue()
+                        upd = {"DieY": dieY,"DevX": devX,"DevY": devY,"Meas": meas, "Num": num, "Val": val}
                     elif key == "DieY":
                         self.setCurDieY(item)
-                        DevX = self.updateDevX()
-                        DevY = self.updateDevY()
-                        Meas = self.updateMeasurements()
-                        Num = self.updateNum()
-                        Val = self.updateValue()
-                        upd = {"DevX": DevX,"DevY": DevY,"Meas": Meas, "Num": Num, "Val": Val}
+                        devX = self.updateDevX()
+                        devY = self.updateDevY()
+                        meas = self.updateMeasurements()
+                        num = self.updateNum()
+                        val = self.updateValue()
+                        upd = {"DevX": devX,"DevY": devY,"Meas": meas, "Num": num, "Val": val}
                     elif key == "DevX":
                         self.setCurDevX(item)
-                        DevY = self.updateDevY()
-                        Meas = self.updateMeasurements()
-                        Num = self.updateNum()
-                        Val = self.updateValue()
-                        upd = {"DevY": DevY,"Meas": Meas, "Num": Num, "Val": Val}
+                        devY = self.updateDevY()
+                        meas = self.updateMeasurements()
+                        num = self.updateNum()
+                        val = self.updateValue()
+                        upd = {"DevY": devY,"Meas": meas, "Num": num, "Val": val}
                     elif key == "DevY":
                         self.setCurDevY(item)
-                        Meas = self.updateMeasurements()
-                        Num = self.updateNum()
-                        Val = self.updateValue()
-                        upd = {"Meas": Meas, "Num": Num, "Val": Val}
+                        meas = self.updateMeasurements()
+                        num = self.updateNum()
+                        val = self.updateValue()
+                        upd = {"Meas": meas, "Num": num, "Val": val}
                     elif key == "Meas":
                         self.setCurMeas(item)
-                        Num = self.updateNum()
-                        Val = self.updateValue()
-                        upd = {"Num": Num, "Val": Val}
+                        num = self.updateNum()
+                        val = self.updateValue()
+                        upd = {"Num": num, "Val": val}
                     elif key == "Val":
-                        self.setCurNum(item)
-                        Num = self.updateNum()
-                        upd = {"Num": Num}
+                        self.setCurVal(item)
+                        num = self.updateNum()
+                        upd = {"Num": num}
                     elif key == "Num":
                         if item == "":
                             item = "Live"
@@ -682,134 +716,286 @@ class ResultHandling():
                             self.unsetLive()
 
                     if self.getResult() != None:
-                        if key == "lineColor":
+                        if key == "LineColor":
                             self.getResult().setLineColor(item)
-                        elif key == 'lineStyle':
+                        elif key == 'LineStyle':
                             self.getResult().setLineStyle(item)
-                        elif key == 'lineWidth':
+                        elif key == 'LineWidth':
                             self.getResult().setLineWidth(item)
-                        elif key == 'lineSize':
+                        elif key == 'LineSize':
                             self.getResult().setLineWidth(item)
 
                 if upd != None:
-                    self.ResultWindow.Updates.put(upd)
+                    self.ResultWindow.updates.put(upd)
                     self.updateCurFile(self.getResult())
                 
                 if updData:
-
                     res = self.getResult()
-                    self.updateCurGraphProp(res)
-                    self.updateCurData(res)
+                    if res != None:
+                        self.updateResultWindowGraph(res['Result'])
 
             tm.sleep(0.2)
 
-    def updateCurGraphProp(self, res):
-        if res != None:
-            self.ResultWindow.Updates.put({"Figure": res.createGraphProp()})
-
-    def updateCurData(self, res):
-        if res != None:
-            self.ResultWindow.Updates.put({"Data": res.getData()})
+    def updateResultWindowGraph(self, resultClass):
+        if resultClass != None:
+            self.ResultWindow.updates.put({"GraphData": resultClass.createGraphProp()})
 
     def updateCurFile(self, res):
-        
         if res != None:
-            folder = res.getFolder()
-            fileName = res.getFileName()
-            self.ResultWindow.Updates.put({'fileName': fileName, "folder":folder})
+            folder = res['Result'].getFolder()
+            fileName = res['Result'].getFilename()
+            self.ResultWindow.updates.put({'fileName': fileName, "folder":folder})
 
 
 class MeasurementResult():
 
-    def __init__(self, data, X, MaxLength=2.5e5, DieX='X', DieY='Y', DevX='X', DevY='Y',  Xlabel="", MapCoordinates=[None,None], Folder='', Clabel='', Xscale="lin", Ylabel="", Yscale="lin", legend=None, linestyle='o', linewidth='1', color='b', Measurement='', ValueName='', WindowTitle='XY Plot'):
+    def __init__(self, data, errorQueue, row=-1, column=-1, rowspan=1, colspan=1, MaxLength=2.5e5, **kwargs):
         
-        self.DieX = DieX
-        self.DieY = DieY
-        self.DevX = DevX
-        self.DevY = DevY
-        self.Folder = Folder
-        self.data = np.array(data, dtype=float)
-        self.dumped = False
-        self.Measurement = Measurement
-        self.MaxLength = int(MaxLength)
-        self.X = X
-        self.Xlabel = Xlabel
-        self.Ylabel = Ylabel
-        self.Clabel = Clabel
-        self.Xscale = Xscale
-        self.Yscale = Yscale
-        self.linestyle = linestyle
-        self.linewidth = linewidth
-        self.legend = legend
-        self.color = color
-        self.ValueName = ValueName
+        # row or column at -2 indicates one plot per graph
+        # row or column at -1 indicates automatically adding plots to graphs 
+
+        self.maxLength = int(MaxLength)
         self.dumpFile = ""
-        self.WindowTitle = WindowTitle
-        self.MapCoordinates = MapCoordinates
+        self.dumped = False
 
-        if MapCoordinates[0] == None or MapCoordinates[1] == None:
-            self.Map = False
-            self.data = np.array(data, dtype=float)
-            
+        self.errorQueue = errorQueue
+
+        colspan = 1
+        rowspan = 1
+
+        self.data = []
+        self.dataInfo = []
+        dataInfo = {}
+        dataInfo["Row"] = row
+        dataInfo["Column"] = column
+        dataInfo["Rowspan"] = rowspan
+        dataInfo["Colspan"] = colspan
+
+        self.commonKeys = ['DieX', 'DieY', 'DevX', 'DevY', "Measurement"]
+        self.commonInfo = {}
+
+        self.graphPropKeys = list(kwargs.keys())
+        self.graphPropKeys.extend(['Row', 'Column', 'Rowspan', 'Colspan', 'Map'])
+        for key, value in kwargs.items():
+            if key in self.commonKeys:
+                self.commonInfo[key] = value
+            dataInfo[key] = value
+        
+        if dataInfo['MapCoordinates'][0] == None or dataInfo['MapCoordinates'][1] == None:
+            dataInfo["Map"] = False
+            self.data.append(np.array(data, dtype=float))
         else:
-            self.Map = True
-            dataShape = (MapCoordinates[0],MapCoordinates[1])
-            self.data = np.zeros(dataShape, dtype=float)
+            dataInfo["Map"] = True
+            dataShape = (dataInfo['MapCoordinates'][0],dataInfo['MapCoordinates'][1])
+            self.data.append(np.zeros(dataShape, dtype=float))
+            self.data[-1][dataInfo['MapCoordinates'][0]][dataInfo['MapCoordinates'][1]] = data[0]
 
-            self.data[MapCoordinates[0]][MapCoordinates[1]] = data[0]
+        self.dataInfo.append(dataInfo)
     
-    def getFileName(self):
+    def isDataDumped(self):
+        return self.dumped
 
-        ret = "%s_%s_DieX%dY%d_DevX%dY%d" %(self.Measurement, self.ValueName, self.DieX, self.DieY, self.DevX, self.DevY)
+    def putErrorQueue(self, msg):
+        msg = "MeasurementResult: %s" %(msg)
+        self.errorQueue.put(msg)
+    
+    def getDataInfoByCell(self, row=-1, column=-1):
+        for n, d in enumerate(self.dataInfo):
+            rowOcc = d['Row']
+            colOcc = d['Column']
+            if row == rowOcc and colOcc == column:
+                return (n, d)
+        return (None, None)
+
+    def getDataByCell(self, row=-1, column=-1):
+        n, d = self.getDataInfoByCell(row, column)
+        if n != None:
+            return cp.deepcopy(self.getData()[n])
+        return None
+
+
+    def getFolder(self):
+        return ""
+
+    def getMeasurementAndValueName(self):
+        valNames = []
+        measNames = []
+        for d in self.dataInfo:
+            if not d['ValueName'] in valNames:
+                valNames.append(d['ValueName'])
+                
+            if not d['Measurement'] in measNames:
+                measNames.append(d['Measurement'])
+
+        ret = "Types_"
+        for m in measNames:
+            ret = "%s%s_" %(ret, m) 
+        ret = "%sValNames__" %(ret) 
+        for v in valNames:
+            ret = "%s%s_" %(ret, v) 
+
         return ret
 
-    def extend(self, data, MapCoordinates=None):
-        if not isinstance(data, np.ndarray):
-            data = np.array(data,dtype=float)
+    def getFilename(self, row=-1, column=-1):
+        n, dataInfo = self.getDataInfoByCell(row, column)
+        if dataInfo == None:
+            return ""
+        ret = "%sDieX%dY%d_DevX%dY%d_%s" %(self.getMeasurementAndValueName(),  self.commonInfo['DieX'], self.commonInfo['DieY'], self.commonInfo['DevX'], self.commonInfo['DevY'], self.commonInfo['Measurement'])
+        return ret
+    
+    def cellAvailable(self, row, column, rowspan, colspan):
+        avail = True
+        for d in self.dataInfo:
+            avail = False
+            rowOcc = d['Row']
+            colOcc = d['Column']
+            rowSpanOcc = d['Rowspan']
+            colSpanOcc = d['Colspan']
 
-        if not self.Map:
-            orgShape = np.shape(self.data)
-            newShape = np.shape(data)
+            if rowOcc == -2 or colOcc == -2:
+                return False
 
-            if len(orgShape) == 3:
-                if np.shape(data)[1] != np.shape(self.data)[1] or np.shape(data)[2] != np.shape(self.data)[2]:
-                    raise ValueError("Measurement Data can only be extended if the Data dimensions are the same.")
-                
-                self.data = np.append(self.data, data, axis=0)
+            if row > (rowOcc+rowSpanOcc - 1) or (row + rowspan - 1) < rowOcc:
+                continue
 
-            elif len(orgShape) == 2:
-                newShape = (orgShape[0], orgShape[1] + newShape[1])
-                tempData = np.empty(newShape, dtype=float)
-                for m in range(orgShape[0]):
-                    tempData[m][0:orgShape[1]] = self.data[m]
-                    tempData[m][orgShape[1]:] = data[m]
-                self.data = tempData
+            
+            if column > (colOcc+colSpanOcc - 1) or (column + colspan - 1) < colOcc:
+                continue
+
+            return False
+        
+        return True
+
+    def add(self, data, row, column, rowspan=1, colspan=1, **kwargs):
+        
+        if not self.compareDevice(row, column, checkValueName=False, **kwargs):
+            return False
+        if not self.cellAvailable(row, column, rowspan, colspan):
+            return False
+        
+        try:
+            dataInfo = {}
+            dataInfo["Row"] = row
+            dataInfo["Column"] = column
+            dataInfo["Rowspan"] = rowspan
+            dataInfo["Colspan"] = colspan
+
+            self.graphPropKeys = list(kwargs.keys())
+            self.graphPropKeys.extend(['Row', 'Column', 'Rowspan', 'Colspan', "Map"])
+            for key, value in kwargs.items():
+                setattr(self, key, value)
+                dataInfo[key] = value
+            
+            if dataInfo['MapCoordinates'][0] == None or dataInfo['MapCoordinates'][1] == None:
+                dataInfo["Map"] = False
+                self.data.append(np.array(data, dtype=float))
             else:
-                if np.shape(data)[0] > self.MaxLength:
-                    tempData = np.array(data[-self.MaxLength:])
-                elif (np.shape(self.data)[0] + np.shape(data)[0]) > self.MaxLength:
-                    self.data = np.delete(self.data, np.s_[:np.shape(self.data)[0]-(self.MaxLength-np.shape(data)[0])])
-                    newShape = orgShape[0] + newShape[0]
-                    tempData = np.empty(newShape, dtype=float)
-                    tempData[0:orgShape[0]] = self.data
-                    tempData[orgShape[0]:] = data
-                else:
-                    newShape = orgShape[0] + newShape[0]
-                    tempData = np.empty(newShape, dtype=float)
-                    tempData[0:orgShape[0]] = self.data
-                    tempData[orgShape[0]:] = data
-                
-                self.data = tempData
-        else:
-            if isinstance(MapCoordinates, list):
-                if MapCoordinates[0] != None and MapCoordinates[1] != None:
-                    while len(self.data) < MapCoordinates[0]+1:
-                        self.data.append([])
-                    
-                    while len(self.data[MapCoordinates[0]]) < MapCoordinates[1]+1:
-                        self.data[MapCoordinates[0]].append(None)
+                dataInfo["Map"] = True
+                dataShape = (dataInfo['MapCoordinates'][0],dataInfo['MapCoordinates'][1])
+                self.data.append(np.zeros(dataShape, dtype=float))
+                self.data[-1][dataInfo['MapCoordinates'][0]][dataInfo['MapCoordinates'][1]] = data[0]
 
-                    self.data[MapCoordinates[0]][MapCoordinates[1]] = data[0]
+            self.dataInfo.append(dataInfo)
+
+        except Exception as e:
+            print(traceback.format_exc())
+            self.putErrorQueue("Extend Data: Error: %s" %(e))
+            return False               
+        
+        return True
+            
+    def isDataInCell(self, row, column, valueName):
+        for d in self.dataInfo:
+            rowOcc = d['Row']
+            colOcc = d['Column']
+            valueNameOcc = d['ValueName']
+            if row == rowOcc and colOcc == column and valueNameOcc == valueName:
+                return True
+
+        return False
+
+    def getOccupiedCells(self):
+        cells = []
+        for d in self.dataInfo:
+            rowOcc = d['Row']
+            colOcc = d['Column']
+            rowSpanOcc = d['Rowspan']
+            colSpanOcc = d['Colspan']
+            cell = {}
+            cell["Row"] = rowOcc
+            cell["Column"] = colOcc
+            cell["Rowspan"] = rowSpanOcc
+            cell["Colspan"] = colSpanOcc
+            cells.append(cell)
+        return cells
+        
+
+    def extend(self, data, row=-1, column=-1, valueName=""):
+        
+        if self.isDataDumped():
+            self.restoreData()
+
+        if not self.isDataInCell(row, column, valueName):
+            return False
+
+        if not isinstance(data, np.ndarray):
+            data = np.array(data, dtype=float)
+
+        n, dataInfo = self.getDataInfoByCell(row, column)
+        
+        MapCoordinates = dataInfo['MapCoordinates']
+        Map = dataInfo['Map']
+        
+        try:
+            if not Map:
+                orgShape = np.shape(self.data[n])
+                newShape = np.shape(data)
+
+                if len(orgShape) == 3:
+                    if np.shape(data)[1] != np.shape(self.data[n])[1] or np.shape(data)[2] != np.shape(self.data[n])[2]:
+                        self.putErrorQueue("Extend Data: Measurement Data can only be extended if the Data dimensions are the same. OrigShape: %s, NewShape: %s" %(orgShape, newShape))
+                        return False
+                    
+                    self.data[n] = np.append(self.data[n], data, axis=0)
+
+                elif len(orgShape) == 2:
+                    newShape = (orgShape[0], orgShape[1] + newShape[1])
+                    tempData = np.empty(newShape, dtype=float)
+                    for m in range(orgShape[0]):
+                        tempData[m][0:orgShape[1]] = self.data[n][m]
+                        tempData[m][orgShape[1]:] = data[m]
+                    self.data[n] = tempData
+                else:
+                    if np.shape(data)[0] > self.maxLength:
+                        tempData = np.array(data[-self.maxLength:])
+                    elif (np.shape(self.data[n])[0] + np.shape(data)[0]) > self.maxLength:
+                        self.data[n] = np.delete(self.data[n], np.s_[:np.shape(self.data[n])[0]-(self.maxLength-np.shape(data)[0])])
+                        newShape = orgShape[0] + newShape[0]
+                        tempData = np.empty(newShape, dtype=float)
+                        tempData[0:orgShape[0]] = self.data[n]
+                        tempData[orgShape[0]:] = data
+                    else:
+                        newShape = orgShape[0] + newShape[0]
+                        tempData = np.empty(newShape, dtype=float)
+                        tempData[0:orgShape[0]] = self.data[n]
+                        tempData[orgShape[0]:] = data
+                    
+                    self.data[n] = tempData
+            else:
+                if isinstance(MapCoordinates, list):
+                    if MapCoordinates[0] != None and MapCoordinates[1] != None:
+                        while len(self.data[n]) < MapCoordinates[0]+1:
+                            self.data[n].append([])
+                        
+                        while len(self.data[n][MapCoordinates[0]]) < MapCoordinates[1]+1:
+                            self.data[n][MapCoordinates[0]].append(None)
+
+                        self.data[n][MapCoordinates[0]][MapCoordinates[1]] = data[0]
+            
+        except Exception as e:
+            print(traceback.format_exc())
+            self.putErrorQueue("Extend Data: Error: %s" %(e))
+            return False               
 
         return True
     
@@ -822,23 +1008,12 @@ class MeasurementResult():
             del self.data
 
     def createGraphProp(self):
-
         ret = dict()
-
-        ret['lineStyle'] = self.linestyle
-        ret['lineSize'] = self.linewidth
-        ret['lineColor'] = self.color
-        ret['xLabel'] = self.Xlabel
-        ret['yLabel'] = self.Ylabel
-        ret['cLabel'] = self.Clabel
-        ret['legend'] = self.legend
-        ret['title'] = self.WindowTitle
-        ret['x'] = self.X
-        ret['map'] = self.Map
-        ret['xScale'] = self.Xscale
-        ret['yScale'] = self.Yscale
-        ret['valueName'] = self.ValueName
-
+        dataInfo= cp.deepcopy(self.dataInfo)
+        ret['GraphInfo'] = dataInfo
+        ret['Data'] = self.getData()
+        ret['Filename'] = self.getFilename()
+        ret['Folder'] = self.getFolder()
         return ret
 
     def restoreData(self):
@@ -847,94 +1022,56 @@ class MeasurementResult():
             self.data = pk.load(ResultFileObj)
             self.dumped = False
 
-    def getData(self):
-        if self.dumped:
+    def getDataInfo(self, row=-1, column=-1):
+        return self.dataInfo
+
+    def getData(self, row=-1, column=-1):
+        if self.isDataDumped():
             self.restoreData()
             return self.data
-        else:
-            return self.data
+        return self.data
 
     def deleteData(self):
+        del self.data
         self.data = None
-        
-    def setLineColor(self, color):
-        self.color = color
-    
-    def setLineStyle(self, style):
-        self.linestyle = style
-    
-    def setLineWidth(self, width):
-        self.linewidth = width
 
-    def getYlabel(self):
-        return self.Ylabel
+    def compareDevice(self, row=-1, column=-1, checkValueName=True, **kwargs):
+        for key, value in self.commonInfo.items():
+            if key in kwargs.keys():
+                if kwargs[key] != value:
+                    return False 
+            else:
+                return False
+        if not checkValueName:
+            return True
 
-    def getXlabel(self):
-        return self.Xlabel
-
-    def getYscale(self):
-        return self.Yscale
-
-    def getLegend(self):
-        return self.legend
-
-    def getXscale(self):
-        return self.Xscale
-
-    def getWindowTitle(self):
-        return self.WindowTitle
-
-    def getX(self):
-        return self.X
-
-    def getDieX(self):
-        return self.DieX
-        
-    def getDieY(self):
-        return self.DieY
-    '''
-    def getXMax(self):
-        return self.xMax
-
-    def getYMax(self):
-        return self.yMax
-    '''
-    def getMap(self):
-        return self.Map
-
-    def getDevX(self):
-        return self.DevX
-
-    def getDevY(self):
-        return self.DevY
-
-    def getMeasurement(self):
-        return self.Measurement
-
-    def getValueName(self):
-        return self.ValueName
-
-    def getFolder(self):
-        return self.Folder
-
-    def checkID(self, DieX, DieY, DevX, DevY, Typ, ValueName):
-        check = True
-        if DieX != self.DieX:
-            check = False
-        if DieY != self.DieY:
-            check = False
-        if DevY != self.DevY:
-            check = False
-        if DevX != self.DevX:
-            check = False
-        if Typ != self.Measurement:
-            check = False
-        if ValueName != self.ValueName:
-            check = False
-        return check
+        found = False
+        for d in self.dataInfo:
+            if d['Row'] == row and d['Column'] == column:       
+                if "ValueName" in kwargs.keys():
+                    if kwargs['ValueName'] != d['ValueName']:
+                        return False
+                else:
+                    return False
+                found = True
+        return found
     
     def setMaxLength(self, MaxLength = 1e5):
         try:
-            self.MaxLength = int(MaxLength)
+            self.maxLength = int(MaxLength)
         except TypeError:
             None
+    
+    def getValueNames(self):
+        valName = []
+        for dataInfo in self.dataInfo:
+            if not dataInfo['ValueName'] in valName:
+                valName.append(dataInfo['ValueName'])
+        return valName
+
+    def getMeasurements(self):
+        meas = []
+        for dataInfo in self.dataInfo:
+            if not dataInfo['Measurement'] in meas:
+                meas.append(dataInfo['Measurement'])
+        return meas

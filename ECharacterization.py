@@ -23,6 +23,7 @@ import copy as cp
 import engineering_notation as eng
 import LetToArray as LtA
 from datetime import datetime as dt
+import inspect
 
 from Exceptions import *
 
@@ -33,10 +34,6 @@ import os as os
 class ECharacterization:
     
     #Endurance Queues
-   
-    EnduranceHeader = []
-    Combinedheader = []
-    SMUHeader = []
     curCycle = 1
     endTime = 0
     curTime = 0
@@ -74,16 +71,22 @@ class ECharacterization:
     MatBit = None
     save = True
     EnduranceData = []
-    AdditionalHeader = []
-    ExternalHeader = []
     MeasTypeClass = None
+
+    Header = {}
+    Header['Internal'] = []
+    Header['External'] = []
+    Header['Additional'] = []
+    Header['Endurance'] = []
+    Header['Selector'] = []
+    Header['SMU'] = []
+    Header['DC'] = []
+    Header['Combined'] = []
 
 
     maxNumSingleEnduranceRun = int(1.5e6)
     DeviceName = []
-    MatDev = 0
-    Header = []
-    Results = []
+    MatDev = []
     Configuration = None
 
     #Plotting Queues
@@ -92,8 +95,6 @@ class ECharacterization:
     LogData = qu.Queue()
     ResData = qu.Queue()
     SelectorEndurance = qu.Queue()
-    SelectorHeader = []
-
 
     # API Return Value - Error Code
     WGFMU_NO_ERROR							= 0
@@ -206,6 +207,12 @@ class ECharacterization:
 
         self.Modules = {}
         
+        self.waferInfoLock = th.Lock()
+        self.headerInfoLock = th.Lock()
+        self.dataAnalysisLock = th.Lock()
+        self.cycleLock = th.Lock()
+        self.parameterLock = th.Lock()
+
         for path in glob.glob('ElectricalCharacterization/[!_]*.py'):
             name, ext = os.path.splitext(os.path.basename(path))
             self.Modules[name] = imp.load_source(name, path)
@@ -221,6 +228,7 @@ class ECharacterization:
         self.estMultFactorB1530A = 1
         self.SubProcessThread = qu.Queue()
         self.deviceCharacterization = None
+
         
         '''
         only possible in PG or FastIV mode
@@ -241,10 +249,8 @@ class ECharacterization:
         self.Selstart = qu.Queue()
         self.Selstop = qu.Queue()
         self.Stop = qu.Queue()
-        self.DCHeader = []
         self.EnduranceData = []
-        self.AdditionalHeader = []
-        self.ExternalHeader = []
+        self.MeasurementType = None
         
         self.cyc = []
         self.HRS = []
@@ -257,9 +263,8 @@ class ECharacterization:
         self.Vset = []
         self.Vreset = []
         self.IVcyc = []
-
-    def checkInstrumentation(self):
         
+    def checkInstrumentation(self):
         try:
             self.Instruments.checkInstrumentation()
             self.writeLog("Instrumentation Checked")
@@ -272,9 +277,37 @@ class ECharacterization:
                     break
             self.getTools()
 
+    def getCurCycle(self):
+        with self.cycleLock:
+            return self.curCycle
+        
+    def setCurCycle(self,cycle):
+        with self.cycleLock:
+            self.CurCycle = cycle
+            
+    def addCurCycle(self,cycle):
+        with self.cycleLock:
+            self.CurCycle = self.CurCycle + cycle
+            return self.CurCycle
+
+    def getMaxNumSingleEnduranceRun(self):
+        with self.parameterLock:
+            return self.maxNumSingleEnduranceRun
+
+    def getMaxRowsPerFile(self):
+        with self.parameterLock:
+            return self.MaxRowsPerFile
+
+    def getMaxDataPerPlot(self):
+        with self.parameterLock:
+            return self.MaxDataPerPlot
+    
+    def writeLocalTime(self, localTime):
+        with self.parameterLock:
+            self.localtime = localTime
+
 
     def writeMeasLog(self, data):
-
         if isinstance(data, list):
             for entry in data:
                 self.MeasQu.put(entry)
@@ -304,24 +337,40 @@ class ECharacterization:
         self.emptySubProcessThread()
             
     def updateConfiguration(self, Configuration):
-
-        self.Configuration = Configuration
-        self.Mainfolder = self.Configuration.getMainFolder()
-        self.WaferID = self.Configuration.getWaferID()
-        self.Subfolder = self.Configuration.getSubfolder()
-        self.DoYield = self.Configuration.getDoYield()
-        self.device = self.Configuration.getDeviceName()
+        with self.waferInfoLock:
+            self.Configuration = Configuration
+            self.Mainfolder = self.Configuration.getMainFolder()
+            self.WaferID = self.Configuration.getWaferID()
+            self.Subfolder = self.Configuration.getSubfolder()
+            self.DoYield = self.Configuration.getDoYield()
+            self.device = self.Configuration.getDeviceName()
     
+    def getDevice(self):
+        with self.waferInfoLock:
+            return self.device
+
     def updateTools(self, Tools):
         Tools.ReInitialize()
         self.getTools()
+    
+    def getMeasurementType(self):
+        with self.waferInfoLock:
+            return self.MeasurementType
+            
+    def setMeasurementType(self, measType):
+        with self.waferInfoLock:
+            self.MeasurementType = measType
 
-    def writeDataToFile(self, header, data, Typ="", startCyc=None, endCyc=None, withDie=True, subFolder=None):
-        
-        filename= self.getFilename(Typ, startCyc, endCyc)
+    def writeDataToFile(self, header, data, startCyc=None, endCyc=None, withDie=True, subFolder=None, Typ=None):
+        print("here")
+        filename= self.getFilename(Typ,startCyc, endCyc)
         folder = self.getFolder(withDie)
         data2 = cp.deepcopy(data)
-        header2 = cp.deepcopy(header)
+        header2 = []
+        WriteHeader = ['Internal', "External", "Combined", "DC", "SMU"]
+        for h in WriteHeader:
+            header2.extend(self.getHeader(h))
+        header2.extend(cp.deepcopy(header))
         thread =th.Thread(target = std.writeDataToFile , args=(header2, data2, folder, filename, self.MeasQu, subFolder))
         thread.start()
         self.threads.append(thread)
@@ -353,7 +402,29 @@ class ECharacterization:
         return retModel
 
     def writeError(self, msg):
-        self.ErrorQueue.put("Echar: %s" %(message))
+        self.ErrorQueue.put("Echar: %s" %(msg))
+
+    def writeHeader(self, name, data, index=None):
+        with self.headerInfoLock:
+            if index != None:
+                self.Header[name][index] = data
+            else:
+                self.Header[name] = data
+            
+    def appendHeader(self, name, data):
+        with self.headerInfoLock:
+            self.Header[name].append(data)
+
+    def extendHeader(self, name, data):
+        with self.headerInfoLock:
+            self.Header[name].extend(data)
+
+    def getHeader(self, name):
+        with self.headerInfoLock:
+            for key, value in self.Header.items(): 
+                if key == name:
+                    return cp.deepcopy(value)
+        return []
 
     def getTools(self):
         tools = dict()
@@ -416,36 +487,48 @@ class ECharacterization:
         self.wgfmu.setChannelParameter(chn, operationMode, forceVoltageRange, measureMode, measureCurrentRange, MeasureVoltageRange, ForceDelay, MeasureDelay)
     
     def plotIVData(self, data):
+        with self.waferInfoLock:
+            data['DieX'] = self.DieX
+            data['DieY'] = self.DieY
+            data['DevX'] = self.DevX
+            data['DevY'] = self.DevY
+        
+        key = "MeasurementType"
+        if not key in data.keys():
+            data[key] = self.getMeasurementType()
 
-        data['DieX'] = self.DieX
-        data['DieY'] = self.DieY
-        data['DevX'] = self.DevX
-        data['DevY'] = self.DevY
         data['Folder'] = self.getFolder()
-
         self.IVplotData.put(cp.deepcopy(data))
 
     def dhValue(self, Value, Name, Unit=None):
         return dh.Value(self, Value, Name, Unit, self.DoYield)
 
-    def dhAddRow(self, values, typ, cycleStart=None, cycleStop=None):
+    def dhAddRow(self, values, cycleStart=None, cycleStop=None):
+        typ = self.getMeasurementType()
         cycles = []
         if cycleStart != None:
             cycles.append(cycleStart)
         if cycleStop != None:
             cycles.append(cycleStop)
         cycles = tuple(cycles)
-
-        row = dh.Row(values,self.DieX,self.DieY,self.DevX,self.DevY,self.MatNormal,self.MatBit,typ, *cycles)
+        
+        with self.waferInfoLock:
+            row = dh.Row(values,self.DieX,self.DieY,self.DevX,self.DevY,self.MatNormal,self.MatBit,typ, *cycles)
         self.StatOutValues.addRow(row)
 
+    def getLocalTime(self):
+        with self.waferInfoLock:
+            return self.localtime
+
     def updateDateFolder(self):
-        timestamp = tm.strftime("%Y_%m_%d", self.localtime)
-        self.DateFolder = timestamp
+        timestamp = tm.strftime("%Y_%m_%d", self.getLocalTime())
+        with self.waferInfoLock:
+            self.DateFolder = timestamp
         return timestamp
 
     def updateTime(self):
-        self.localtime = tm.localtime()
+        with self.waferInfoLock:
+            self.localtime = tm.localtime()
 
     def getChannelStatus(self):
         ret = None
@@ -460,44 +543,56 @@ class ECharacterization:
             self.ValError("WaferID cannot contain '/'.")
         if '\\' in WaferID: 
             self.ValError("WaferID cannot contain '\\'.")
-        self.WaferID = str(WaferID)
+            
+        with self.waferInfoLock:
+            self.WaferID = str(WaferID)
     
     def getConfiguration(self):
         return self.Configuration
 
     def deleteWaferID(self):
-        self.WaferID = None
+        with self.waferInfoLock:
+            self.WaferID = None
 
     def enableWaferCharacterization(self):
-        self.WaferChar = True
+        with self.waferInfoLock:
+            self.WaferChar = True
 
     def disableWaferCharacterization(self):
-        self.WaferChar = False
+        with self.waferInfoLock:
+            self.WaferChar = False
 
-    def reset(self):
-        self.curCycle = 1
-        self.localtime = tm.localtime()
-        self.starttime = tm.localtime()
-        self.cyc = []
-        self.HRS = []
-        self.LRS = []
-
-        self.IVHRS = []
-        self.IVLRS = []
-        self.ImaxSet = []
-        self.ImaxReset = []
-        self.Vset = []
-        self.Vreset = []
-        self.IVcyc = []
-        self.Combinedheader = []
-        self.EnduranceData = []
-        self.AdditionalHeader = []
-        self.Header = []
-        del self.StatOutValues
-        self.StatOutValues = dh.batch('DeviceSummary')
+    def reset(self, full=True):
+        with self.cycleLock:
+            self.curCycle = 1.
+            self.cyc = []
+        with self.dataAnalysisLock:
+            self.HRS = []
+            self.LRS = []
+            self.IVHRS = []
+            self.IVLRS = []
+            self.ImaxSet = []
+            self.ImaxReset = []
+            self.Vset = []
+            self.Vreset = []
+            self.IVcyc = []
+        with self.waferInfoLock:
+            self.MeasurementType = None
+            self.localtime = tm.localtime()
+            self.starttime = tm.localtime()
+            for key, value in self.Header.items():
+                value = []
+            self.EnduranceData = []
+            del self.StatOutValues
+            self.StatOutValues = dh.batch('DeviceSummary')
+        with self.headerInfoLock:
+            newHeader = {}
+            for h in self.Header.keys():
+                if not h in ["Combined", "Additional"]:
+                    self.Header[h] = []
+    
         del self.SubProcessThread
         self.SubProcessThread = qu.Queue()
-
         del self.rawData
         self.rawData = qu.Queue()
         del self.RDstart
@@ -506,14 +601,11 @@ class ECharacterization:
         self.RDstop = qu.Queue()
         del self.Stop
         self.Stop = qu.Queue()
-
-        del self.AdditionalHeader 
-        self.AdditionalHeader = []
-        del self.Combinedheader
-        self.Combinedheader = []
+        self.emptyFinish()
 
     def getWaferCharacterization(self):
-        return self.WaferChar
+        with self.waferInfoLock:
+            return self.WaferChar
 
     def emptyFinish(self):
         while not self.finished.empty():
@@ -523,9 +615,18 @@ class ECharacterization:
         while not self.SubProcessThread.empty():
             self.SubProcessThread.get()
 
+    def compileInteralHeader(self):
+        self.appendHeader("Internal", "TestParameter,Measurement.Type,%s" %(self.getMeasurementType()))
+        self.appendHeader("Internal", "Measurement,Device,%s" %(self.getDevice()))
+        self.appendHeader("Internal", "Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",self.getLocalTime())))
+
     def executeMeasurement(self, folder, name, parameters):
+        self.reset(full=False)
+        self.updateTime()
         try:
             func = getattr(self.Modules[folder],name)
+            self.setMeasurementType(str(func.__name__))
+            self.compileInteralHeader()
             ret = func(self, *parameters)
             return ret
         except ToolInputError as e:
@@ -573,25 +674,64 @@ class ECharacterization:
 
 
     def getFolder(self, withDie=True):
+        with self.waferInfoLock:
+            if self.WaferID == None:
+                folder = os.path.join(self.Mainfolder,self.DateFolder)
+            else:
+                folder = os.path.join(self.Mainfolder,self.DateFolder, self.WaferID)
 
-        if self.WaferID == None:
-            folder = "%s/%s" %(self.Mainfolder,self.DateFolder)
-        else:
-            folder = "%s/%s/%s" %(self.Mainfolder,self.DateFolder, self.WaferID)
-
-        if not self.Subfolder == "":
-            folder = "%s/%s" %(folder, self.Subfolder)
-            
-        if self.WaferChar and withDie and self.Configuration.getMultipleDies():
-            folder = "%s/DieX%sY%s" %(folder, str(self.DieX), str(self.DieY))
+            if not self.Subfolder == "":
+                folder = os.path.join(folder, self.Subfolder)
+                
+                if self.WaferChar and withDie and self.Configuration.getMultipleDies():
+                    folder = os.path.join(folder, "DieX%sY%s" %(str(self.DieX), str(self.DieY)))
 
         return folder
 
-    def getFilename(self, MeasType, startCyc=None, endCyc=None):
+    
+    def setMatrixConfiguration(self, normalConfig, bitConfig):
+        with self.waferInfoLock:
+            self.MatNormal = normalConfig
+            self.MatBit = bitConfig
+
+    def getFilename(self, *args):
+        # six option for arguemnt assignment
+        # 1: () --> nothing gets trasmitted
+        # 2: (str) --> MeasType
+        # 3: (int) --> startCyc
+        # 4: (str,int) --> MeasType, startCyc
+        # 5: (int,int) --> startCyc, endCyc
+        # 6: (str,int, int) --> MeasType, startCyc, endCyc
+
+        MeasType=None
+        startCyc=None
+        endCyc=None
+        if len(args) == 1:
+            if isinstance(args[0], (int)):
+                startCyc = args[0]
+        elif len(args) == 2: 
+            if isinstance(args[0], (int)):
+                startCyc = args[0]
+                if isinstance(args[1], (int)):
+                    endCyc = args[1]
+            else: 
+                MeasType = args[0]
+                if isinstance(args[1], (int)):
+                    startCyc = args[1]
+        elif len(args) == 3: 
+            MeasType=args[0]
+            startCyc=args[1]
+            endCyc=args[2]
+
+        if MeasType == None:
+            MeasType = self.getMeasurementType()
         
         timestamp = dt.now().strftime("%Y%m%d_%H-%M-%S-%f")
         #timestamp = tm.strftime("%Y%m%d_%H-%M-%S", tm.localtime())
-        filename = "%s_%s_%s" %(MeasType,timestamp,self.device)
+        filename = ""
+        if MeasType != None:
+            filename = "%s%s_" %(filename, MeasType)
+        filename = "%s%s_%s" %(filename,timestamp,self.device)
         if self.WaferChar:
             filename = "%s_DevX%dY%d_DieX%dY%d" %(filename,self.DevX, self.DevY, self.DieX, self.DieY)
         if self.Configuration.getUseMatrix() and self.Instruments.getMatrixInstrument() != None:
@@ -616,7 +756,6 @@ class ECharacterization:
         
 
     def checkStop(self):
-        
         stop = False
         while not self.Stop.empty():
             stop = self.Stop.get()
@@ -640,9 +779,7 @@ class ECharacterization:
 
 
 class SMU:
-
     SMUs = []
-    
     def __init__(self, eChar, tools=[]):
 
         self.tools = tools

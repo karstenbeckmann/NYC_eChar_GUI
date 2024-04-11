@@ -47,7 +47,6 @@ def AnalogRet_PG81110(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent,
         Vreset = 2*Vreset
         Vread = 2*Vread
 
-    Typ = 'AnalogRetention'
     settrise = 0.8e-9
     #settrise = 2e-9
     NumOfPul = int(duration/tseperation)
@@ -210,9 +209,9 @@ def AnalogRet_PG81110(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent,
 
         R = abs(V/I)
         Trac = [[1/R]]  
-        eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change", "MeasurementType": Typ, "ValueName": 'C'})
+        eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change", "ValueName": 'C'})
         Trac = [[R]]
-        eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'R'})
+        eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "ValueName": 'R'})
         
         C = 1/R
         Pdev = (abs(R-Rgoal)/Rgoal)
@@ -349,9 +348,9 @@ def AnalogRet_PG81110(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent,
         PercDelCompl[-1].append(Pdev)
         
         Trac = [[1/R]]  
-        eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change", "MeasurementType": Typ, "ValueName": 'C'})
+        eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change", "ValueName": 'C'})
         Trac = [[R]]
-        eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'R'})
+        eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "ValueName": 'R'})
         
 
         r = 1
@@ -479,9 +478,9 @@ def AnalogRet_PG81110(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent,
             PercDelCompl[-1].append(Pdev)
 
             Trac = [[1/R]]  
-            eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change", "MeasurementType": Typ, "ValueName": 'C'})
+            eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change", "ValueName": 'C'})
             Trac = [[R]]
-            eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'R'})
+            eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "ValueName": 'R'})
             r = r+1
         
 
@@ -548,9 +547,9 @@ def AnalogRet_PG81110(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent,
             PercDelCompl[-1].append(Pdev)
 
             Trac = [[1/R]]  
-            eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change", "MeasurementType": Typ, "ValueName": 'C'})
+            eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change",   "ValueName": 'C'})
             Trac = [[R]]
-            eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'R'})
+            eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change",   "ValueName": 'R'})
             r = r+1
             while True:
 
@@ -570,17 +569,11 @@ def AnalogRet_PG81110(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent,
     ################################################################
 
     if not WriteHeader:
-        header = eChar.Combinedheader
+        header = eChar.getHeader("Combined")
     else:
-        header = []
-
-
-    header.insert(0,"TestParameter,Measurement.Type,HFanalogRetention")
-    
+        header = []    
     header.append("Instrument,Oscilloscope,%s" %(OscName.strip()))
     header.append("Instrument,PulseGenerator,%s" %(PGName.strip()))
-    header.append("Measurement,Device,%s" %(eChar.device))
-    header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
     header.append("Measurement,PGPulseChannel, %s" %(PGPulseChn))
     header.append("Measurement,OscPulseChn, %s" %(OscPulseChn))
     header.append("Measurement,OscGNDChn, %s" %(OscGNDChn))
@@ -598,13 +591,7 @@ def AnalogRet_PG81110(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent,
     header.append("Measurement,PowerSplitter, %s" %(PS))
 
     if WriteHeader:
-        eChar.Combinedheader.extend(header)
-
-    if not eChar.ExternalHeader == []:
-        header.extend(eChar.ExternalHeader)
-    
-    if not eChar.DCHeader == None:
-        header.extend(eChar.DCHeader)
+        header.writeHeader("Combined",header)
 
     newline = [None]*3
     newline[0] = 'DataName'
@@ -651,7 +638,7 @@ def AnalogRet_PG81110(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent,
     header1 = cp.deepcopy(header)
     header1.extend(newline)
 
-    eChar.writeDataToFile(header, OutputData, Typ=Typ, startCyc=CycStart, endCyc=eChar.curCycle-1)
+    eChar.writeDataToFile(header, OutputData, startCyc=CycStart, endCyc=eChar.curCycle-1)
             
     nMax = 0
     for n in range(RunRep):
@@ -679,14 +666,13 @@ def AnalogRet_PG81110(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent,
         OutputData.append(data)
     
     header.extend(newline)
-    Typ2 = "Compl_%s" %(Typ)
-    
-    eChar.writeDataToFile(header, OutputData, Typ=Typ2, startCyc=CycStart, endCyc=eChar.curCycle-1)
+    Typ2 = "Compl_%s" %(eChar.getMeasurementType())
+    eChar.writeDataToFile(header, OutputData, startCyc=CycStart, endCyc=eChar.curCycle-1, Typ=Typ2)
 
-    AvgLRS = dh.Value(eChar, [], 'FirstHRS', DoYield=False, Unit='ohm')
-    AvgHRS = dh.Value(eChar, [], 'FirstLRS', DoYield=False, Unit='ohm')
-    AvgRret = dh.Value(eChar, [], 'Rret', DoYield=False, Unit='ohm')
-    Avgtfail = dh.Value(eChar, [], 'tfail', DoYield=False, Unit='ohm')
+    AvgLRS =  eChar.dhValue([], 'FirstHRS', DoYield=False, Unit='ohm')
+    AvgHRS =  eChar.dhValue([], 'FirstLRS', DoYield=False, Unit='ohm')
+    AvgRret =  eChar.dhValue([], 'Rret', DoYield=False, Unit='ohm')
+    Avgtfail =  eChar.dhValue([], 'tfail', DoYield=False, Unit='ohm')
     
     for n in range(RunRep-1):
         if len(Rreset) > n: 
@@ -704,9 +690,7 @@ def AnalogRet_PG81110(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent,
             None
         AvgRret.extend(Rret[n])
 
-    row = dh.Row([AvgLRS,AvgHRS,AvgRret, Avgtfail],eChar.DieX,eChar.DieY,eChar.DevX,eChar.DevY,'AnalogRetention')
-
-    eChar.StatOutValues.addRow(row)
+    row = eChar.dhAddRow([AvgLRS,AvgHRS,AvgRret, Avgtfail])
 
 
 ###########################################################################################################################
@@ -742,7 +726,6 @@ def AnalogRet_PGBNC765(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent
         Vreset = 2*Vreset
         Vread = 2*Vread
 
-    Typ = 'AnalogRetention'
     NumOfPul = int(duration/tseperation)
     VertScale = max([Vset,Vreset,Vread])*3
     VertScale2 = 50*ExpReadCurrent/2
@@ -893,9 +876,9 @@ def AnalogRet_PGBNC765(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent
 
         R = abs(V/I)
         Trac = [[1/R]]  
-        eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change", "MeasurementType": Typ, "ValueName": 'C'})
+        eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change",   "ValueName": 'C'})
         Trac = [[R]]
-        eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'R'})
+        eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change",   "ValueName": 'R'})
         
         C = 1/R
         Pdev = (abs(R-Rgoal)/Rgoal)
@@ -994,9 +977,9 @@ def AnalogRet_PGBNC765(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent
         PercDelCompl[-1].append(Pdev)
         
         Trac = [[1/R]]  
-        eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change", "MeasurementType": Typ, "ValueName": 'C'})
+        eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change",   "ValueName": 'C'})
         Trac = [[R]]
-        eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'R'})
+        eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change",   "ValueName": 'R'})
         
 
         r = 1
@@ -1085,9 +1068,9 @@ def AnalogRet_PGBNC765(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent
             PercDelCompl[-1].append(Pdev)
 
             Trac = [[1/R]]  
-            eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change", "MeasurementType": Typ, "ValueName": 'C'})
+            eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change",   "ValueName": 'C'})
             Trac = [[R]]
-            eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'R'})
+            eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change",   "ValueName": 'R'})
             r = r+1
         
 
@@ -1149,9 +1132,9 @@ def AnalogRet_PGBNC765(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent
             PercDelCompl[-1].append(Pdev)
 
             Trac = [[1/R]]  
-            eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change", "MeasurementType": Typ, "ValueName": 'C'})
+            eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change",   "ValueName": 'C'})
             Trac = [[R]]
-            eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'R'})
+            eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change",   "ValueName": 'R'})
             r = r+1
             while True:
 
@@ -1171,16 +1154,14 @@ def AnalogRet_PGBNC765(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent
     ################################################################################
 
     if not WriteHeader:
-        header = eChar.Combinedheader
+        header = eChar.getHeader("Combined")
     else:
         header = []
 
-    header.insert(0,"TestParameter,Measurement.Type,HFanalogRetention")
-    
     header.append("Instrument,Oscilloscope,%s" %(OscName.strip()))
     header.append("Instrument,PulseGenerator,%s" %(PGName.strip()))
-    header.append("Measurement,Device,%s" %(eChar.device))
-    header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
+    header.append("Measurement,Device,%s" %(eChar.getDevice()))
+    header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.getLocalTime())))
     header.append("Measurement,PGPulseChannel, %s" %(PGPulseChn))
     header.append("Measurement,OscPulseChn, %s" %(OscPulseChn))
     header.append("Measurement,OscGNDChn, %s" %(OscGNDChn))
@@ -1198,13 +1179,7 @@ def AnalogRet_PGBNC765(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent
     header.append("Measurement,PowerSplitter, %s" %(PS))
 
     if WriteHeader:
-        eChar.Combinedheader.extend(header)
-
-    if not eChar.ExternalHeader == []:
-        header.extend(eChar.ExternalHeader)
-    
-    if not eChar.DCHeader == None:
-        header.extend(eChar.DCHeader)
+        eChar.extendHeader("Combined", header)
 
     newline = [None]*3
     newline[0] = 'DataName'
@@ -1251,7 +1226,7 @@ def AnalogRet_PGBNC765(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent
     header1 = cp.deepcopy(header)
     header1.extend(newline)
 
-    eChar.writeDataToFile(header, OutputData, Typ=Typ, startCyc=CycStart, endCyc=eChar.curCycle-1)
+    eChar.writeDataToFile(header, OutputData, startCyc=CycStart, endCyc=eChar.curCycle-1)
             
     nMax = 0
     for n in range(RunRep):
@@ -1283,10 +1258,10 @@ def AnalogRet_PGBNC765(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent
     
     eChar.writeDataToFile(header, OutputData, Typ=Typ2, startCyc=CycStart, endCyc=eChar.curCycle-1)
 
-    AvgLRS = dh.Value(eChar, [], 'FirstHRS', DoYield=False, Unit='ohm')
-    AvgHRS = dh.Value(eChar, [], 'FirstLRS', DoYield=False, Unit='ohm')
-    AvgRret = dh.Value(eChar, [], 'Rret', DoYield=False, Unit='ohm')
-    Avgtfail = dh.Value(eChar, [], 'tfail', DoYield=False, Unit='ohm')
+    AvgLRS =  eChar.dhValue([], 'FirstHRS', DoYield=False, Unit='ohm')
+    AvgHRS =  eChar.dhValue([], 'FirstLRS', DoYield=False, Unit='ohm')
+    AvgRret =  eChar.dhValue([], 'Rret', DoYield=False, Unit='ohm')
+    Avgtfail =  eChar.dhValue([], 'tfail', DoYield=False, Unit='ohm')
     
     for n in range(RunRep-1):
         if len(Rreset) > n: 
@@ -1304,9 +1279,9 @@ def AnalogRet_PGBNC765(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent
             None
         AvgRret.extend(Rret[n])
 
-    row = dh.Row([AvgLRS,AvgHRS,AvgRret, Avgtfail],eChar.DieX,eChar.DieY,eChar.DevX,eChar.DevY,'AnalogRetention')
+    row = eChar.dhAddRow([AvgLRS,AvgHRS,AvgRret, Avgtfail])
 
-    eChar.StatOutValues.addRow(row)
+    
 
 
 
@@ -1343,7 +1318,6 @@ def AnalogSwi_PG81110A(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent
         Vreset = 2*Vreset
         Vread = 2*Vread
 
-    Typ = 'AnalogSwitching'
     #settrise = 0.8e-9
     settrise = 2e-9
     VertScale = max([Vset,Vreset,Vread])*3
@@ -1493,9 +1467,9 @@ def AnalogSwi_PG81110A(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent
     R0 = abs(V/I)
     R = R0
     Trac = [[R]]
-    eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'R'})
+    eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change",   "ValueName": 'R'})
     Trac = [[1/R]]  
-    eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change", "MeasurementType": Typ, "ValueName": 'C'})
+    eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change",   "ValueName": 'C'})
 
     Rcompl.append(R)
     Ccompl.append(1/R)
@@ -1660,9 +1634,9 @@ def AnalogSwi_PG81110A(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent
                     r = 1
                     Rgoal = Rgoal + RstepReset
                     Trac = [[R]]
-                    eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'R'})
+                    eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change",   "ValueName": 'R'})
                     Trac = [[1/R]]  
-                    eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change", "MeasurementType": Typ, "ValueName": 'C'})
+                    eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change",   "ValueName": 'C'})
                     Rwrote = True
                 else:
                     r = r+1
@@ -1675,9 +1649,9 @@ def AnalogSwi_PG81110A(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent
                 PercDelReset[n].append(abs((R-Rgoal)/R))
 
                 Trac = [[R]]
-                eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'R'})
+                eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change",   "ValueName": 'R'})
                 Trac = [[1/R]]  
-                eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change", "MeasurementType": Typ, "ValueName": 'C'})
+                eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change",   "ValueName": 'C'})
                     
             s = 1
             
@@ -1808,9 +1782,9 @@ def AnalogSwi_PG81110A(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent
                     PercDelSet[n].append(abs((R-Rgoal)/R))
                     
                     Trac = [[R]]
-                    eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'R'})
+                    eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change",   "ValueName": 'R'})
                     Trac = [[1/R]]  
-                    eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change", "MeasurementType": Typ, "ValueName": 'C'})
+                    eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change",   "ValueName": 'C'})
                     s = 1
                     Rgoal = Rgoal - RstepSet
                     Swrote = True
@@ -1825,9 +1799,9 @@ def AnalogSwi_PG81110A(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent
                 PercDelSet[n].append(abs((R-Rgoal)/R))
                                 
                 Trac = [[R]]
-                eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'R'})
+                eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change",   "ValueName": 'R'})
                 Trac = [[1/R]]  
-                eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change", "MeasurementType": Typ, "ValueName": 'C'})
+                eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change",   "ValueName": 'C'})
 
             eChar.curCycle = eChar.curCycle + 1
 
@@ -1842,16 +1816,12 @@ def AnalogSwi_PG81110A(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent
 
 
     if not WriteHeader:
-        header = eChar.Combinedheader
+        header = eChar.getHeader("Combined")
     else:
         header = []
-
-    header.insert(0,"TestParameter,Measurement.Type,HFincrementalPulsing81110A")
     
     header.append("Instrument,Oscilloscope,%s" %(OscName.strip()))
     header.append("Instrument,PulseGenerator,%s" %(PGName.strip()))
-    header.append("Measurement,Device,%s" %(eChar.device))
-    header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
     header.append("Measurement,Vset, %.2e" %(Vset))
     header.append("Measurement,Set Pulse Width, %.2e" %(twidthSet))
     header.append("Measurement,Set Max Pulses Per Step,  %d" %(MaxPulsesPerStepSet))
@@ -1867,13 +1837,8 @@ def AnalogSwi_PG81110A(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent
     header.append("Measurement,PowerSplitter, %s" %(PS))
 
     if WriteHeader:
-        eChar.Combinedheader.extend(header)
+        eChar.extendHeader("Combined", header)
 
-    if not eChar.ExternalHeader == []:
-        header.extend(eChar.ExternalHeader)
-    
-    if not eChar.DCHeader == None:
-        header.extend(eChar.DCHeader)
 
     newline = [None]*3
     newline[0] = 'DataName'
@@ -1928,7 +1893,7 @@ def AnalogSwi_PG81110A(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent
     header1 = cp.deepcopy(header)
     header1.extend(newline)
     
-    eChar.writeDataToFile(header, OutputData, Typ=Typ, startCyc=CycStart, endCyc=eChar.curCycle-1)
+    eChar.writeDataToFile(header, OutputData, startCyc=CycStart, endCyc=eChar.curCycle-1)
             
     newline = [None]*2
     newline[0] = 'DataName, R Goal, R, # of Pulses, Deviation (value), Deviation (perc), Conductance (s)'
@@ -1951,8 +1916,8 @@ def AnalogSwi_PG81110A(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent
         Rdelta.append(r[-1]-s[-1])
 
 
-    AvgSetPul = dh.Value(eChar, [], 'FirstHRS', DoYield=False, Unit='ohm')
-    AvgResetPul = dh.Value(eChar, [], 'FirstLRS', DoYield=False, Unit='ohm')
+    AvgSetPul =  eChar.dhValue([], 'FirstHRS', DoYield=False, Unit='ohm')
+    AvgResetPul =  eChar.dhValue([], 'FirstLRS', DoYield=False, Unit='ohm')
 
     for n in nSet:
         AvgSetPul.extend(n)
@@ -1960,10 +1925,10 @@ def AnalogSwi_PG81110A(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent
     for n in nReset:
         AvgResetPul.extend(n)
 
-    AvgRratio = dh.Value(eChar, Rdelta, 'ImaxForm', DoYield=eChar.DoYield, Unit='A')
-    row = dh.Row([AvgSetPul,AvgResetPul,AvgRratio],eChar.DieX,eChar.DieY,eChar.DevX,eChar.DevY,'PulseForming',eChar.curCycle,eChar.curCycle)
+    AvgRratio =  eChar.dhValue(Rdelta, 'ImaxForm', DoYield=eChar.DoYield, Unit='A')
+    row = eChar.dhAddRow([AvgSetPul,AvgResetPul,AvgRratio], eChar.curCycle,eChar.curCycle)
 
-    eChar.StatOutValues.addRow(row)
+    
 
 
 
@@ -2000,7 +1965,6 @@ def AnalogSwi_PGBNC765(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent
         Vreset = 2*Vreset
         Vread = 2*Vread
 
-    Typ = 'AnalogSwitching'
     VertScale = max([Vset,Vreset,Vread])*3
     VertScale2 = 50*ExpReadCurrent/2
     #VertScale2 = ExpReadCurrent
@@ -2147,9 +2111,9 @@ def AnalogSwi_PGBNC765(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent
     R0 = abs(V/I)
     R = R0
     Trac = [[R]]
-    eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'R'})
+    eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change",   "ValueName": 'R'})
     Trac = [[1/R]]  
-    eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change", "MeasurementType": Typ, "ValueName": 'C'})
+    eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change",   "ValueName": 'C'})
 
     Rcompl.append(R)
     Ccompl.append(1/R)
@@ -2277,9 +2241,9 @@ def AnalogSwi_PGBNC765(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent
                 r = 1
                 Rgoal = Rgoal + RstepReset
                 Trac = [[R]]
-                eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'R'})
+                eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change",   "ValueName": 'R'})
                 Trac = [[1/R]]  
-                eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change", "MeasurementType": Typ, "ValueName": 'C'})
+                eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change",   "ValueName": 'C'})
                 Rwrote = True
             else:
                 r = r+1
@@ -2292,9 +2256,9 @@ def AnalogSwi_PGBNC765(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent
             PercDelReset[n].append(abs((R-Rgoal)/R))
 
             Trac = [[R]]
-            eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'R'})
+            eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change",   "ValueName": 'R'})
             Trac = [[1/R]]  
-            eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change", "MeasurementType": Typ, "ValueName": 'C'})
+            eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change",   "ValueName": 'C'})
                 
         s = 1
         
@@ -2390,9 +2354,9 @@ def AnalogSwi_PGBNC765(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent
                 PercDelSet[n].append(abs((R-Rgoal)/R))
                 
                 Trac = [[R]]
-                eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'R'})
+                eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change",   "ValueName": 'R'})
                 Trac = [[1/R]]  
-                eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change", "MeasurementType": Typ, "ValueName": 'C'})
+                eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change",   "ValueName": 'C'})
                 s = 1
                 Rgoal = Rgoal - RstepSet
                 Swrote = True
@@ -2432,9 +2396,9 @@ def AnalogSwi_PGBNC765(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent
             PercDelSet[n].append(abs((R-Rgoal)/R))
                             
             Trac = [[R]]
-            eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'R'})
+            eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change",   "ValueName": 'R'})
             Trac = [[1/R]]  
-            eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change", "MeasurementType": Typ, "ValueName": 'C'})
+            eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change",   "ValueName": 'C'})
 
         eChar.curCycle = eChar.curCycle + 1
 
@@ -2451,16 +2415,12 @@ def AnalogSwi_PGBNC765(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent
     ########## Data Analysis
 
     if not WriteHeader:
-        header = eChar.Combinedheader
+        header = eChar.getHeader("Combined")
     else:
         header = []
-
-    header.insert(0,"TestParameter,Measurement.Type,HFincrementalPulsing81110A")
     
     header.append("Instrument,Oscilloscope,%s" %(OscName.strip()))
     header.append("Instrument,PulseGenerator,%s" %(PGName.strip()))
-    header.append("Measurement,Device,%s" %(eChar.device))
-    header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
     header.append("Measurement,Vset, %.2e" %(Vset))
     header.append("Measurement,Set Pulse Width, %.2e" %(twidthSet))
     header.append("Measurement,Set Max Pulses Per Step,  %d" %(MaxPulsesPerStepSet))
@@ -2476,13 +2436,7 @@ def AnalogSwi_PGBNC765(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent
     header.append("Measurement,PowerSplitter, %s" %(PS))
 
     if WriteHeader:
-        eChar.Combinedheader.extend(header)
-
-    if not eChar.ExternalHeader == []:
-        header.extend(eChar.ExternalHeader)
-    
-    if not eChar.DCHeader == None:
-        header.extend(eChar.DCHeader)
+        header.extendHeader("Combined",header)
 
     newline = [None]*3
     newline[0] = 'DataName'
@@ -2537,7 +2491,7 @@ def AnalogSwi_PGBNC765(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent
     header1 = cp.deepcopy(header)
     header1.extend(newline)
     
-    eChar.writeDataToFile(header1, OutputData, Typ=Typ, startCyc=CycStart, endCyc=eChar.curCycle-1)
+    eChar.writeDataToFile(header1, OutputData, startCyc=CycStart, endCyc=eChar.curCycle-1)
             
     newline = [None]*2
     newline[0] = 'DataName, R Goal, R, # of Pulses, Deviation (value), Deviation (perc), Conductance (s)'
@@ -2549,8 +2503,7 @@ def AnalogSwi_PGBNC765(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent
         OutputData2.append(data)
     
     header.extend(newline)
-    Typ2 = "Compl_%s" %(Typ)
-    
+    Typ2 = "Compl_%s" %(self.eChar.getMeasurementType())
     eChar.writeDataToFile(header, OutputData2, Typ=Typ2, startCyc=CycStart, endCyc=eChar.curCycle-1)
             
     r0 = R0
@@ -2560,8 +2513,8 @@ def AnalogSwi_PGBNC765(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent
         Rdelta.append(r[-1]-s[-1])
 
 
-    AvgSetPul = dh.Value(eChar, [], 'FirstHRS', DoYield=False, Unit='ohm')
-    AvgResetPul = dh.Value(eChar, [], 'FirstLRS', DoYield=False, Unit='ohm')
+    AvgSetPul =  eChar.dhValue([], 'FirstHRS', DoYield=False, Unit='ohm')
+    AvgResetPul =  eChar.dhValue([], 'FirstLRS', DoYield=False, Unit='ohm')
 
     for n in nSet:
         AvgSetPul.extend(n)
@@ -2569,10 +2522,10 @@ def AnalogSwi_PGBNC765(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent
     for n in nReset:
         AvgResetPul.extend(n)
 
-    AvgRratio = dh.Value(eChar, Rdelta, 'ImaxForm', DoYield=eChar.DoYield, Unit='A')
-    row = dh.Row([AvgSetPul,AvgResetPul,AvgRratio],eChar.DieX,eChar.DieY,eChar.DevX,eChar.DevY,'PulseForming',eChar.curCycle,eChar.curCycle)
+    AvgRratio =  eChar.dhValue(Rdelta, 'ImaxForm', DoYield=eChar.DoYield, Unit='A')
+    row = eChar.dhAddRow([AvgSetPul,AvgResetPul,AvgRratio],eChar.curCycle,eChar.curCycle)
 
-    eChar.StatOutValues.addRow(row)
+    
 
 
 ##########################################################################################
@@ -2727,9 +2680,9 @@ def AnalogForm_PGBNC765(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurren
     R = R0
     print("Resistance: ", R)
     Trac = [[R]]
-    eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Resistance (R)', 'Title': "Resistance", "MeasurementType": Typ, "ValueName": 'R'})
+    eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Resistance (R)', 'Title': "Resistance",   "ValueName": 'R'})
     Trac = [[1/R]]  
-    eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance", "MeasurementType": Typ, "ValueName": 'C'})
+    eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance",   "ValueName": 'C'})
 
     Rcompl.append(R)
     Ccompl.append(1/R)
@@ -2821,9 +2774,9 @@ def AnalogForm_PGBNC765(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurren
         Ccompl.append(1/R)
 
         Trac = [[R]]
-        eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'R'})
+        eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change",   "ValueName": 'R'})
         Trac = [[1/R]]  
-        eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change", "MeasurementType": Typ, "ValueName": 'C'})
+        eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change",   "ValueName": 'C'})
 
         r = r+1
         if stop:    
@@ -2836,7 +2789,7 @@ def AnalogForm_PGBNC765(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurren
 
 
     if not WriteHeader:
-        header = eChar.Combinedheader
+        header = eChar.getHeader("Combined")
     else:
         header = []
 
@@ -2844,8 +2797,6 @@ def AnalogForm_PGBNC765(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurren
     
     header.append("Instrument,Oscilloscope,%s" %(OscName.strip()))
     header.append("Instrument,PulseGenerator,%s" %(PGName.strip()))
-    header.append("Measurement,Device,%s" %(eChar.device))
-    header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
     header.append("Measurement,Vform, %.2e" %(Vform))
     header.append("Measurement,Forming Pulse Width, %.2e" %(twidthForm))
     header.append("Measurement,Forming Max Pulses,  %d" %(MaxPulses))
@@ -2855,13 +2806,8 @@ def AnalogForm_PGBNC765(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurren
     header.append("Measurement,PowerSplitter, %s" %(PS))
 
     if WriteHeader:
-        eChar.Combinedheader.extend(header)
+        header.extendHeader("Combined",header)
 
-    if not eChar.ExternalHeader == []:
-        header.extend(eChar.ExternalHeader)
-    
-    if not eChar.DCHeader == None:
-        header.extend(eChar.DCHeader)
 
     newline = [None]*2
     newline[0] = 'DataName'
@@ -2893,11 +2839,11 @@ def AnalogForm_PGBNC765(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurren
     
     eChar.writeDataToFile(header1, OutDa, Typ=Typ, startCyc=CycStart, endCyc=eChar.curCycle-1) 
 
-    HRS = dh.Value(eChar, Rcompl[0], 'FirstHRS', DoYield=eChar.DoYield, Unit='ohm')
-    LRS = dh.Value(eChar, Rcompl[-1], 'FirstLRS', DoYield=eChar.DoYield, Unit='ohm')
-    row = dh.Row([HRS,LRS],eChar.DieX,eChar.DieY,eChar.DevX,eChar.DevY,'PulseForming',eChar.curCycle,eChar.curCycle)
+    HRS =  eChar.dhValue(Rcompl[0], 'FirstHRS', DoYield=eChar.DoYield, Unit='ohm')
+    LRS =  eChar.dhValue(Rcompl[-1], 'FirstLRS', DoYield=eChar.DoYield, Unit='ohm')
+    row = eChar.dhAddRow([HRS,LRS],eChar.curCycle,eChar.curCycle)
 
-    eChar.StatOutValues.addRow(row)
+    
 
 
 
@@ -3092,9 +3038,9 @@ def AnalogSwi_PGBNC765_Burst(eChar, PGPulseChnSetReset, PGPulseChnRead, OscPulse
     R = R0
     print("First R", R)
     Trac = [[R]]
-    #eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'R'})
+    #eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change",   "ValueName": 'R'})
     Trac = [[1/R]]  
-    #eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change", "MeasurementType": Typ, "ValueName": 'C'})
+    #eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change",   "ValueName": 'C'})
     '''
     Rcompl.append(R)
     Ccompl.append(1/R)
@@ -3259,7 +3205,7 @@ def AnalogSwi_PGBNC765_Burst(eChar, PGPulseChnSetReset, PGPulseChnRead, OscPulse
         ############## Update this section for Burst pulsing!!!!! ####################################################################
         if PS:
             #DataReads = Oscilloscope.queryDataArray(1)
-            #eChar.plotIVData({"Add": True, "Traces":DataReads, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Voltage (V)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'V'})
+            #eChar.plotIVData({"Add": True, "Traces":DataReads, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Voltage (V)', 'Title': "Resistance Change",   "ValueName": 'V'})
             er = 1
             #V = float(Oscilloscope.getMeasurementResults(1))
 
@@ -3353,15 +3299,15 @@ def AnalogSwi_PGBNC765_Burst(eChar, PGPulseChnSetReset, PGPulseChnRead, OscPulse
                 #r = 1
                 #Rgoal = Rgoal + RstepReset
                 Trac = [[R[e]]]
-                eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Pulse Number', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'R'})
+                eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Pulse Number', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change",   "ValueName": 'R'})
                 #Trac = [[1/R]]  
-                #eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change", "MeasurementType": Typ, "ValueName": 'C'})
+                #eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change",   "ValueName": 'C'})
             Rwrote = True
             #print(DataReads)
             #Rreads = B
             #print(Rreads)
             #Trac = Rreads
-            #eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Pulse Number', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'R'})
+            #eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Pulse Number', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change",   "ValueName": 'R'})
                 
         else:
             r = r+1
@@ -3494,7 +3440,7 @@ def AnalogSwi_PGBNC765_Burst(eChar, PGPulseChnSetReset, PGPulseChnRead, OscPulse
         ############## Update this section for Burst pulsing!!!!! ####################################################################
         if PS:
             #DataReads = Oscilloscope.queryDataArray(1)
-            #eChar.plotIVData({"Add": True, "Traces":DataReads, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Voltage (V)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'V'})
+            #eChar.plotIVData({"Add": True, "Traces":DataReads, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Voltage (V)', 'Title': "Resistance Change",   "ValueName": 'V'})
             er = 1
             #V = float(Oscilloscope.getMeasurementResults(1))
 
@@ -3596,9 +3542,9 @@ def AnalogSwi_PGBNC765_Burst(eChar, PGPulseChnSetReset, PGPulseChnRead, OscPulse
                 #r = 1
                 #Rgoal = Rgoal + RstepReset
                 Trac = [[R[e]]]
-                eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Pulse Number', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'R'})
+                eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Pulse Number', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change",   "ValueName": 'R'})
                 #Trac = [[1/R]]  
-                #eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change", "MeasurementType": Typ, "ValueName": 'C'})
+                #eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change",   "ValueName": 'C'})
             Rwrote = True
         else:
             r = r+1
@@ -3619,7 +3565,7 @@ def AnalogSwi_PGBNC765_Burst(eChar, PGPulseChnSetReset, PGPulseChnRead, OscPulse
 
     ############################################# Header ######################################################
     if not WriteHeader:
-        header = eChar.Combinedheader
+        header = eChar.getHeader("Combined")
     else:
         header = []
 
@@ -3627,8 +3573,6 @@ def AnalogSwi_PGBNC765_Burst(eChar, PGPulseChnSetReset, PGPulseChnRead, OscPulse
     
     header.append("Instrument,Oscilloscope,%s" %(OscName.strip()))
     header.append("Instrument,PulseGenerator,%s" %(PGName.strip()))
-    header.append("Measurement,Device,%s" %(eChar.device))
-    header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
     header.append("Measurement,Vset, %.2e" %(Vset))
     header.append("Measurement,Set Pulse Width, %.2e" %(twidthSet))
     header.append("Measurement,Set Burst Pulse Number, %.2e" %(BurstPulseNumSet))
@@ -3648,13 +3592,7 @@ def AnalogSwi_PGBNC765_Burst(eChar, PGPulseChnSetReset, PGPulseChnRead, OscPulse
     header.append("Measurement,PowerSplitter, %s" %(PS))
 
     if WriteHeader:
-        eChar.Combinedheader.extend(header)
-
-    if not eChar.ExternalHeader == []:
-        header.extend(eChar.ExternalHeader)
-    
-    if not eChar.DCHeader == None:
-        header.extend(eChar.DCHeader)
+        header.extendHeader("Combined",header)
 
     newline = [None]*3
     newline[0] = 'DataName'
@@ -3754,8 +3692,8 @@ def AnalogSwi_PGBNC765_Burst(eChar, PGPulseChnSetReset, PGPulseChnRead, OscPulse
         Rdelta.append(r[-1]-s[-1])
     
 
-    AvgSetPul = dh.Value(eChar, [], 'FirstHRS', DoYield=False, Unit='ohm')
-    AvgResetPul = dh.Value(eChar, [], 'FirstLRS', DoYield=False, Unit='ohm')
+    AvgSetPul =  eChar.dhValue([], 'FirstHRS', DoYield=False, Unit='ohm')
+    AvgResetPul =  eChar.dhValue([], 'FirstLRS', DoYield=False, Unit='ohm')
 
     for n in nSet:
         AvgSetPul.extend(n)
@@ -3763,10 +3701,10 @@ def AnalogSwi_PGBNC765_Burst(eChar, PGPulseChnSetReset, PGPulseChnRead, OscPulse
     for n in nReset:
         AvgResetPul.extend(n)
 
-    #AvgRratio = dh.Value(eChar, Rdelta, 'ImaxForm', DoYield=eChar.DoYield, Unit='A')
-    r#ow = dh.Row([AvgSetPul,AvgResetPul,AvgRratio],eChar.DieX,eChar.DieY,eChar.DevX,eChar.DevY,'PulseForming',eChar.curCycle,eChar.curCycle)
+    #AvgRratio =  eChar.dhValue(Rdelta, 'ImaxForm', DoYield=eChar.DoYield, Unit='A')
+    r#ow = eChar.dhAddRow([AvgSetPul,AvgResetPul,AvgRratio],eChar.curCycle,eChar.curCycle)
 
-    #eChar.StatOutValues.addRow(row)
+    #
     '''
 
 
@@ -3982,9 +3920,9 @@ def AnalogSwi_PGBNC765_BurstRead(eChar, PGPulseChnSetReset, PGPulseChnRead, OscP
     R = R0
     print("First R", R)
     Trac = [[R]]
-    #eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'R'})
+    #eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change",   "ValueName": 'R'})
     Trac = [[1/R]]  
-    #eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change", "MeasurementType": Typ, "ValueName": 'C'})
+    #eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change",   "ValueName": 'C'})
     '''
     Rcompl.append(R)
     Ccompl.append(1/R)
@@ -4147,7 +4085,7 @@ def AnalogSwi_PGBNC765_BurstRead(eChar, PGPulseChnSetReset, PGPulseChnRead, OscP
             ############## Update this section for Burst pulsing!!!!! ####################################################################
             if PS:
                 #DataReads = Oscilloscope.queryDataArray(1)
-                #eChar.plotIVData({"Add": True, "Traces":DataReads, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Voltage (V)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'V'})
+                #eChar.plotIVData({"Add": True, "Traces":DataReads, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Voltage (V)', 'Title': "Resistance Change",   "ValueName": 'V'})
                 er = 1
                 #V = float(Oscilloscope.getMeasurementResults(1))
 
@@ -4234,9 +4172,9 @@ def AnalogSwi_PGBNC765_BurstRead(eChar, PGPulseChnSetReset, PGPulseChnRead, OscP
                     #r = 1
                     #Rgoal = Rgoal + RstepReset
                     Trac = [[R[e]]]
-                    eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Pulse Number', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'R'})
+                    eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Pulse Number', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change",   "ValueName": 'R'})
                     #Trac = [[1/R]]  
-                    #eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change", "MeasurementType": Typ, "ValueName": 'C'})
+                    #eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change",   "ValueName": 'C'})
                 Rwrote = True
             else:
                 r = r+1
@@ -4380,7 +4318,7 @@ def AnalogSwi_PGBNC765_BurstRead(eChar, PGPulseChnSetReset, PGPulseChnRead, OscP
             ############## Update this section for Burst pulsing!!!!! ####################################################################
             if PS:
                 #DataReads = Oscilloscope.queryDataArray(1)
-                #eChar.plotIVData({"Add": True, "Traces":DataReads, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Voltage (V)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'V'})
+                #eChar.plotIVData({"Add": True, "Traces":DataReads, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Voltage (V)', 'Title': "Resistance Change",   "ValueName": 'V'})
                 er = 1
                 #V = float(Oscilloscope.getMeasurementResults(1))
 
@@ -4474,9 +4412,9 @@ def AnalogSwi_PGBNC765_BurstRead(eChar, PGPulseChnSetReset, PGPulseChnRead, OscP
                     #r = 1
                     #Rgoal = Rgoal + RstepReset
                     Trac = [[R[e]]]
-                    eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Pulse Number', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'R'})
+                    eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Pulse Number', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change",   "ValueName": 'R'})
                     #Trac = [[1/R]]  
-                    #eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change", "MeasurementType": Typ, "ValueName": 'C'})
+                    #eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change",   "ValueName": 'C'})
                 Rwrote = True
             else:
                 r = r+1
@@ -4518,7 +4456,7 @@ def AnalogSwi_PGBNC765_BurstRead(eChar, PGPulseChnSetReset, PGPulseChnRead, OscP
 
     ############################################# Header ######################################################
     if not WriteHeader:
-        header = eChar.Combinedheader
+        header = eChar.getHeader("Combined")
     else:
         header = []
 
@@ -4526,8 +4464,8 @@ def AnalogSwi_PGBNC765_BurstRead(eChar, PGPulseChnSetReset, PGPulseChnRead, OscP
     
     header.append("Instrument,Oscilloscope,%s" %(OscName.strip()))
     header.append("Instrument,PulseGenerator,%s" %(PGName.strip()))
-    header.append("Measurement,Device,%s" %(eChar.device))
-    header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
+    header.append("Measurement,Device,%s" %(eChar.getDevice()))
+    header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.getLocalTime())))
     header.append("Measurement,Vset, %.2e" %(Vset))
     header.append("Measurement,Set Pulse Width, %.2e" %(twidthSet))
     header.append("Measurement,Set Burst Pulse Number, %.2e" %(BurstPulseNumSet))
@@ -4555,13 +4493,7 @@ def AnalogSwi_PGBNC765_BurstRead(eChar, PGPulseChnSetReset, PGPulseChnRead, OscP
     header.append("Measurement,PowerSplitter, %s" %(PS))
 
     if WriteHeader:
-        eChar.Combinedheader.extend(header)
-
-    if not eChar.ExternalHeader == []:
-        header.extend(eChar.ExternalHeader)
-    
-    if not eChar.DCHeader == None:
-        header.extend(eChar.DCHeader)
+        eChar.extendHeader("Combined",header)
 
     newline = [None]*3
     newline[0] = 'DataName'
@@ -4661,8 +4593,8 @@ def AnalogSwi_PGBNC765_BurstRead(eChar, PGPulseChnSetReset, PGPulseChnRead, OscP
         Rdelta.append(r[-1]-s[-1])
     
 
-    AvgSetPul = dh.Value(eChar, [], 'FirstHRS', DoYield=False, Unit='ohm')
-    AvgResetPul = dh.Value(eChar, [], 'FirstLRS', DoYield=False, Unit='ohm')
+    AvgSetPul =  eChar.dhValue([], 'FirstHRS', DoYield=False, Unit='ohm')
+    AvgResetPul =  eChar.dhValue([], 'FirstLRS', DoYield=False, Unit='ohm')
 
     for n in nSet:
         AvgSetPul.extend(n)
@@ -4670,10 +4602,10 @@ def AnalogSwi_PGBNC765_BurstRead(eChar, PGPulseChnSetReset, PGPulseChnRead, OscP
     for n in nReset:
         AvgResetPul.extend(n)
 
-    #AvgRratio = dh.Value(eChar, Rdelta, 'ImaxForm', DoYield=eChar.DoYield, Unit='A')
-    r#ow = dh.Row([AvgSetPul,AvgResetPul,AvgRratio],eChar.DieX,eChar.DieY,eChar.DevX,eChar.DevY,'PulseForming',eChar.curCycle,eChar.curCycle)
+    #AvgRratio =  eChar.dhValue(Rdelta, 'ImaxForm', DoYield=eChar.DoYield, Unit='A')
+    r#ow = eChar.dhAddRow([AvgSetPul,AvgResetPul,AvgRratio],eChar.curCycle,eChar.curCycle)
 
-    #eChar.StatOutValues.addRow(row)
+    #
     '''
 
 ##########################################################################################
@@ -4877,9 +4809,9 @@ def AnalogFormPS_PGBNC765(eChar, PGPulseChnForm, PGPulseChnRead, OscPulseChn, Os
     print("First R", R)
 
     Trac = [[R]]
-    #eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'R'})
+    #eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change",   "ValueName": 'R'})
     Trac = [[1/R]]  
-    #eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change", "MeasurementType": Typ, "ValueName": 'C'})
+    #eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change",   "ValueName": 'C'})
     '''
     Rcompl.append(R)
     Ccompl.append(1/R)
@@ -5130,7 +5062,7 @@ def AnalogFormPS_PGBNC765(eChar, PGPulseChnForm, PGPulseChnRead, OscPulseChn, Os
         ############## Update this section for Burst pulsing!!!!! ####################################################################
         if PS:
             #DataReads = Oscilloscope.queryDataArray(1)
-            #eChar.plotIVData({"Add": True, "Traces":DataReads, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Voltage (V)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'V'})
+            #eChar.plotIVData({"Add": True, "Traces":DataReads, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Voltage (V)', 'Title': "Resistance Change",   "ValueName": 'V'})
             er = 1
             #V = float(Oscilloscope.getMeasurementResults(1))
 
@@ -5232,15 +5164,15 @@ def AnalogFormPS_PGBNC765(eChar, PGPulseChnForm, PGPulseChnRead, OscPulseChn, Os
                 #r = 1
                 #Rgoal = Rgoal + RstepReset
                 Trac = [[R[e]]]
-                eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Pulse Number', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'R'})
+                eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Pulse Number', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change",   "ValueName": 'R'})
                 #Trac = [[1/R]]  
-                #eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change", "MeasurementType": Typ, "ValueName": 'C'})
+                #eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change",   "ValueName": 'C'})
             Rwrote = True
             #print(DataReads)
             #Rreads = B
             #print(Rreads)
             #Trac = Rreads
-            #eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Pulse Number', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'R'})
+            #eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Pulse Number', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change",   "ValueName": 'R'})
                 
         else:
             r = r+1
@@ -5270,7 +5202,7 @@ def AnalogFormPS_PGBNC765(eChar, PGPulseChnForm, PGPulseChnRead, OscPulseChn, Os
 
     ############################################# Header ######################################################
     if not WriteHeader:
-        header = eChar.Combinedheader
+        header = eChar.getHeader("Combined")
     else:
         header = []
 
@@ -5278,8 +5210,8 @@ def AnalogFormPS_PGBNC765(eChar, PGPulseChnForm, PGPulseChnRead, OscPulseChn, Os
     
     header.append("Instrument,Oscilloscope,%s" %(OscName.strip()))
     header.append("Instrument,PulseGenerator,%s" %(PGName.strip()))
-    header.append("Measurement,Device,%s" %(eChar.device))
-    header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
+    header.append("Measurement,Device,%s" %(eChar.getDevice()))
+    header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.getLocalTime())))
     header.append("Measurement,Vform, %.2e" %(Vform))
     header.append("Measurement,Set Pulse Width, %.2e" %(twidthForm))
     #header.append("Measurement,Set Burst Pulse Number, %.2e" %(BurstPulseNumSet))
@@ -5299,13 +5231,7 @@ def AnalogFormPS_PGBNC765(eChar, PGPulseChnForm, PGPulseChnRead, OscPulseChn, Os
     header.append("Measurement,PowerSplitter, %s" %(PS))
 
     if WriteHeader:
-        eChar.Combinedheader.extend(header)
-
-    if not eChar.ExternalHeader == []:
-        header.extend(eChar.ExternalHeader)
-    
-    if not eChar.DCHeader == None:
-        header.extend(eChar.DCHeader)
+        eChar.extendHeader("Combined", header)
 
     newline = [None]*3
     newline[0] = 'DataName'
@@ -5405,8 +5331,8 @@ def AnalogFormPS_PGBNC765(eChar, PGPulseChnForm, PGPulseChnRead, OscPulseChn, Os
         Rdelta.append(r[-1]-s[-1])
     
 
-    AvgSetPul = dh.Value(eChar, [], 'FirstHRS', DoYield=False, Unit='ohm')
-    AvgResetPul = dh.Value(eChar, [], 'FirstLRS', DoYield=False, Unit='ohm')
+    AvgSetPul =  eChar.dhValue([], 'FirstHRS', DoYield=False, Unit='ohm')
+    AvgResetPul =  eChar.dhValue([], 'FirstLRS', DoYield=False, Unit='ohm')
 
     for n in nSet:
         AvgSetPul.extend(n)
@@ -5414,10 +5340,10 @@ def AnalogFormPS_PGBNC765(eChar, PGPulseChnForm, PGPulseChnRead, OscPulseChn, Os
     for n in nReset:
         AvgResetPul.extend(n)
 
-    #AvgRratio = dh.Value(eChar, Rdelta, 'ImaxForm', DoYield=eChar.DoYield, Unit='A')
-    r#ow = dh.Row([AvgSetPul,AvgResetPul,AvgRratio],eChar.DieX,eChar.DieY,eChar.DevX,eChar.DevY,'PulseForming',eChar.curCycle,eChar.curCycle)
+    #AvgRratio =  eChar.dhValue(Rdelta, 'ImaxForm', DoYield=eChar.DoYield, Unit='A')
+    r#ow = eChar.dhAddRow([AvgSetPul,AvgResetPul,AvgRratio],eChar.curCycle,eChar.curCycle)
 
-    #eChar.StatOutValues.addRow(row)
+    #
     '''
 
 ###########################################################################################################################
@@ -5626,9 +5552,9 @@ def AnalogSwiVariableReset_PGBNC765_Burst(eChar, PGPulseChnSetReset, PGPulseChnR
     R = R0
     print("First R", R)
     Trac = [[R]]
-    #eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'R'})
+    #eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change",   "ValueName": 'R'})
     Trac = [[1/R]]  
-    #eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change", "MeasurementType": Typ, "ValueName": 'C'})
+    #eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change",   "ValueName": 'C'})
     '''
     Rcompl.append(R)
     Ccompl.append(1/R)
@@ -5787,7 +5713,7 @@ def AnalogSwiVariableReset_PGBNC765_Burst(eChar, PGPulseChnSetReset, PGPulseChnR
         ############## Update this section for Burst pulsing!!!!! ####################################################################
         if PS:
             #DataReads = Oscilloscope.queryDataArray(1)
-            #eChar.plotIVData({"Add": True, "Traces":DataReads, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Voltage (V)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'V'})
+            #eChar.plotIVData({"Add": True, "Traces":DataReads, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Voltage (V)', 'Title': "Resistance Change",   "ValueName": 'V'})
             er = 1
             #V = float(Oscilloscope.getMeasurementResults(1))
 
@@ -5886,15 +5812,15 @@ def AnalogSwiVariableReset_PGBNC765_Burst(eChar, PGPulseChnSetReset, PGPulseChnR
                 #r = 1
                 #Rgoal = Rgoal + RstepReset
                 Trac = [[R[e]]]
-                eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Pulse Number', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'R'})
+                eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Pulse Number', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change",   "ValueName": 'R'})
                 #Trac = [[1/R]]  
-                #eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change", "MeasurementType": Typ, "ValueName": 'C'})
+                #eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change",   "ValueName": 'C'})
             Rwrote = True
             #print(DataReads)
             #Rreads = B
             #print(Rreads)
             #Trac = Rreads
-            #eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Pulse Number', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'R'})
+            #eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Pulse Number', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change",   "ValueName": 'R'})
                 
         else:
             r = r+1
@@ -6024,7 +5950,7 @@ def AnalogSwiVariableReset_PGBNC765_Burst(eChar, PGPulseChnSetReset, PGPulseChnR
         ############## Update this section for Burst pulsing!!!!! ####################################################################
         if PS:
             #DataReads = Oscilloscope.queryDataArray(1)
-            #eChar.plotIVData({"Add": True, "Traces":DataReads, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Voltage (V)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'V'})
+            #eChar.plotIVData({"Add": True, "Traces":DataReads, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Voltage (V)', 'Title': "Resistance Change",   "ValueName": 'V'})
             er = 1
             #V = float(Oscilloscope.getMeasurementResults(1))
 
@@ -6126,9 +6052,9 @@ def AnalogSwiVariableReset_PGBNC765_Burst(eChar, PGPulseChnSetReset, PGPulseChnR
                 #r = 1
                 #Rgoal = Rgoal + RstepReset
                 Trac = [[R[e]]]
-                eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Pulse Number', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'R'})
+                eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Pulse Number', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change",   "ValueName": 'R'})
                 #Trac = [[1/R]]  
-                #eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change", "MeasurementType": Typ, "ValueName": 'C'})
+                #eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change",   "ValueName": 'C'})
             Rwrote = True
         else:
             r = r+1
@@ -6149,7 +6075,7 @@ def AnalogSwiVariableReset_PGBNC765_Burst(eChar, PGPulseChnSetReset, PGPulseChnR
 
     ############################################# Header ######################################################
     if not WriteHeader:
-        header = eChar.Combinedheader
+        header = eChar.getHeader("Combined")
     else:
         header = []
 
@@ -6157,8 +6083,6 @@ def AnalogSwiVariableReset_PGBNC765_Burst(eChar, PGPulseChnSetReset, PGPulseChnR
     
     header.append("Instrument,Oscilloscope,%s" %(OscName.strip()))
     header.append("Instrument,PulseGenerator,%s" %(PGName.strip()))
-    header.append("Measurement,Device,%s" %(eChar.device))
-    header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
     #header.append("Measurement,Vset, %.2e" %(Vset))
     #header.append("Measurement,Set Pulse Width, %.2e" %(twidthSet))
     #header.append("Measurement,Set Burst Pulse Number, %.2e" %(BurstPulseNumSet))
@@ -6182,13 +6106,7 @@ def AnalogSwiVariableReset_PGBNC765_Burst(eChar, PGPulseChnSetReset, PGPulseChnR
     header.append("Measurement,PowerSplitter, %s" %(PS))
 
     if WriteHeader:
-        eChar.Combinedheader.extend(header)
-
-    if not eChar.ExternalHeader == []:
-        header.extend(eChar.ExternalHeader)
-    
-    if not eChar.DCHeader == None:
-        header.extend(eChar.DCHeader)
+        eChar.extendHeader("Combined", header)    
 
     newline = [None]*3
     newline[0] = 'DataName'
@@ -6295,8 +6213,8 @@ def AnalogSwiVariableReset_PGBNC765_Burst(eChar, PGPulseChnSetReset, PGPulseChnR
         Rdelta.append(r[-1]-s[-1])
     
 
-    AvgSetPul = dh.Value(eChar, [], 'FirstHRS', DoYield=False, Unit='ohm')
-    AvgResetPul = dh.Value(eChar, [], 'FirstLRS', DoYield=False, Unit='ohm')
+    AvgSetPul =  eChar.dhValue([], 'FirstHRS', DoYield=False, Unit='ohm')
+    AvgResetPul =  eChar.dhValue([], 'FirstLRS', DoYield=False, Unit='ohm')
 
     for n in nSet:
         AvgSetPul.extend(n)
@@ -6304,10 +6222,10 @@ def AnalogSwiVariableReset_PGBNC765_Burst(eChar, PGPulseChnSetReset, PGPulseChnR
     for n in nReset:
         AvgResetPul.extend(n)
 
-    #AvgRratio = dh.Value(eChar, Rdelta, 'ImaxForm', DoYield=eChar.DoYield, Unit='A')
-    r#ow = dh.Row([AvgSetPul,AvgResetPul,AvgRratio],eChar.DieX,eChar.DieY,eChar.DevX,eChar.DevY,'PulseForming',eChar.curCycle,eChar.curCycle)
+    #AvgRratio =  eChar.dhValue(Rdelta, 'ImaxForm', DoYield=eChar.DoYield, Unit='A')
+    r#ow = eChar.dhAddRow([AvgSetPul,AvgResetPul,AvgRratio],eChar.curCycle,eChar.curCycle)
 
-    #eChar.StatOutValues.addRow(row)
+    #
     '''
 
     

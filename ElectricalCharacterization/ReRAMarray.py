@@ -37,8 +37,8 @@ def Cycle8x8(eChar, SetChn, GNDChn, GateChn, NumofCycles, Vset, Vreset, Vread, V
     
     MatrixFile = CreateInternal8x8MatrixClass(SetChn, GateChn, GNDChn)
     
-    Rs = dh.Value(eChar, [], 'Rset', DoYield=eChar.DoYield, Unit='ohm')
-    Rr = dh.Value(eChar, [], 'Rreset', DoYield=eChar.DoYield, Unit='ohm')
+    Rs = eChar.dhValue([], 'Rset', Unit='ohm')
+    Rr = eChar.dhValue( [], 'Rreset', Unit='ohm')
 
     stop = False
 
@@ -95,8 +95,9 @@ def Cycle8x8(eChar, SetChn, GNDChn, GateChn, NumofCycles, Vset, Vreset, Vread, V
             Rr.extend(ResRead[0])
             Coordinates.append([n+1,m+1])
 
-            eChar.plotIVData({"Add": True, "lineStyle": 'o', 'legend': ['GND', 'Vlow', 'Vhigh'], "lineWidth":0.5, 'Yscale': 'log',  "Traces":ResRead, 'Xaxis': False, 'Xlabel': "Array Device", "Ylabel": 'Resistance ($\Omega$)', 'Title': "Array Resistance", "MeasurementType": TypR, "ValueName": 'Resistance'})
-            eChar.plotIVData({"Add": True, 'Yscale': 'lin',  "Traces": ResRead, 'Map': [n,m], 'Xlabel': 'X Position', "Ylabel": 'Y Position', "Clabel": 'Resistance ($\Omega$)', 'Title': "Array Resistance", "MeasurementType": TypR, "ValueName": 'Resistance Map'})
+            eChar.plotIVData({"Add": True, "lineStyle": 'o', 'legend': ['GND', 'Vlow', 'Vhigh'], "lineWidth":0.5, 'Yscale': 'log',  "Traces":ResRead, 'Xaxis': False, 'Xlabel': "Array Device", "Ylabel": 'Resistance ($\Omega$)', 'Title': "Array Resistance", 
+            "ValueName": 'Reset Resistance'})
+            eChar.plotIVData({"Add": True, 'Yscale': 'lin',  "Traces": ResRead, 'Map': [n,m], 'Xlabel': 'X Position', "Ylabel": 'Y Position', "Clabel": 'Resistance ($\Omega$)', 'Title': "Array Resistance", "ValueName": 'Reset Resistance Map'})
             eChar.LogData.put("Cycle 8x8 (Reset): Device %sx%s: Resistance: %s ohm." %(n+1,m+1, ResRead))
             
             n = n+1
@@ -147,8 +148,8 @@ def Cycle8x8(eChar, SetChn, GNDChn, GateChn, NumofCycles, Vset, Vreset, Vread, V
             ReadVal[-1].append(cp.deepcopy(add))
             Rs.extend(ResRead[0])
 
-            eChar.plotIVData({"Add": True, "lineStyle": 'o', 'legend': ['GND', 'Vlow', 'Vhigh'], "lineWidth":0.5, 'Yscale': 'log',  "Traces":ResRead, 'Xaxis': False, 'Xlabel': "Array Device", "Ylabel": 'Resistance ($\Omega$)', 'Title': "Array Resistance", "MeasurementType": TypS, "ValueName": 'Resistance'})
-            eChar.plotIVData({"Add": True, 'Yscale': 'lin',  "Traces": ResRead, 'Map': [n,m], 'Xlabel': 'X Position', "Ylabel": 'Y Position', "Clabel": 'Resistance ($\Omega$)', 'Title': "Array Resistance", "MeasurementType": TypS, "ValueName": 'Resistance Map'})
+            eChar.plotIVData({"Add": True, "lineStyle": 'o', 'legend': ['GND', 'Vlow', 'Vhigh'], "lineWidth":0.5, 'Yscale': 'log',  "Traces":ResRead, 'Xaxis': False, 'Xlabel': "Array Device", "Ylabel": 'Resistance ($\Omega$)', 'Title': "Array Resistance", "Set ValueName": 'Resistance'})
+            eChar.plotIVData({"Add": True, 'Yscale': 'lin',  "Traces": ResRead, 'Map': [n,m], 'Xlabel': 'X Position', "Ylabel": 'Y Position', "Clabel": 'Resistance ($\Omega$)', 'Title': "Array Resistance", "ValueName": 'Set Resistance Map'})
             eChar.LogData.put("Cycle 8x8 (Set): Device %sx%s: Resistance: %s ohm." %(n+1,m+1, ResRead[0]))
             
             n = n+1
@@ -160,11 +161,6 @@ def Cycle8x8(eChar, SetChn, GNDChn, GateChn, NumofCycles, Vset, Vreset, Vread, V
 
     try: 
         header = out['Header']
-        
-        header.insert(0,"TestParameter,Measurement.Type,%s" %(Typ))
-        header.append("Measurement,Device,%s" %(eChar.device))
-        header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
-        
         header.append('DataName, Ignd, Irram, Igate, R')
         header.append('Dimension, %d, %d, %d, %d' %(n,n,n,n))
         header.append('SetHeader--------------')
@@ -207,10 +203,7 @@ def Cycle8x8(eChar, SetChn, GNDChn, GateChn, NumofCycles, Vset, Vreset, Vread, V
 
     eChar.writeDataToFile(header, data, Typ=Typ, startCyc=eChar.curCycle+1, endCyc=eChar.curCycle+1)
    
-
-    row = dh.Row([Rs,Rr],eChar.DieX,eChar.DieY,eChar.DevX,eChar.DevY,Typ,eChar.curCycle,eChar.curCycle+NumofCycles)
-
-    eChar.StatOutValues.addRow(row)
+    eChar.dhAddRow([Rs,Rr],eChar.curCycle,eChar.curCycle+NumofCycles)
     eChar.curCycle = eChar.curCycle + NumofCycles
 
 
@@ -293,8 +286,8 @@ def ImageWrite8x8(eChar, ImageFile, SetChn, GNDChn, GateChn, Vset, Vread, Vgatel
         ReadVal.append(cp.deepcopy(add))
         Coordinates.append([n+1,m+1])
 
-        eChar.IVplotData.put({"Add": True, "lineStyle": 'o', 'legend': ['GND', 'Vlow', 'Vhigh'], "lineWidth":0.5, 'Yscale': 'log',  "Traces": ResRead, 'Xaxis': False, 'Xlabel': "Array Device", "Ylabel": 'Resistance ($\Omega$)', 'Title': "Array Resistance", "MeasurementType": Typ, "ValueName": 'Resistance'})
-        eChar.IVplotData.put({"Add": True, 'Yscale': 'lin',  "Traces": ResRead, 'Map': [n,m], 'Xlabel': 'X Position', "Ylabel": 'Y Position', "Clabel": 'Resistance ($\Omega$)', 'Title': "Array Resistance", "MeasurementType": Typ, "ValueName": 'Resistance Map'})
+        eChar.IVplotData.put({"Add": True, "lineStyle": 'o', 'legend': ['GND', 'Vlow', 'Vhigh'], "lineWidth":0.5, 'Yscale': 'log',  "Traces": ResRead, 'Xaxis': False, 'Xlabel': "Array Device", "Ylabel": 'Resistance ($\Omega$)', 'Title': "Array Resistance", "ValueName": 'Resistance'})
+        eChar.IVplotData.put({"Add": True, 'Yscale': 'lin',  "Traces": ResRead, 'Map': [n,m], 'Xlabel': 'X Position', "Ylabel": 'Y Position', "Clabel": 'Resistance ($\Omega$)', 'Title': "Array Resistance", "ValueName": 'Resistance Map'})
         eChar.LogData.put("Forming 8x8: Device %sx%s: Resistance: %s ohm." %(n+1,m+1, ResRead))
         
         n = n+1
@@ -308,8 +301,8 @@ def ImageWrite8x8(eChar, ImageFile, SetChn, GNDChn, GateChn, Vset, Vread, Vgatel
         header = out['Header']
         
         header.insert(0,"TestParameter,Measurement.Type,%s" %(Typ))
-        header.append("Measurement,Device,%s" %(eChar.device))
-        header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
+        header.append("Measurement,Device,%s" %(eChar.getDevice()))
+        header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.getLocalTime())))
         
         header.append('SetHeader--------------')
         header.extend(FormingHeader)
@@ -335,10 +328,8 @@ def ImageWrite8x8(eChar, ImageFile, SetChn, GNDChn, GateChn, Vset, Vread, Vgatel
 
     eChar.writeDataToFile(header, data, Typ=Typ, startCyc=0, endCyc=1)
     
-    R = dh.Value(eChar, statVal, 'Rset', DoYield=eChar.DoYield, Unit='ohm')
-    row = dh.Row([R],eChar.DieX,eChar.DieY,eChar.DevX,eChar.DevY,Typ,eChar.curCycle+1)
-
-    eChar.StatOutValues.addRow(row)
+    R = eChar.dhValue(statVal, 'Rset', Unit='ohm')
+    eChar.dhAddRow([R],eChar.curCycle+1)
 
 
 ##########################################################################################################################
@@ -407,8 +398,8 @@ def Set8x8(eChar, SetChn, GNDChn, GateChn, Vset, Vread, Vgate, tset, tread):
         ReadVal.append(cp.deepcopy(add))
         Coordinates.append([n+1,m+1])
 
-        eChar.plotIVData({"Add": True, "lineStyle": 'o', 'legend': ['GND', 'Vlow', 'Vhigh'], "lineWidth":0.5, 'Yscale': 'log',  "Traces": ResRead, 'Xaxis': False, 'Xlabel': "Array Device", "Ylabel": 'Resistance ($\Omega$)', 'Title': "Array Resistance", "MeasurementType": Typ, "ValueName": 'Resistance'})
-        eChar.plotIVData({"Add": True, 'Yscale': 'lin',  "Traces": ResRead, 'Map': [n,m], 'Xlabel': 'X Position', "Ylabel": 'Y Position', "Clabel": 'Resistance ($\Omega$)', 'Title': "Array Resistance", "MeasurementType": Typ, "ValueName": 'Resistance Map'})
+        eChar.plotIVData({"Add": True, "lineStyle": 'o', 'legend': ['GND', 'Vlow', 'Vhigh'], "lineWidth":0.5, 'Yscale': 'log',  "Traces": ResRead, 'Xaxis': False, 'Xlabel': "Array Device", "Ylabel": 'Resistance ($\Omega$)', 'Title': "Array Resistance", "ValueName": 'Resistance'})
+        eChar.plotIVData({"Add": True, 'Yscale': 'lin',  "Traces": ResRead, 'Map': [n,m], 'Xlabel': 'X Position', "Ylabel": 'Y Position', "Clabel": 'Resistance ($\Omega$)', 'Title': "Array Resistance", "ValueName": 'Resistance Map'})
         eChar.LogData.put("Forming 8x8: Device %sx%s: Resistance: %s ohm." %(n+1,m+1, ResRead))
         
         n = n+1
@@ -422,8 +413,8 @@ def Set8x8(eChar, SetChn, GNDChn, GateChn, Vset, Vread, Vgate, tset, tread):
         header = out['Header']
         
         header.insert(0,"TestParameter,Measurement.Type,%s" %(Typ))
-        header.append("Measurement,Device,%s" %(eChar.device))
-        header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
+        header.append("Measurement,Device,%s" %(eChar.getDevice()))
+        header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.getLocalTime())))
         
         header.append('SetHeader--------------')
         header.extend(FormingHeader)
@@ -449,19 +440,14 @@ def Set8x8(eChar, SetChn, GNDChn, GateChn, Vset, Vread, Vgate, tset, tread):
 
     eChar.writeDataToFile(header, data, Typ=Typ, startCyc=0, endCyc=1)
     
-    R = dh.Value(eChar, statVal, 'Rset', DoYield=eChar.DoYield, Unit='ohm')
-    row = dh.Row([R],eChar.DieX,eChar.DieY,eChar.DevX,eChar.DevY,Typ,eChar.curCycle+1)
-
-    eChar.StatOutValues.addRow(row)
+    R = eChar.dhValue(statVal, 'Rset', Unit='ohm')
+    eChar.dhAddRow([R],eChar.curCycle+1)
 
 
 ##########################################################################################################################
 
 
 def Forming8x8(eChar, FormChn, GNDChn, GateChn, Vform, Vread, Vgate, tform, tread):
-
-    Typ = 'Forming_8x8'
-    TypI = 'Forming_Initial_8x8'
 
     Chns = [FormChn, GNDChn, GateChn]
     PulseChn = FormChn
@@ -511,8 +497,8 @@ def Forming8x8(eChar, FormChn, GNDChn, GateChn, Vform, Vread, Vgate, tform, trea
             add.append(out1['Data'][l][0])
             
 
-        eChar.plotIVData({"Add": True, "lineStyle": 'o', 'legend': ['GND', 'Vlow', 'Vhigh'], "lineWidth":0.5, 'Yscale': 'log',  "Traces":ResRead, 'Xaxis': False, 'Xlabel': "Array Device", "Ylabel": 'Resistance ($\Omega$)', 'Title': "Array Resistance", "MeasurementType": Typ, "ValueName": 'Inital Resistance'})
-        eChar.plotIVData({"Add": True, 'Yscale': 'lin',  "Traces": ResRead, 'Map': [n,m], 'Xlabel': 'X Position', "Ylabel": 'Y Position', "Clabel": 'Resistance ($\Omega$)', 'Title': "Array Resistance", "MeasurementType": TypI, "ValueName": 'Resistance Map'})
+        eChar.plotIVData({"Add": True, "lineStyle": 'o', 'legend': ['GND', 'Vlow', 'Vhigh'], "lineWidth":0.5, 'Yscale': 'log',  "Traces":ResRead, 'Xaxis': False, 'Xlabel': "Array Device", "Ylabel": 'Resistance ($\Omega$)', 'Title': "Array Resistance", "ValueName": 'Inital Resistance'})
+        eChar.plotIVData({"Add": True, 'Yscale': 'lin',  "Traces": ResRead, 'Map': [n,m], 'Xlabel': 'X Position', "Ylabel": 'Y Position', "Clabel": 'Resistance ($\Omega$)', 'Title': "Array Resistance", "ValueName": 'Initial - Resistance Map'})
         eChar.LogData.put("Forming 8x8: Device %sx%s: Resistance: %s ohm." %(n+1,m+1, ResRead))
         
         ###### Forming 
@@ -543,8 +529,8 @@ def Forming8x8(eChar, FormChn, GNDChn, GateChn, Vform, Vread, Vgate, tform, trea
         ReadVal.append(cp.deepcopy(add))
         Coordinates.append([n+1,m+1])
 
-        eChar.plotIVData({"Add": True, "lineStyle": 'o', 'legend': ['GND', 'Vlow', 'Vhigh'], "lineWidth":0.5, 'Yscale': 'log',  "Traces":ResRead, 'Xaxis': False, 'Xlabel': "Array Device", "Ylabel": 'Resistance ($\Omega$)', 'Title': "Array Resistance", "MeasurementType": Typ, "ValueName": 'Forming Resistance'})
-        eChar.plotIVData({"Add": True, 'Yscale': 'lin',  "Traces": ResRead, 'Map': [n,m], 'Xlabel': 'X Position', "Ylabel": 'Y Position', "Clabel": 'Resistance ($\Omega$)', 'Title': "Array Resistance", "MeasurementType": Typ, "ValueName": 'Resistance Map'})
+        eChar.plotIVData({"Add": True, "lineStyle": 'o', 'legend': ['GND', 'Vlow', 'Vhigh'], "lineWidth":0.5, 'Yscale': 'log',  "Traces":ResRead, 'Xaxis': False, 'Xlabel': "Array Device", "Ylabel": 'Resistance ($\Omega$)', 'Title': "Array Resistance", "ValueName": 'Forming Resistance'})
+        eChar.plotIVData({"Add": True, 'Yscale': 'lin',  "Traces": ResRead, 'Map': [n,m], 'Xlabel': 'X Position', "Ylabel": 'Y Position', "Clabel": 'Resistance ($\Omega$)', 'Title': "Array Resistance", "ValueName": 'Resistance Map'})
         eChar.LogData.put("Forming 8x8: Device %sx%s: Init. Resistance: %s ohm." %(n+1,m+1, ResRead))
         
         n = n+1
@@ -556,11 +542,6 @@ def Forming8x8(eChar, FormChn, GNDChn, GateChn, Vform, Vread, Vgate, tform, trea
 
     try: 
         header = out['Header']
-        
-        header.insert(0,"TestParameter,Measurement.Type,%s" %(Typ))
-        header.append("Measurement,Device,%s" %(eChar.device))
-        header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
-        
         header.append('SetHeader--------------')
         header.extend(FormingHeader)
         header.append('ReadHeader-----------------')
@@ -583,19 +564,16 @@ def Forming8x8(eChar, FormChn, GNDChn, GateChn, Vform, Vread, Vgate, tform, trea
         data.append(line)
 
 
-    eChar.writeDataToFile(header, data, Typ=Typ, startCyc=0, endCyc=1)
+    eChar.writeDataToFile(header, data, startCyc=0, endCyc=1)
 
-    R = dh.Value(eChar, statVal, 'Rform', DoYield=eChar.DoYield, Unit='ohm')
-    row = dh.Row([R],eChar.DieX,eChar.DieY,eChar.DevX,eChar.DevY,Typ,0,1)
+    R = eChar.dhValue(statVal, 'Rform', Unit='ohm')
+    eChar.dhAddRow([R],0,1)
 
-    eChar.StatOutValues.addRow(row)
 
 
 ##########################################################################################################################
 
 def Reset8x8(eChar, ResetChn, GNDChn, GateChn, Vreset, Vread, Vgate, treset, tread):
-
-    Typ = 'Reset_8x8'
 
     Chns = [ResetChn, GNDChn, GateChn]
     PulseChn = ResetChn
@@ -657,8 +635,8 @@ def Reset8x8(eChar, ResetChn, GNDChn, GateChn, Vreset, Vread, Vgate, treset, tre
         ReadVal.append(cp.deepcopy(add))
         Coordinates.append([n+1,m+1])
 
-        eChar.plotIVData({"Add": True, "lineStyle": 'o', 'legend': ['GND', 'Vlow', 'Vhigh'], "lineWidth":0.5, 'Yscale': 'log',  "Traces":ResRead, 'Xaxis': False, 'Xlabel': "Array Device", "Ylabel": 'Resistance ($\Omega$)', 'Title': "Array Resistance", "MeasurementType": Typ, "ValueName": 'Resistance'})
-        eChar.plotIVData({"Add": True, 'Yscale': 'lin',  "Traces": ResRead, 'Map': [n,m], 'Xlabel': 'X Position', "Ylabel": 'Y Position', "Clabel": 'Resistance ($\Omega$)', 'Title': "Array Resistance", "MeasurementType": Typ, "ValueName": 'Resistance Map'})
+        eChar.plotIVData({"Add": True, "lineStyle": 'o', 'legend': ['GND', 'Vlow', 'Vhigh'], "lineWidth":0.5, 'Yscale': 'log',  "Traces":ResRead, 'Xaxis': False, 'Xlabel': "Array Device", "Ylabel": 'Resistance ($\Omega$)', 'Title': "Array Resistance", "ValueName": 'Resistance'})
+        eChar.plotIVData({"Add": True, 'Yscale': 'lin',  "Traces": ResRead, 'Map': [n,m], 'Xlabel': 'X Position', "Ylabel": 'Y Position', "Clabel": 'Resistance ($\Omega$)', 'Title': "Array Resistance", "ValueName": 'Resistance Map'})
         eChar.LogData.put("Forming 8x8: Device %sx%s: Resistance: %s ohm." %(n+1,m+1, ResRead))
         
         n = n+1
@@ -669,12 +647,7 @@ def Reset8x8(eChar, ResetChn, GNDChn, GateChn, Vreset, Vread, Vgate, treset, tre
     n = len(ReadVal)
 
     try: 
-        header = out['Header']
-        
-        header.insert(0,"TestParameter,Measurement.Type,%s" %(Typ))
-        header.append("Measurement,Device,%s" %(eChar.device))
-        header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
-        
+        header = out['Header']        
         header.append('ResetHeader--------------')
         header.extend(FormingHeader)
         header.append('ReadHeader-----------------')
@@ -696,12 +669,11 @@ def Reset8x8(eChar, ResetChn, GNDChn, GateChn, Vreset, Vread, Vgate, treset, tre
         statVal.append(ReadVal[l][0])
         data.append(line)
 
-    eChar.writeDataToFile(header, data, Typ=Typ, startCyc=0, endCyc=1)
+    eChar.writeDataToFile(header, data, startCyc=0, endCyc=1)
     
-    R = dh.Value(eChar, statVal, 'Rreset', DoYield=eChar.DoYield, Unit='ohm')
-    row = dh.Row([R],eChar.DieX,eChar.DieY,eChar.DevX,eChar.DevY,Typ, eChar.curCycle,eChar.curCycle+1)
+    R = eChar.dhValue(eChar, statVal, 'Rreset', Unit='ohm')
+    eChar.dhAddRow([R], eChar.curCycle,eChar.curCycle+1)
 
-    eChar.StatOutValues.addRow(row)
     eChar.curCycle = eChar.curCycle+1
 
 
@@ -709,8 +681,6 @@ def Reset8x8(eChar, ResetChn, GNDChn, GateChn, Vreset, Vread, Vgate, treset, tre
 
 
 def Retention8x8(eChar, Log, ReadChn, GNDChn, GateChn, Vread, Vgate, t_total, delay, MeasPoints):
-
-    Typ = 'Retention_8x8'
 
     Chns = [ReadChn, GNDChn, GateChn]
     PulseChn = ReadChn
@@ -826,8 +796,8 @@ def Retention8x8(eChar, Log, ReadChn, GNDChn, GateChn, Vread, Vgate, t_total, de
             if k == 0:
                 Coordinates.append([n+1,m+1])
 
-            eChar.plotIVData({"Add": True, "lineStyle": 'o', 'legend': ['GND', 'Vlow', 'Vhigh'], "lineWidth":0.5, 'Yscale': 'log',  "Traces":ResRead, 'Xaxis': False, 'Xlabel': "Array Device", "Ylabel": 'Resistance ($\Omega$)', 'Title': "Array Resistance", "MeasurementType": Typ, "ValueName": 'Resistance'})
-            eChar.plotIVData({"Add": True, 'Yscale': 'lin',  "Traces": ResRead, 'Map': [n,m], 'Xlabel': 'X Position', "Ylabel": 'Y Position', "Clabel": 'Resistance ($\Omega$)', 'Title': "Array Resistance", "MeasurementType": Typ, "ValueName": 'Resistance Map'})
+            eChar.plotIVData({"Add": True, "lineStyle": 'o', 'legend': ['GND', 'Vlow', 'Vhigh'], "lineWidth":0.5, 'Yscale': 'log',  "Traces":ResRead, 'Xaxis': False, 'Xlabel': "Array Device", "Ylabel": 'Resistance ($\Omega$)', 'Title': "Array Resistance", "ValueName": 'Resistance'})
+            eChar.plotIVData({"Add": True, 'Yscale': 'lin',  "Traces": ResRead, 'Map': [n,m], 'Xlabel': 'X Position', "Ylabel": 'Y Position', "Clabel": 'Resistance ($\Omega$)', 'Title': "Array Resistance", "ValueName": 'Resistance Map'})
             eChar.LogData.put("Forming 8x8: Device %sx%s: Resistance: %s ohm." %(n+1,m+1, ResRead))
             
             n = n+1
@@ -840,10 +810,6 @@ def Retention8x8(eChar, Log, ReadChn, GNDChn, GateChn, Vread, Vgate, t_total, de
         
     try: 
         header = out['Header']
-        
-        header.insert(0,"TestParameter,Measurement.Type,%s" %(Typ))
-        header.append("Measurement,Device,%s" %(eChar.device))
-        header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
         
         header.append('ReadHeader-----------------')
         header.extend(ReadHeader)
@@ -883,12 +849,10 @@ def Retention8x8(eChar, Log, ReadChn, GNDChn, GateChn, Vread, Vgate, t_total, de
                 break
         data.append(line)
 
-    eChar.writeDataToFile(header, data, Typ=Typ, startCyc=0, endCyc=1)
+    eChar.writeDataToFile(header, data, startCyc=0, endCyc=1)
 
-    R = dh.Value(eChar, statVal, 'Rretention', DoYield=eChar.DoYield, Unit='ohm')
-    row = dh.Row([R],eChar.DieX,eChar.DieY,eChar.DevX,eChar.DevY,Typ, eChar.curCycle,eChar.curCycle+1)
-
-    eChar.StatOutValues.addRow(row)
+    R = eChar.dhValue(statVal, 'Rretention', Unit='ohm')
+    eChar.dhAddRow([R], cycleStart=eChar.curCycle,cycleStop=eChar.curCycle+1)
     eChar.curCycle = eChar.curCycle+1
 
 
@@ -957,8 +921,6 @@ def WriteString8x8(eChar, string, PulseChn, GNDChn, GateChn, Vform, Vset, Vreset
     IComp = [10e-3,10e-3,1e-3, 10e-3]
     Typ = 'PulsedSpotMeasurement'
     
-    MeasType = 'WriteString8x8'
-
     OutputData = dict()
     OutputData['Resistance'] = []
     OutputData['x'] = []
@@ -1022,8 +984,8 @@ def WriteString8x8(eChar, string, PulseChn, GNDChn, GateChn, Vform, Vset, Vreset
             readForm = eChar.E5274A.PulsedSpotMeasurement(Chns, PChn, readVal, Pbase, VorI, hold, tread, IComp=IComp)
 
             Rform = Vread/readForm['Data'][-1][0:]
-            eChar.plotIVData({"Add": True, "lineStyle": 'o', 'legend': 'Resistance', "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Rform, 'Xaxis': False, 'Xlabel': "Matrix Iteration", "Ylabel": 'current (A)', 'Title': "Resistance", "MeasurementType": Typ, "ValueName": 'Resistance'})
-            eChar.plotIVData({"Add": True, 'Yscale': 'lin',  "Traces": Rform, 'Map': [n,m], 'Xlabel': 'X Position', "Ylabel": 'Y Position', "Clabel": 'Resistance ($Omega$)', 'Title': "Array Resistance", "MeasurementType": Typ, "ValueName": 'resistance'})
+            eChar.plotIVData({"Add": True, "lineStyle": 'o', 'legend': 'Resistance', "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Rform, 'Xaxis': False, 'Xlabel': "Matrix Iteration", "Ylabel": 'current (A)', 'Title': "Resistance", "ValueName": 'Resistance'})
+            eChar.plotIVData({"Add": True, 'Yscale': 'lin',  "Traces": Rform, 'Map': [n,m], 'Xlabel': 'X Position', "Ylabel": 'Y Position', "Clabel": 'Resistance ($Omega$)', 'Title': "Array Resistance", "ValueName": 'resistance'})
             
             OutputData['Resistance'].append(Rform)
             OutputData['Ignd'].append(readForm['Data'][-1][0:])
@@ -1053,8 +1015,8 @@ def WriteString8x8(eChar, string, PulseChn, GNDChn, GateChn, Vform, Vset, Vreset
             readReset = eChar.E5274A.PulsedSpotMeasurement(Chns, PChn, readVal, Pbase, VorI, hold, tread, IComp=IComp)
             
             Rreset = Vread/readReset['Data'][-1][0:]
-            eChar.plotIVData({"Add": True, "lineStyle": 'o', 'legend': 'Resistance', "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Rreset, 'Xaxis': False, 'Xlabel': "Matrix Iteration", "Ylabel": 'current (A)', 'Title': "Resistance", "MeasurementType": Typ, "ValueName": 'Resistance'})
-            eChar.plotIVData({"Add": True, 'Yscale': 'lin',  "Traces": Rreset, 'Map': [n,m], 'Xlabel': 'X Position', "Ylabel": 'Y Position', "Clabel": 'Resistance ($Omega$)', 'Title': "Array Resistance", "MeasurementType": Typ, "ValueName": 'resistance'})
+            eChar.plotIVData({"Add": True, "lineStyle": 'o', 'legend': 'Resistance', "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Rreset, 'Xaxis': False, 'Xlabel': "Matrix Iteration", "Ylabel": 'current (A)', 'Title': "Resistance", "ValueName": 'Resistance'})
+            eChar.plotIVData({"Add": True, 'Yscale': 'lin',  "Traces": Rreset, 'Map': [n,m], 'Xlabel': 'X Position', "Ylabel": 'Y Position', "Clabel": 'Resistance ($Omega$)', 'Title': "Array Resistance", "ValueName": 'resistance'})
             
             OutputData['Resistance'].append(Rform)
             OutputData['Ignd'].append(readReset['Data'][-1][0:])
@@ -1105,8 +1067,8 @@ def WriteString8x8(eChar, string, PulseChn, GNDChn, GateChn, Vform, Vset, Vreset
             ret.append([i[0] for i in out['Data']])
 
             Rwrite = Vread/readWrite['Data'][-1][0:]
-            eChar.plotIVData({"Add": True, "lineStyle": 'o', 'legend': 'Resistance', "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Rwrite, 'Xaxis': False, 'Xlabel': "Matrix Iteration", "Ylabel": 'current (A)', 'Title': "Resistance", "MeasurementType": Typ, "ValueName": 'Resistance'})
-            eChar.plotIVData({"Add": True, 'Yscale': 'lin',  "Traces": Rwrite, 'Map': [n,m], 'Xlabel': 'X Position', "Ylabel": 'Y Position', "Clabel": 'Resistance ($Omega$)', 'Title': "Array Resistance", "MeasurementType": Typ, "ValueName": 'resistance'})
+            eChar.plotIVData({"Add": True, "lineStyle": 'o', 'legend': 'Resistance', "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Rwrite, 'Xaxis': False, 'Xlabel': "Matrix Iteration", "Ylabel": 'current (A)', 'Title': "Resistance", "ValueName": 'Resistance'})
+            eChar.plotIVData({"Add": True, 'Yscale': 'lin',  "Traces": Rwrite, 'Map': [n,m], 'Xlabel': 'X Position', "Ylabel": 'Y Position', "Clabel": 'Resistance ($Omega$)', 'Title': "Array Resistance", "ValueName": 'resistance'})
             
             OutputData['Resistance'].append(Rwrite)
             OutputData['Ignd'].append(readWrite['Data'][-1][0:])
@@ -1122,11 +1084,6 @@ def WriteString8x8(eChar, string, PulseChn, GNDChn, GateChn, Vform, Vset, Vreset
     nD = len(OutputData['Resistance'])
                 
     header = out['Header']
-
-
-    header.insert(0,"TestParameter,Measurement.Type,%s" %(MeasType))
-    header.append("Measurement,Device,%s" %(eChar.device))
-    header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
     header.append("Measurement,Forming Voltage, %s" %(Vform))
     header.append("Measurement,Set Voltage, %s" %(Vset))
     header.append("Measurement,Reset Voltage, %s" %(Vreset))

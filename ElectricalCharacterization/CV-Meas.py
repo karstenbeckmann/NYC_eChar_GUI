@@ -13,7 +13,6 @@ import queue as qu
 import copy as cp
 
 def C_SpotMeas(eChar, CMU, freq, Vac, Vdc, SMUs, VorI, Val, Compl, delay):
-    Typ = 'SpotCMeasurement'
 
     IComp = []
     VComp = []
@@ -31,18 +30,16 @@ def C_SpotMeas(eChar, CMU, freq, Vac, Vdc, SMUs, VorI, Val, Compl, delay):
     
     Plot = [[out['Data'][3][0]], [out['Data'][0][0]]]
 
-    Xlab = "Voltage (V)" 
-    Ylab = "%s (%s)" %(out['Name'][0], out['Unit'][0])
+    Xlab = "Voltage" 
+    xunit = "V"
+    Ylab = "%s" %(out['Name'][0])
+    yunit = out['Unit']
 
-    eChar.plotIVData({"Add": False, 'Yscale': 'lin', 'Xaxis': True, "Traces": Plot, 'Xlabel': Xlab, "Ylabel": Ylab, 'Title': "C Spot", "MeasurementType": Typ, "ValueName": 'IV Spot'})
+    eChar.plotIVData({"Add": False, 'Yscale': 'lin', 'Xaxis': True, "Traces": Plot, 'Xlabel': Xlab, "Ylabel": Ylab, "Xunit": xunit, "Yunit":yunit, 'Title': "C Spot", "ValueName": 'I-V'})
             
     try: 
         header = out['Header']
         
-        header.insert(0,"TestParameter,Measurement.Type,%s" %(Typ))
-        header.append("Measurement,Device,%s" %(eChar.device))
-        header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
-
         DataName = "DataName, %s, %s, Osc_level, DC_bias" %(out['Name'][0], out['Name'][1]) 
         Unit = "Units, %s, %s, V, V" %(out['Unit'][0], out['Unit'][1]) 
         Dimension = "Dimension, %d, %d, %d, %d" %(1,1,1,1)
@@ -59,7 +56,7 @@ def C_SpotMeas(eChar, CMU, freq, Vac, Vdc, SMUs, VorI, Val, Compl, delay):
         data.append("DataValue, %e, %e, %e, %e" %(out['Data'][0][0],out['Data'][1][0],out['Data'][2][0],out['Data'][3][0]))
 
 
-    eChar.writeDataToFile(header, data, eChar.getFolder(), eChar.getFilename(Typ, 0, 1))
+    eChar.writeDataToFile(header, data, eChar.getFolder(), eChar.getFilename(0, 1))
     
     resis = [None]*4
     resis[0] = eChar.dhValue(out['Data'][0][0], out['Name'][0], Unit=out['Unit'][0])
@@ -67,11 +64,9 @@ def C_SpotMeas(eChar, CMU, freq, Vac, Vdc, SMUs, VorI, Val, Compl, delay):
     resis[2] = eChar.dhValue(out['Data'][2][0], "Osc. Level", Unit="V")
     resis[3] = eChar.dhValue(out['Data'][3][0], "DC bias", Unit="V")
 
-    row = eChar.dhAddRow(resis,Typ)
+    row = eChar.dhAddRow(resis)
 
 def CVsweep(eChar, CMU, freq, Vac, start, stop, steps, Double, Log, hold, delay, DCSMUs, DCVorI, DCval, DCCompl):
-
-    Typ = 'CV-sweep'
 
     Chns = DCSMUs
     VorI = DCVorI
@@ -107,23 +102,18 @@ def CVsweep(eChar, CMU, freq, Vac, start, stop, steps, Double, Log, hold, delay,
     Plot.append(out['Data'][0])
     Ylab = "%s (%s)" %(out['Name'][0], out['Unit'][0])
     Title = "%s-V Sweep" %(out['Name'][0])
-    eChar.plotIVData({"Add": False, 'Yscale': 'lin', "Xaxis":True, "Traces": Plot, 'Xlabel': Xlab, "Ylabel": Ylab, 'Title': Title,  "MeasurementType": Typ, "ValueName": 'CV Sweep'})
+    eChar.plotIVData({"Add": False, 'Yscale': 'lin', "Xaxis":True, "Traces": Plot, 'Xlabel': Xlab, "Ylabel": Ylab, 'Title': Title,  "ValueName": 'CV Sweep'})
 
     Plot2 = [out['Data'][-1]]
     Plot2.append(out['Data'][1])
     Ylab2 = "%s (%s)" %(out['Name'][1], out['Unit'][1])
     Title2 = "%s-V Sweep" %(out['Name'][1])
-    eChar.plotIVData({"Add": False, 'Yscale': 'lin', "Xaxis":True,  "Traces": Plot2, 'Xlabel': Xlab, "Ylabel": Ylab2, 'Title': Title2, "MeasurementType": Typ, "ValueName": 'CV Sweep'})
+    eChar.plotIVData({"Add": False, 'Yscale': 'lin', "Xaxis":True,  "Traces": Plot2, 'Xlabel': Xlab, "Ylabel": Ylab2, 'Title': Title2, "ValueName": 'CV Sweep'})
     
 
     try: 
 
         header = out['Header']
-        
-        header.insert(0,"TestParameter,Measurement.Type,%s" %(Typ))
-        header.append("Measurement,Device,%s" %(eChar.device))
-        header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
-
         DataName = "DataName, V, %s, %s, Osc_level, DC_bias" %(out['Name'][0], out['Name'][1]) 
         Unit = "Units, V, %s, %s, V, V" %(out['Unit'][0], out['Unit'][1]) 
         Dimension = "Dimension, %d, %d, %d, %d, %d" %(len(out['Data'][-1]), len(out['Data'][0]), len(out['Data'][1]), len(out['Data'][2]), len(out['Data'][3]))
@@ -145,8 +135,9 @@ def CVsweep(eChar, CMU, freq, Vac, start, stop, steps, Double, Log, hold, delay,
         
         data.append(line)
 
-    eChar.writeDataToFile(header, data, Typ=Typ, startCyc=0, endCyc=1)
+    eChar.writeDataToFile(header, data, startCyc=0, endCyc=1)
     
+    resist = []
     for n in range(len(out['Data'][0])):
         if VorI:
             name = "I@%.2eV" %(out['Data'][-1][n])
@@ -154,13 +145,11 @@ def CVsweep(eChar, CMU, freq, Vac, start, stop, steps, Double, Log, hold, delay,
             name = "V@%.2eA" %(out['Data'][-1][n])
         resis = eChar.dhValue(out['Data'][0][n], name, Unit='ohm')
 
-    row = eChar.dhAddRow([resis],Typ)
+    eChar.dhAddRow([resis])
 
 ###########################################################################################################################
 
 def CFsweep(eChar, CMU, fStart, fStop, steps, Double, Log, Vac, Vdc, hold, delay, SMUs, VorI, Val, Compl):
-
-    Typ = 'CF-sweep'
 
     IComp = []
     VComp = []
@@ -219,23 +208,18 @@ def CFsweep(eChar, CMU, fStart, fStop, steps, Double, Log, Vac, Vdc, hold, delay
     Plot.append(out['Data'][0])
     Ylab = "%s (%s)" %(out['Name'][0], out['Unit'][0])
     Title = "%s-F Sweep" %(out['Name'][0])
-    eChar.plotIVData({"Add": False, 'Yscale': 'lin', 'Xscale':xScale, "Xaxis":True, "Traces": Plot, 'Xlabel': Xlab, "Ylabel": Ylab, 'Title': Title,  "MeasurementType": Typ, "ValueName": 'CF Sweep'})
+    eChar.plotIVData({"Add": False, 'Yscale': 'lin', 'Xscale':xScale, "Xaxis":True, "Traces": Plot, 'Xlabel': Xlab, "Ylabel": Ylab, 'Title': Title,  "ValueName": 'CF Sweep'})
 
     Plot2 = [freqs]
     Plot2.append(out['Data'][1])
     Ylab2 = "%s (%s)" %(out['Name'][1], out['Unit'][1])
     Title2 = "%s-F Sweep" %(out['Name'][1])
-    eChar.plotIVData({"Add": False, 'Yscale': 'lin', "Xaxis":True, 'Xscale': xScale,  "Traces": Plot2, 'Xlabel': Xlab, "Ylabel": Ylab2, 'Title': Title2, "MeasurementType": Typ, "ValueName": 'CF Sweep'})
+    eChar.plotIVData({"Add": False, 'Yscale': 'lin', "Xaxis":True, 'Xscale': xScale,  "Traces": Plot2, 'Xlabel': Xlab, "Ylabel": Ylab2, 'Title': Title2, "ValueName": 'CF Sweep'})
     
 
     try: 
 
         header = out['Header']
-        
-        header.insert(0,"TestParameter,Measurement.Type,%s" %(Typ))
-        header.append("Measurement,Device,%s" %(eChar.device))
-        header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
-
         DataName = "DataName, F, %s, %s, Osc_level, DC_bias" %(out['Name'][0], out['Name'][1]) 
         Unit = "Units, Hz, %s, %s, V, V" %(out['Unit'][0], out['Unit'][1]) 
         Dimension = "Dimension, %d, %d, %d, %d, %d" %(len(freqs), len(out['Data'][0]), len(out['Data'][1]), len(out['Data'][2]), len(out['Data'][3]))
@@ -257,7 +241,7 @@ def CFsweep(eChar, CMU, fStart, fStop, steps, Double, Log, Vac, Vdc, hold, delay
         
         data.append(line)
 
-    eChar.writeDataToFile(header, data, Typ=Typ, startCyc=0, endCyc=1)
+    eChar.writeDataToFile(header, data, startCyc=0, endCyc=1)
     
     for n in range(len(out['Data'][0])):
         if VorI:
@@ -266,7 +250,7 @@ def CFsweep(eChar, CMU, fStart, fStop, steps, Double, Log, Vac, Vdc, hold, delay
             name = "V@%.2eA" %(out['Data'][-1][n])
         resis = eChar.dhValue( out['Data'][0][n], name, Unit='ohm')
 
-    row = eChar.dhAddRow([resis],Typ)
+    row = eChar.dhAddRow([resis])
     
 
 ###########################################################################################################################
@@ -283,4 +267,4 @@ def setDCVoltages(eChar,SMUs=None, Vdc=None, DCcompl=None, WriteHeader=True):
     ret = eChar.B1500A.SpotMeasurement(SMUs,VorI,Vdc,IVal,IComp=DCcompl)
     eChar.B1500A.remoteExecute()
     if WriteHeader:
-        eChar.Combinedheader.extend(ret['Header'])
+        eChar.extendHeader("Combined", ret['Header'])

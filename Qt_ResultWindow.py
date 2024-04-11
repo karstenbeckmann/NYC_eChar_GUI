@@ -13,62 +13,48 @@ import copy as dp
 import os as os
 import functools
 import queue as qu
-from matplotlib.figure import Figure
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from PyQt5 import QtWidgets, QtCore, QtGui
 import Qt_stdObjects as stdObj
-
+import darkdetect
+import numpy as np
+import pyqtgraph as pg
+import datetime as dt
+import pyqtgraph.exporters
+from matplotlib import cm
+import matplotlib as mpl
+import copy as cp
 
 class ResultWindow(QtWidgets.QMainWindow):
     
     ErrorQu = qu.Queue()
 
     def __init__(self, MainGI, QFont=None, QMargin=None, QSpacing=None, width=600, height=400, icon=None, title="Results"):
-
-
-        self.styles = ["-", "--", ":", "-.", ".", ",", "o", "v", "^", "<", ">"]
-        self.sizes = [0.5,1,1.5,2,3]
-        self.colors = ['blue', 'red', 'black', 'green', "orange"]    
         
-        self.QFont=QFont
+        self.QFont= QFont
         self.QMargin = QMargin
         self.QSpacing = QSpacing
+        self.darkMode = darkdetect.isDark()
 
         super().__init__(MainGI)
         self.filename = ""
         self.folder = ""
         self.UpdateRequestsQu = qu.Queue()
-        self.Updates = qu.Queue()
+        self.updates = qu.Queue()
         self.MainGI = MainGI
         self.Configuration = MainGI.Configuration
         self.__width = width
         self.__height = height
         self.icon = icon
-        self.FigCancas = None
-        self.Fig = None
-        
-        self.columns = 9
-        self.rows = 20
 
-        self.RowHeight = int(self.__height/self.rows)
-        self.ColumnWidth = int(self.__width/self.columns)
+        self.rows = 19
+        self.columns = 8
+
+        self.frameHeight = int(self.__height)-self.QMargin.top()-self.QMargin.bottom()-15
+        self.frameWidth = int(self.__width)-self.QMargin.left()-self.QMargin.right()
+
+        self.RowHeight = int(self.frameHeight/self.rows)
+        self.ColumnWidth = int(self.frameWidth/self.columns)
         self.figData = []
-
-        self.GraphProp = dict()
-
-        self.GraphProp['lineStyle'] = "o"
-        self.GraphProp['lineSize'] = 1
-        self.GraphProp['lineColor'] = 'blue'
-        self.GraphProp['xLabel'] = "Voltage (V)"
-        self.GraphProp['yLabel'] = "Current (A)"
-        self.GraphProp['cLabel'] = "Resistance ($\Omega$)"
-        self.GraphProp['legend'] = None
-        self.GraphProp['title'] = ""
-        self.GraphProp['x'] = True
-        self.GraphProp['map'] = False
-        self.GraphProp['xScale'] = 'lin'
-        self.GraphProp['yScale'] = 'lin'
-        self.GraphProp['valueName'] = 'IV-Curve'
 
         self.setWindowTitle(title)
 
@@ -77,61 +63,225 @@ class ResultWindow(QtWidgets.QMainWindow):
         except:
             self.MainGI.writeError("Icon not found in window %s" %(title))
         
-        self._main = stdObj.stdFrameGrid(self, self.MainGI, self.columns, self.rows, self.__width, self.__height)
-        self._main.setFont(self.QFont)
-        self._main.setContentsMargins(*self.QMargin)
+        self._main = stdObj.stdFrameGrid(self, self.MainGI, self.columns, self.rows, self.frameWidth, self.frameHeight,fixSize=False)
+        self._main.layout.setRowMinimumHeight(0, int(self.RowHeight))
+        self._main.layout.setRowStretch(0, 0)
+        self._main.layout.setRowMinimumHeight(2, int(self.RowHeight))
+        self._main.layout.setRowStretch(1, 0)
+        self._main.layout.setRowMinimumHeight(18, int(self.RowHeight))
+        self._main.layout.setRowStretch(18, 0)
+        self._main.layout.setRowMinimumHeight(19, int(self.RowHeight))
+        self._main.layout.setRowStretch(19, 0)
+        for n in range(self.rows-4):
+            self._main.layout.setRowStretch(n+2, 1)
+        for n in range(self.columns-1):
+            self._main.layout.setColumnMinimumWidth(n, int(self.ColumnWidth))
+            self._main.layout.setColumnStretch(n, 1)
+
+        #self._main.setFont(self.QFont)
         self.resize(int(self.__width), int(self.__height))
+        #self._main.setContentsMargins(self.QMargin)
+        #self._main.resize(int(self.__width), int(self.__height))
+        self._main.resize(self.frameWidth, self.frameWidth)
+        self._main.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        self.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         self.layout = self._main.layout
+
         self.Menus = []
         self.IntWid = []
 
-        self.IntWid.append(ComboBox(self._main, self.layout, "DieX", row=2, column=1, columnspan=1))
+        self.IntWid.append(ComboBox(self._main, self.layout, "DieX", row=1, column=0, columnspan=1))
         
-        self.IntWid.append(ComboBox(self._main, self.layout, "DieY", row=2, column=2, columnspan=1))
+        self.IntWid.append(ComboBox(self._main, self.layout, "DieY", row=1, column=1, columnspan=1))
         
-        self.IntWid.append(ComboBox(self._main, self.layout, "DevX", row=2, column=3, columnspan=1))
+        self.IntWid.append(ComboBox(self._main, self.layout, "DevX", row=1, column=2, columnspan=1))
         
-        self.IntWid.append(ComboBox(self._main, self.layout, "DevY", row=2, column=4, columnspan=1))
+        self.IntWid.append(ComboBox(self._main, self.layout, "DevY", row=1, column=3, columnspan=1))
         
-        self.IntWid.append(ComboBox(self._main, self.layout, "Meas", row=2, column=5, columnspan=2))
+        self.IntWid.append(ComboBox(self._main, self.layout, "Meas", row=1, column=4, columnspan=1))
+        self.IntWid[-1].view().setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         
-        self.IntWid.append(ComboBox(self._main, self.layout, "Val", row=2, column=7, columnspan=2))
+        self.IntWid.append(ComboBox(self._main, self.layout, "Val", row=1, column=5, columnspan=1))
+        self.IntWid[-1].view().setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         
-        self.IntWid.append(ComboBox(self._main, self.layout, "Num", default='Live', items=['Live'], row=2, column=9, columnspan=1))
+        self.IntWid.append(ComboBox(self._main, self.layout, "Num", default='Live', items=['Live'], row=1, column=6, columnspan=3))
+        self.IntWid[-1].view().setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         
-        self.TxTab7DieX=Label(self._main, "Die X",self.layout, row=1, column=1, columnspan=1)
+        self.TxTab7DieX=Label(self._main, "Die X",self.layout, row=0, column=0, columnspan=1)
         
-        self.TxTab7DieY=Label(self._main, "Die Y",self.layout, row=1, column=2, columnspan=1)
+        self.TxTab7DieY=Label(self._main, "Die Y",self.layout, row=0, column=1, columnspan=1)
         
-        self.TxTab7DevX=Label(self._main, "Device X",self.layout, row=1, column=3, columnspan=1)
+        self.TxTab7DevX=Label(self._main, "Device X",self.layout, row=0, column=2, columnspan=1)
 
-        self.TxTab7DevY=Label(self._main, "Device Y",self.layout, row=1, column=4, columnspan=1)
+        self.TxTab7DevY=Label(self._main, "Device Y",self.layout, row=0, column=3, columnspan=1)
         
-        self.TxTab7Meas=Label(self._main, "Measurement",self.layout, row=1, column=5, columnspan=2)
+        self.TxTab7Meas=Label(self._main, "Measurement",self.layout, row=0, column=4, columnspan=1)
         
-        self.TxTab7Val=Label(self._main, "Value", self.layout, row=1, column=7, columnspan=2)
+        self.TxTab7Val=Label(self._main, "Value", self.layout, row=0, column=5, columnspan=2)
 
-        self.TxTab7Num=Label(self._main, "Number", self.layout, row=1, column=9, columnspan=1)
+        self.TxTab7Num=Label(self._main, "Number", self.layout, row=0, column=6, columnspan=2)
 
         self.SaveBut = QtWidgets.QPushButton("Save Plot", self._main)
         self.SaveBut.clicked.connect(self.SaveFigure)
+        self.SaveBut.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         self.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-        self.layout.addWidget(self.SaveBut, 20, 8, 1, 2)
+        self.layout.addWidget(self.SaveBut, 18, 6, 1, 2)
 
-        self.TxLineStyle=Label(self._main, "Style", self.layout, row=20, column=2, columnspan=1)
-        self.LineStyle = ComboBox(self._main, self.layout, "lineStyle", row=20, column=3, default=self.GraphProp['lineStyle'], items=self.styles, columnspan=1, command=self.updateLineStyle)
-        
-        self.TxLineSize=Label(self._main, "Size",self.layout, row=20, column=4, columnspan=1)
-        self.LineSize = ComboBox(self._main, self.layout, "lineSize", row=20, column=4, default=self.GraphProp['lineSize'], items=(self.sizes), columnspan=1, command=self.updateLineSize)
-        
-        self.TxColorStart=Label(self._main, "Color", self.layout, row=20, column=6, columnspan=1)
-        self.ColorStart = ComboBox(self._main, self.layout, "lineColor", row=20, column=5, default=self.GraphProp['lineColor'], items=(self.colors), columnspan=2, command=self.updateLineColor)
-        
-        self.ClearBut = PushButton(self._main, "Clear Results", "clear", self.layout, row=20, column=1, columnspan=2, command=self.clearResults)
 
-        self.CreateCanvas()
-        self.setFixedSize(self.size())
+        self.ResultPlot = PlotWidget(self._main, self.MainGI, name="ResultPlotWidget", background=self.MainGI.getBackgroundColor(True), labelColor=self.MainGI.getLabelColor(True), title="Result Plotting")
+        self.ResultPlot.setSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.MinimumExpanding)
+        row=2
+        column=0
+        rowspan=16
+        columnspan=9
+        self.layout.addWidget(self.ResultPlot, row, column, rowspan,  columnspan)
+        graphProp=self.ResultPlot.getStdGraphProperties()
+        
+        self.TxRow=Label(self._main, "Row", self.layout, row=18, column=2, columnspan=1, alignment=QtCore.Qt.AlignRight)
+        self.Row = stdObj.Entry(self, MainGI, "ResultRow", validate='all', validateNumbers="-1|-2|[0-9]+", type=int, default=-2, command=self.updateGraph, sizePolicy=(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding))
+        self.SaveBut.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        self.layout.addWidget(self.Row, 18, 3, 1, 1)
+        
+        self.TxColumn=Label(self._main, "Column", self.layout, row=18, column=4, columnspan=1, alignment=QtCore.Qt.AlignRight)
+        self.Column = stdObj.Entry(self, MainGI, "ResultColumn", validate='all', validateNumbers="-1|-2|[0-9]+", type=int, default=-2, command=self.updateGraph, sizePolicy=(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding))
+        self.layout.addWidget(self.Column, 18, 5, 1, 1)
+        
+        self.TxStyle=Label(self._main, "Style", self.layout, row=19, column=2, columnspan=1, alignment=QtCore.Qt.AlignRight)
+        self.Style = ComboBox(self._main, self.layout, "Style", row=19, column=3, default=graphProp['Style'], items=self.ResultPlot.getStyleOptions(), columnspan=1, command=self.updateStyle)
+        
+        self.TxLineStyle=Label(self._main, "Line", self.layout, row=19, column=4, columnspan=1, alignment=QtCore.Qt.AlignRight)
+        self.LineStyle = ComboBox(self._main, self.layout, "lineStyle", row=19, column=5, default=graphProp['LineStyle'], items=self.ResultPlot.getLineStyleOptions(), columnspan=1, command=self.updateLineStyle)
+        
+        self.TxScatterStyle=Label(self._main, "Symbol", self.layout, row=19, column=4, columnspan=1, alignment=QtCore.Qt.AlignRight)
+        self.ScatterStyle = ComboBox(self._main, self.layout, "scatterStyle", row=19, column=5, default=graphProp['ScatterStyle'], items=self.ResultPlot.getScatterStyleOptions(), columnspan=1, command=self.updateScatterStyle)
+        
+        self.TxLineWidth=Label(self._main, "Width",self.layout, row=19, column=6, columnspan=1, alignment=QtCore.Qt.AlignRight)
+        self.LineWidth = ComboBox(self._main, self.layout, "lineWidth", row=19, column=7, default=graphProp['LineWidth'], items=self.ResultPlot.getLineWidthOptions(), columnspan=1, command=self.updateLineWidth)
+        
+        self.TxScatterSize=Label(self._main, "Size",self.layout, row=19, column=6, columnspan=1, alignment=QtCore.Qt.AlignRight)
+        self.ScatterSize = ComboBox(self._main, self.layout, "scatterSize", row=19, column=7, default=graphProp['ScatterSize'], items=self.ResultPlot.getScatterSizeOptions(), columnspan=1, command=self.updateScatterSize)
 
+        self.TxLabelSize=Label(self._main, "Label Size", self.layout, row=19, column=0, columnspan=1, alignment=QtCore.Qt.AlignRight)
+        self.LabelSize = ComboBox(self._main, self.layout, "labelSize", row=19, column=1, default=self.ResultPlot.getLabelSizeOptions()[0], items=self.ResultPlot.getLabelSizeOptions(), columnspan=1, command=self.updateLabelSize)
+
+        #self.TxAppendGraph=Label(self._main, "Append Pl.", self.layout, row=18, column=6, columnspan=1, alignment=QtCore.Qt.AlignRight)
+        #self.AppendGraph = CheckBox(self._main, self.layout, "appendGraph", row=18, column=7, columnspan=1, command=self.updateAppendGraph)
+        
+        self.ClearBut = PushButton(self._main, "Clear Results", "clear", self.layout, row=18, column=0, columnspan=2, command=self.clearResults)
+        self.updateStyle(graphProp['Style'])
+
+        self.setMinimumSize(self.size())
+        self.updateGraph()
+
+    def eventFilter(self, event):
+        if (event.type() == QtCore.QEvent.Resize):
+            self.ResizeSignal.emit(1)
+        return True
+
+    def resizeEvent(self, event):
+
+        self.__width = self.frameGeometry().width()
+        self.__height = self.frameGeometry().height()
+
+        self.RowHeight = int(self.__height/self.rows)
+        self.ColumnWidth = int(self.__width/self.columns)
+
+        for n in range(self.columns-1):
+            self._main.layout.setColumnMinimumWidth(n, int(self.ColumnWidth))
+
+        self.frameHeight = int(self.__height)-self.QMargin.top()-self.QMargin.bottom()-15
+        self.frameWidth = int(self.__width)-self.QMargin.left()-self.QMargin.right()
+
+        self._main.resize(self.frameWidth, self.frameHeight)
+
+        return super().resizeEvent(event)
+
+    def updateGraph(self):
+        row = self.getCurrentRow()
+        col = self.getCurrentCol()
+
+        gp = self.ResultPlot.getGraphProperties(row, col)
+
+        if gp != None:
+            style = gp['Style']
+            self.Style.change(style)
+            self.__updateStyle(style)
+            if style.lower() == "line":
+                self.LineWidth.change(gp['LineWidth'])
+                self.LineStyle.change(gp['LineStyle'])
+            else:
+                self.ScatterSize.change(gp['ScatterSize'])
+                self.ScatterStyle.change(gp['ScatterStyle'])
+
+    def updateAppendGraph(self, state):
+        self.ResultPlot.updateAppendGraph(state)
+
+    def getCurrentRow(self):
+        return self.Row.getVariable()
+    
+    def getCurrentCol(self):
+        return self.Column.getVariable()
+
+    def updateLabelSize(self, value):
+        row = self.getCurrentRow()
+        col = self.getCurrentCol()
+        self.ResultPlot.updateLabelSize(value, row, col)
+
+    def updateLineWidth(self, value):
+        row = self.getCurrentRow()
+        col = self.getCurrentCol()
+        self.ResultPlot.updateLineWidth(value, row, col)
+
+    def updateScatterSize(self, value):
+        row = self.getCurrentRow()
+        col = self.getCurrentCol()
+        self.ResultPlot.updateScatterSize(value, row, col)
+
+    def updateLineStyle(self, value):
+        row = self.getCurrentRow()
+        col = self.getCurrentCol()
+        self.ResultPlot.updateLineStyle(value, row, col)
+
+    def updateScatterStyle(self, value):
+        row = self.getCurrentRow()
+        col = self.getCurrentCol()
+        self.ResultPlot.updateScatterStyle(value, row, col)
+
+    def __updateStyle(self, value):
+        if value.lower() == "scatter":
+            self.TxLineStyle.hide()
+            self.LineStyle.hide()
+            self.TxLineWidth.hide()
+            self.LineWidth.hide()
+            self.TxScatterStyle.show()
+            self.ScatterStyle.show()
+            self.TxScatterSize.show()
+            self.ScatterSize.show()
+        else: 
+            self.TxLineStyle.show()
+            self.LineStyle.show()
+            self.TxLineWidth.show()
+            self.LineWidth.show()
+            self.TxScatterStyle.hide()
+            self.ScatterStyle.hide()
+            self.TxScatterSize.hide()
+            self.ScatterSize.hide()
+
+
+    def updateStyle(self, value):
+        self.__updateStyle(value)
+        row = self.getCurrentRow()
+        col = self.getCurrentCol()
+        self.ResultPlot.updateStyle(value, row, col)
+        gp = self.ResultPlot.getGraphProperties(row, col)
+        if gp != None:
+            if value.lower() == ["line"]:
+                self.LineWidth.change(gp['LineWidth'])
+                self.LineStyle.change(gp['LineStyle'])
+            else:
+                self.ScatterSize.change(gp['ScatterSize'])
+                self.ScatterStyle.change(gp['ScatterStyle'])
+       
 
     def savePosition(self):
         self.Configuration.setValue("ResultWindowX", self.pos().x())
@@ -139,33 +289,40 @@ class ResultWindow(QtWidgets.QMainWindow):
         self.Configuration.setValue("ResultWindowMon", QtWidgets.QDesktopWidget().screenNumber(self))
 
     def SaveFigure(self):
+        folder = self.MainGI.eChar.getFolder()
+        folder = os.path.join(folder, "Plots")
 
-        Folder = self.MainGI.eChar.getFolder()
-        Folder = "%s/Plots" %(Folder)
-
-        if Folder.strip() == "" or Folder == None:
+        if folder.strip() == "" or folder == None:
             self.ErrorQu.put("ResultWindow - Save Figure: No Folder is defined!")
             return None
         
-        if self.filename != "":
-            self.XYGraph.SaveToFile(self.filename, Folder)
 
+        self.ResultPlot.SaveToFile(folder)
+    
+    
     def closeEvent(self, event):
         self.hide()
 
     def clearResults(self):
-        self.figData = [1]
-        self.updateCanvas()
+        self.ResultPlot.clear()
 
-
-    def update(self):
+    def update(self, **kwargs):
         
         graphUpdate = False
+        dataUpdate = False
+        
+        if "BackgroundColor" in kwargs:
+            self.ResultPlot.updateBackground(kwargs["BackgroundColor"])
+            
+        if "LabelColor" in kwargs:
+            self.ResultPlot.updateLabelColor(kwargs["LabelColor"])
 
-        while not self.Updates.empty():
+        row = -1
+        column = -1
 
-            entry = self.Updates.get()
-            #tm.sleep(1)
+        while not self.updates.empty():
+            graphProp = []
+            entry = self.updates.get()
             for key, item in entry.items():
 
                 for widget in self.IntWid:
@@ -177,29 +334,36 @@ class ResultWindow(QtWidgets.QMainWindow):
                     if key == "%sChn" %(name):
                         widget.change(item)
                 
-                if key == "Figure":
-                    
+                if key == "GraphData":
                     for gkey, gitem in item.items():
+                        if gkey =="GraphInfo":
+                            graphProp = gitem
+                            
+                        if gkey =="Data":
+                            self.figData = gitem
+                            graphUpdate = True
 
-                        self.GraphProp[gkey] = gitem
-
+                        if gkey =="Filename":
+                            self.filename = gitem
+                        
+                        if gkey =="Folder":
+                            self.folder = gitem
+                        
                     graphUpdate = True
-
-                if key =="fileName":
-                    self.filename = item
-                
-                if key =="folder":
-                    self.folder = item
 
                 if key == "Data":
                     self.figData = item
-                    graphUpdate = True
+                    dataUpdate = True
 
                 if key == "Show":
                     self.show()
-        
+
+        if self.darkMode != darkdetect.isDark():
+            self.darkMode = darkdetect.isDark()
+            graphUpdate = True
+            
         if graphUpdate:
-            self.updateCanvas()
+            self.ResultPlot.updateGraphs(self.figData, graphProp)
 
     def checkIfinList(self, item, lis):
         if item in lis:
@@ -212,43 +376,6 @@ class ResultWindow(QtWidgets.QMainWindow):
             if value == val:
                 return key
 
-    def CreateCanvas(self, row=3, column=1, rowspan=17, columnspan=10):
-
-        height = int(rowspan*self.RowHeight)
-        width = int(columnspan*self.ColumnWidth)
-        
-        self.figData = [1,1,1,1,1,1,1,1,1,1]
-    
-        self.XYGraph = PR.XY(self.MainGI.getConfiguration().getMainFolder(), self.figData, self.GraphProp, height=height, width=width)
-
-        figure = self.XYGraph.getFigure()
-        
-        self.__Canvas_1 = FigureCanvasQTAgg(figure)
-        self.__Canvas_1.setParent(self._main)
-        self.__Canvas_1.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-        self.__Canvas_1.updateGeometry()
-        self.__Canvas_1.draw() 
-
-        self.layout.addWidget(self.__Canvas_1, row, column, rowspan, columnspan)
-
-    def updateLineSize(self, value):
-        self.GraphProp['lineSize'] = value
-        self.updateCanvas()
-
-    def updateLineStyle(self, value):
-        self.GraphProp['lineStyle'] = value
-        self.updateCanvas()
-        
-    def updateLineColor(self, value):
-        self.GraphProp['lineColor'] = value
-        self.updateCanvas()
-
-    def updateCanvas(self):
-        try: 
-            self.XYGraph.updateWithResult(self.figData, self.GraphProp)
-            self.__Canvas_1.draw()
-        except ValueError as e:
-            self.ErrorQu.put("Error while updating Graph: %s" %(e))
 
     def updateOptionMenu(self, menu, variable, newChoices):
         if len(newChoices) == 0:
@@ -263,6 +390,56 @@ class ResultWindow(QtWidgets.QMainWindow):
         self.ResultHandling.CloseWindow()
 
 
+class CheckBox(QtWidgets.QCheckBox):
+
+    def __init__(self, parent, layout, name, row, column, rowspan=1, columnspan=1, alignment=None, default=False, **kwargs):
+
+        super().__init__(parent)
+
+        self.name = name
+        self.layout = layout
+        self.row = row
+        self.column = column
+        self.rowspan = rowspan
+        self.columnspan = columnspan
+        self.MainGI = parent.MainGI
+        if alignment == None:
+            self.layout.addWidget(self, row, column, rowspan, columnspan)
+        else:
+            self.layout.addWidget(self, row, column, rowspan, columnspan, alignment)
+        self.queue = parent.parentWidget().UpdateRequestsQu
+
+        self.Blocked = False
+        self.command = None
+        if "command" in kwargs:
+            self.command = kwargs['command']
+        
+        self.stateChanged.connect(self.callFunc)
+        self.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+
+    def getName(self):
+        return self.name
+
+    def change(self, item):
+        if isinstance(item, str):
+            if item.lower() == "true":
+                item == True
+            else:
+                item == False
+        elif isinstance(item, (int, float)):
+            if item >=1:
+                item = True
+        elif not isinstance(item, bool):
+            return False
+
+        self.setCheckState(item)
+                
+    def callFunc(self):
+        self.queue.put({self.name: self.checkState()})
+
+        if self.command != None:
+            self.command(self.checkState())
+            
 class ComboBox(QtWidgets.QComboBox):
 
     def __init__(self, parent, layout, name, row, column, rowspan=1, columnspan=1, alignment=None, default="", items=[""], **kwargs):
@@ -287,6 +464,8 @@ class ComboBox(QtWidgets.QComboBox):
         else:
             self.layout.addWidget(self, row, column, rowspan, columnspan, alignment)
         self.queue = parent.parentWidget().UpdateRequestsQu
+        self.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        
 
         self.Blocked = False
         self.command = None
@@ -294,13 +473,12 @@ class ComboBox(QtWidgets.QComboBox):
             self.command = kwargs['command']
         
         self.activated.connect(self.callFunc)
-        self.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+            
 
     def getName(self):
         return self.name
 
     def update(self, items):
-
         self.prevText = self.currentText()
         self.clear()
         if items != None:
@@ -314,11 +492,9 @@ class ComboBox(QtWidgets.QComboBox):
         index = self.findText(str(item))
         if index != -1:
             self.setCurrentIndex(index)
-                
-    def callFunc(self):
-    
-        self.queue.put({self.name: self.currentText()})
 
+    def callFunc(self):
+        self.queue.put({self.name: self.currentText()})
         if self.command != None:
             self.command(self.currentText())
 
@@ -327,7 +503,6 @@ class Label(QtWidgets.QLabel):
     def __init__(self, parent, text, layout, row, column, rowspan=1, columnspan=1, alignment=None, **kwargs):
 
         super().__init__(text, parent)
-
         self.row = row
         self.column = column
         self.rowspan = rowspan
@@ -341,9 +516,7 @@ class Label(QtWidgets.QLabel):
 class PushButton(QtWidgets.QPushButton):
 
     def __init__(self, parent, text, name, layout, row, column, rowspan=1, columnspan=1, alignment=None, **kwargs):
-         
         super().__init__(text, parent)
-
         self.name = name
         self.layout = layout
         self.row = row
@@ -368,8 +541,705 @@ class PushButton(QtWidgets.QPushButton):
         return self.name
 
     def callFunc(self):
-        
         self.queue.put({self.name: True})
 
         if self.command != None:
             self.command()
+            
+class PlotWidget(pg.GraphicsLayoutWidget):
+
+    xticks = []
+    yticks = []
+
+    xlow = 0
+    ylow = 0
+
+    xhigh = 0
+    yhigh = 0
+
+    xcenter = 0
+    ycenter = 0
+
+    Type = 'WafProgress'
+    initValue = None
+    title = None
+    
+    data = np.array([[]])
+    
+    ticks = 15
+
+    def __init__(self, parent=None, mainGI=None, background='default', labelColor="k", name=None, labels=None, title="", initValue=0, ValueName="", **kwargs):
+
+        super().__init__(parent, *kwargs)
+
+        self.setWindowTitle(title)
+        
+        self.MainGI = mainGI
+        self.config = self.MainGI.getConfiguration()
+        self.mainFolder = self.config.getMainFolder()
+        self.backgroundColor = background
+        self.labelColor = labelColor
+        self.title = title
+        self.appendGraph = False
+
+        self.setBackground(self.backgroundColor)
+        
+        pg.setConfigOption('background', self.backgroundColor)
+        pg.setConfigOption('foreground', self.labelColor)
+
+        self.graphDefinitions()
+
+        # first dimension is row, second dimension is column
+        self.figData = []  
+        standardGraphProp = cp.deepcopy(self.standardGraphProp)
+        standardGraphProp["X"] = False
+        standardGraphProp["Map"] = False
+        standardGraphProp["Yscale"] = "lin"
+        standardGraphProp["Xscale"] = "lin"
+        standardGraphProp["LabelSize"] = 10
+        #self.updatePlotItems([[0,1,2,3,4,5,6,7,8,9],[1,10,100,1000,10000,100000,1000000,10000000,100000000,1000000000]], Row=0, Column=0, graphProp=standardGraphProp)
+        #self.updatePlotItems([[0,1,2,3,4,5,6,7,8,9],[1,10,100,1000,10000,100000,1000000,10000000,100000000,1000000000]], Row=1, Column=1, graphProp=standardGraphProp)
+        #self.updatePlotItems([[0,1,2,3,4,5,6,7,8,9],[1,10,100,1000,10000,100000,1000000,10000000,100000000,1000000000]], Row=2, Column=2, graphProp=standardGraphProp)
+        #self.updatePlotItems([[0,1,2,3,4,5,6,7,8,9],[1,10,100,1000,10000,100000,1000000,10000000,100000000,1000000000]], Row=3, Column=3, graphProp=standardGraphProp)
+        
+        #self.updatePlotItems([[0,1,2],[1,2,3],[1000,3,250]], graphProp=graphProp)
+        
+
+    def axisPrep(self, plotItem, figIndex):
+        graphProp = self.figData[figIndex]['GraphProp']
+        labelStyle = {'font-weight': 'bold', 'color': self.labelColor}
+        if 'LabelSize' in graphProp.keys():
+            labelStyle['font-size'] = "%spt" %(graphProp["LabelSize"])
+
+        if 'Ylabel' in graphProp.keys():
+            ylabel = graphProp['Ylabel']
+            yunit = []
+            yLabelStyle = cp.deepcopy(labelStyle)
+            if 'Yunit' in graphProp.keys():
+                yunit.append(graphProp['Yunit'])
+            else:
+                if ylabel.find("(") != -1: 
+                    yunit.append(ylabel.split("(")[1].split(")")[0])
+                    ylabel = ylabel.split("(")[0].strip()
+                elif ylabel.find("[") != -1:
+                    yunit.append(ylabel.split("[")[1].split("]")[0])
+                    ylabel = ylabel.split("(")[0].strip()
+            plotItem.setLabel('left', ylabel, *yunit, **yLabelStyle) 
+        if 'Xlabel' in graphProp.keys():
+            xlabel = graphProp['Xlabel']
+            xLabelStyle = cp.deepcopy(labelStyle)
+            xunit = []
+            if 'Xunit' in graphProp.keys():
+                xunit.append(graphProp['Xunit'])
+            else:
+                if xlabel.find("(") != -1: 
+                    xunit.append(xlabel.split("(")[1].split(")")[0])
+                    xlabel = xlabel.split("(")[0].strip()
+                elif xlabel.find("[") != -1:
+                    xunit.append(xlabel.split("[")[1].split("]")[0])
+                    xlabel = xlabel.split("(")[0].strip()
+            plotItem.setLabel('bottom', xlabel, *xunit, **xLabelStyle)
+
+        plotItem.showAxis("top", False)
+        plotItem.showAxis("left")
+        plotItem.showAxis("bottom")
+        plotItem.showAxis("right", False)
+
+        leftAxis = plotItem.getAxis("left")
+        leftAxis.setTextPen(self.labelColor)
+        botAxis = plotItem.getAxis("bottom")
+        botAxis.setTextPen(self.labelColor)
+
+    def updatePlotProperties(self, GraphProp={}, row=0, column=0, **kwargs):
+
+        plotItem = self.getItem(row,column)
+        
+        if plotItem == None:
+            return False
+        
+        self.removeItem(plotItem)
+
+        for n,d in enumerate(self.figData):
+            if d["GraphProp"]['Row'] == row and d["GraphProp"]['Column'] == column:
+                break
+
+        for key, value in GraphProp.items():
+            self.figData[n]["GraphProp"][key] = value
+
+        self.updatePlotItems(figIndex=n)
+
+    
+    def updatePlotPropertiesbyIndex(self, GraphProp={}, figIndex=0, **kwargs):
+
+        try:
+            figData = self.figData[figIndex]
+        except ValueError:
+            return False
+        
+        curGraphProp = figData['GraphProp']
+
+        plotItem = self.getItem(curGraphProp['Row'],curGraphProp['Column'])
+        self.removeItem(plotItem)
+
+        for key, value in curGraphProp.items():
+            figData["GraphProp"][key] = value
+
+        self.updatePlotItems(figIndex=figIndex)
+
+    def addPlot(self):
+        pass
+
+    def updatePlotItems(self, figIndex=0, **kwargs):
+        
+        try:
+            figData = self.figData[figIndex]
+            data = self.figData[figIndex]["Data"]
+            graphProp = self.figData[figIndex]["GraphProp"]
+        except ValueError:
+            return False
+        
+        for key, value in self.getStdGraphProperties().items():
+            if not key in list(graphProp.keys()):
+                graphProp[key] = value
+
+        keys = ['Row', 'Column', 'Rowspan', 'Columnspan']
+
+        for key in keys:
+            if key in kwargs.keys():
+                graphProp[key] = kwargs[key]
+
+        if not 'X' in graphProp.keys():
+            graphProp['X'] = False
+        if not 'Map' in graphProp.keys():
+            graphProp['Map'] = False
+
+        plotType = self.checkData(figData)
+        graphProp['PlotType'] = plotType
+        
+        ## most permanent manipulations are done - create copy for strorage
+
+        if 'Legend' in graphProp.keys():
+            self.legend = graphProp['Legend']
+
+        if 'LineStyle' in graphProp.keys():
+            graphProp['LineStyle'] = self.adjustInput(graphProp['LineStyle'], data, plotType)
+        if 'LineWidth' in graphProp.keys():
+            graphProp['LineWidth'] = self.adjustInput(graphProp['LineWidth'], data, plotType)
+        if 'ScatterStyle' in graphProp.keys():
+            graphProp['ScatterStyle'] = self.adjustInput(graphProp['ScatterStyle'], data, plotType)
+        if 'ScatterSize' in graphProp.keys():
+            graphProp['ScatterSize'] = self.adjustInput(graphProp['ScatterSize'], data, plotType)
+        
+        listLength = self.getRequiredLength(data, plotType)
+        org = cp.deepcopy(graphProp['ColorTable'])
+        graphProp['ColorTable'] = []
+        while len(graphProp['ColorTable']) < listLength:
+            graphProp['ColorTable'].extend(org)
+
+        if not isinstance(graphProp['Map'], pg.ImageItem) and not graphProp['PlotType'] == 'Map':
+            self.checkInputDimensions(graphProp, "LineStyle")
+            self.checkInputDimensions(graphProp, "LineWidth")
+            self.checkInputDimensions(graphProp, "ScatterStyle")
+            self.checkInputDimensions(graphProp, "ScatterSize")
+            self.checkInputDimensions(graphProp, "ColorTable")
+
+        if plotType == "Map":
+            graphProp['Map'] = pg.ImageItem()
+        
+        ## if no row/column are defined (automatically asign None) the plots will we appended if specified in the GUI
+        clear = False
+        append = self.appendGraph
+        if graphProp['Row'] == None and graphProp['Column'] == None:
+            append = self.appendGraph
+            if not append: 
+                clear = True
+                
+        if graphProp['Row'] == -2 or graphProp['Column'] == -2:
+            clear = True
+        
+        if graphProp['Row'] == None or graphProp['Row'] == -2:
+            graphProp['Row'] = -1
+        if graphProp['Column'] == None or graphProp['Column'] == -2:
+            graphProp['Column'] = -1
+
+        if graphProp['Row'] == -1 and graphProp['Column'] == -1:
+            if clear:
+                self.clear()
+            plotItem = self.addPlot(rowspan=graphProp['Rowspan'], colspan=graphProp['Colspan'])
+            graphProp['Row'], graphProp['Column'] = self.getRowColumn(plotItem)
+        elif graphProp['Row'] == None:
+            plotItem = self.addPlot(row=0, col=graphProp['Column'], rowspan=graphProp['Rowspan'], colspan=graphProp['Colspan'])
+            graphProp['Row'] = 0
+        elif graphProp['Column'] == None:
+            plotItem = self.addPlot(row=graphProp['Row'], col=0, rowspan=graphProp['Rowspan'], colspan=graphProp['Colspan'])
+            graphProp['Column'] = 0
+        else:
+            plotItem = self.addPlot(row=graphProp['Row'], col=graphProp['Column'], rowspan=graphProp['Rowspan'], colspan=graphProp['Colspan'])
+        
+        self.axisPrep(plotItem, figIndex)
+        self.updatePlot(plotItem, figIndex)
+    
+    def updateGraphs(self, graphData, graphProp):
+        self.clear()
+        self.figData = []
+        
+        n = 0
+        for d, i in zip(graphData, graphProp):
+            self.figData.append({"Data": d, "GraphProp":i})
+            self.updatePlotItems(n)
+            n = n+1
+
+    def getRowColumn(self, plotItem):
+        for n in range(100):
+            for m in range(100):
+                if plotItem == self.getItem(n,m):
+                    return (n, m)
+        return (0,0)
+
+    def clear(self):
+        super().clear()
+        self.figData = []
+
+    def adjustInput(self, input, data, plotType):
+        if not isinstance(input, list):
+            if isinstance(data, (list, np.ndarray)):
+                if plotType == "Y":
+                    return [input]
+                elif plotType == "XY":
+                    if len(np.shape(data)) == 3:
+                        return [input]*(len(data))
+                    elif len(np.shape(data)) == 2:
+                        return [input]*(len(data)-1)
+                    else:
+                        return [input]
+                elif plotType == "YY":
+                    return [input]*(len(data))
+            else:
+                return [input]
+        else:
+            return input
+        
+    def getRequiredLength(self, data, plotType):
+        if not isinstance(input, list):
+            if isinstance(data, (list, np.ndarray)):
+                if plotType == "Y":
+                    return 1
+                elif plotType == "XY":
+                    if len(np.shape(data)) == 3:
+                        return len(data)
+                    elif len(np.shape(data)) == 2:
+                        return len(data)-1
+                    else:
+                        return 1
+                elif plotType == "YY":
+                    return len(data)
+            else:
+                return 1
+        else:
+            return 0
+
+    def checkData(self, figData):
+        data = figData['Data']
+        figData['GraphProp']['PlotType']='Y'
+        if not isinstance(data, (list, np.ndarray)):
+            raise ValueError("Data must be a one or more dimensional list of int/float.")
+        if not isinstance(data[0], (list, np.ndarray)):
+            figData['GraphProp']['PlotType']='Y'
+        else:
+            if figData['GraphProp']["Map"]:
+                figData['GraphProp']['PlotType'] = 'Map'
+            else:
+                if figData['GraphProp']['X']:
+                    figData['GraphProp']['PlotType'] ='XY'
+                else:
+                    figData['GraphProp']['PlotType'] ='YY'
+        return figData['GraphProp']['PlotType']
+
+    def checkInputDimensions(self, graphProp, description):
+        
+        plotType = graphProp['PlotType']
+        n = graphProp[description]
+                
+        if not isinstance(n, (int,float,str,type(None))):
+            if isinstance(n, list):
+                if plotType=='Y' and len(n) < 1:
+                    raise TypeError("%s must be the same dimension as the data input")
+                #if not len(list) == len(n):
+                #    raise TypeError("%s must be the same dimension as the data input")
+                for x in range(len(n)):
+                    if not isinstance(x, (int,float,str)):
+                        raise TypeError("%s inputs must be int,float or str.")
+        
+    def updatePlot(self, plotItem, figIndex):
+        #plotItem.clear()
+        lines = []
+        graphProp = self.figData[figIndex]['GraphProp']
+        data = self.figData[figIndex]['Data']
+        plotType = graphProp["PlotType"]
+        style = graphProp["Style"]
+        linestyle = []
+        for x in graphProp["LineStyle"]:
+            try:
+                linestyle.append(self.lineLookup[x])
+            except KeyError:
+                linestyle.append(list(self.lineLookup.values())[0])
+
+        linewidth = graphProp["LineWidth"]
+        scatterstyle = graphProp["ScatterStyle"]
+        scattersize = graphProp["ScatterSize"]
+        colorTable = graphProp["ColorTable"]
+
+        xState = False
+        if graphProp['Xscale'] == 'log':
+            xState=True
+            
+        yState = False
+        if graphProp['Yscale'] == 'log':
+            yState=True
+
+        mkPens = []
+        mkBrush = []
+        symbol = []
+
+        scatter = False
+        if plotType != "Map":
+            if style.lower() == "line":
+                for n in range(len(linestyle)):
+                    pen = {}
+                    if linestyle[n] != None:
+                        pen['style'] =  linestyle[n]
+                    if linewidth[n] != None:
+                        pen['width'] = float(linewidth[n])
+                    if colorTable[n] != None:
+                        pen['color'] = colorTable[n]
+                    mkPens.append(pg.mkPen(**pen))
+            else:
+                for n in range(len(scatterstyle)):
+                    pen = {}
+                    brush = ()
+                    symbol.append({})
+                    if scatterstyle[n] != None:
+                        symbol[-1]['symbol'] = scatterstyle[n]
+                    if scattersize[n] != None:
+                        symbol[-1]['size'] = scattersize[n]
+                    if colorTable[n] != None:
+                        symbol[-1]['brush'] = pg.mkBrush(*colorTable[n])
+                        pen['color'] = colorTable[n]
+                    mkPens.append(pg.mkPen(**pen))
+                scatter = True
+
+            plotItem.setLogMode(xState, yState)
+        
+        lines.append([])
+        if plotType == 'Y':
+            lines.append(None)
+            if yState:
+                data1 = np.arange(1,len(data)+1,1)
+                data2 = np.absolute(data)
+                if scatter:
+                    lines[0] = plotItem.addItem(pg.ScatterPlotItem(x=data1, y=data2, **symbol[0], pen=mkPens[0]))
+                else:
+                    lines[0] = plotItem.plot(x=data1, y=data2, pen=mkPens[0])
+
+        elif plotType == 'XY':
+            # data in 3D array 
+            if len(np.shape(data)) == 3:
+                for n in range(np.shape(data)[0]):
+                    lines.append(None)
+                    data1 = data[n][0]
+                    if yState:
+                        data1 = np.absolute(data[n][0])
+                    data2 = data[n][1]
+                    if xState:
+                        data2 = np.absolute(data[n][1])
+                    if scatter:
+                        lines[n] = plotItem.addItem(pg.ScatterPlotItem(x=data1, y=data2, **symbol[n], pen=mkPens[n]))
+                    else:
+                        lines[n] = plotItem.plot(x=data1, y=data2, pen=mkPens[n])
+
+                #if data[0][0][-1] < 0.1 and self.xscale=='lin':
+                #    plotItem.ticklabel_format(style='sci', axis='x', scilimits=(-1,1))
+           
+            # data in 2D array
+            else: 
+                plotNum = np.shape(data)[0]-1 
+                data1 = data[0]
+                if xState:
+                    data1 = np.absolute(data[0])
+                for n in range(plotNum):
+                    lines.append(None)
+                    data2 = data[n+1]
+                    if yState:
+                        data2 = np.absolute(data[n+1])
+                    if scatter:
+                        lines[n] = plotItem.addItem(pg.ScatterPlotItem(x=data1, y=data2, **symbol[n], pen=mkPens[n]))
+                    else:
+                        lines[n] = plotItem.plot(x=data1, y=data2, pen=mkPens[n]) 
+
+                #if data[0][-1] < 0.1 and self.xscale=='lin':
+                #    plotItem.ticklabel_format(style='sci', axis='x', scilimits=(-1,1))
+
+        elif plotType == 'YY':
+            for n in range(len(data)):
+                lines.append(None)
+                data1 = np.arange(1,len(data[n])+1,1)
+                data2 = np.absolute(data[n])
+                if yState:
+                    data1 = np.absolute(data[n])
+                if scatter:
+                    lines[n] = plotItem.addItem(pg.ScatterPlotItem(x=data1, y=data2, **symbol[n], pen=mkPens[n]))
+                else:
+                    lines[n] = plotItem.plot(x=data1, y=data2, pen=mkPens[n])
+            
+            try:
+                size = len(data1)
+            except:
+                size = data1.size
+
+            #if size > 99 and not xState:
+            #    plotItem.ticklabel_format(style='sci', axis='x', scilimits=(-1,1))
+
+        elif plotType == 'Map':
+
+            kwargs = {}
+            if "Clabel" in graphProp:
+                kwargs["label"] = graphProp["Clabel"]
+
+            data1 = std.equalizeArray(data)
+            data1 = np.array(data1, np.longdouble)
+                    
+            maxValue = 0
+            minValue = sys.float_info.max
+            for ent in data: 
+                if max(ent)>maxValue:
+                    maxValue = max(ent)
+                if max(ent)<minValue:
+                    minValue = max(ent)
+                    
+            # Get the colormap
+            maxValue = 255
+            colormap = pg.colormap.getFromMatplotlib("viridis")  # cm.get_cmap("CMRmap")
+            graphProp['Map'].setImage(data1)
+            graphProp['Map'].setColorMap(colormap)
+            tr = QtGui.QTransform()
+            graphProp['Map'].setTransform(tr)
+            graphProp['Map'].setBorder(1)
+            plotItem.addColorBar( graphProp['Map'], colorMap=colormap, values=(minValue, maxValue), *kwargs)   
+            plotItem.addItem(graphProp['Map'])
+
+    def getFilename(self):
+        grProp = self.figData[0]["GraphProp"]
+        
+        timestamp = dt.datetime.now().strftime("%Y%m%d_%H-%M-%S-%f")
+        filename = "ResultWindow_%s_%s" %(filename, timestamp)
+        filename = "%s_DieX%dY%d_DevX%dY%d_%s" %(filename, grProp['DieX'], grProp['DieY'], grProp['DevX'], grProp['DevY'], grProp['Measurement'])
+        return filename
+
+    def SaveToFile(self, folder):
+        
+        currentRowMax = 0
+        currentColMax = 0
+        
+        filename = self.getFilename()
+        
+
+        while self.getItem(currentRowMax, 0) is not None:
+            currentRowMax += 1
+        
+        while self.getItem(0, currentColMax) is not None:
+            currentColMax += 1
+
+        if not os.path.exists(folder):
+            os.makedirs(folder)
+        
+        for n, m in zip(range(currentRowMax), range(currentColMax)):
+            for f in self.figData:
+                if f["GraphProp"]['Row'] == n and f["GraphProp"]['Column'] == m:
+                    filename = "%s_%s" %(filename, f["GraphProp"]['ValueName'])
+            item = self.getItem(n,m)
+            exporter = pg.exporters.ImageExporter(item)
+            filename = "%s_Row%d_Col%d.png" %(filename, n,m)
+            path = os.path.join(folder, filename)
+            exporter.export(path)
+
+    def updateBackground(self, backgroundColor):
+        self.backgroundColor = backgroundColor
+
+        self.setBackground(self.backgroundColor)
+        pg.setConfigOption('background', self.backgroundColor)
+
+    def updateLabelColor(self, labelColor):
+        self.labelColor = labelColor
+        pg.setConfigOption('foreground', self.labelColor)
+
+        currentRowMax = 0
+        currentColMax = 0
+        
+        while self.getItem(currentRowMax, 0) is not None:
+            currentRowMax += 1
+        
+        while self.getItem(0, currentColMax) is not None:
+            currentColMax += 1
+
+
+        for n, m in zip(range(currentRowMax), range(currentColMax)):
+            item = self.getItem(n,m)
+
+            axisNames = [ 'left', 'bottom', 'top', 'right']
+            for a in axisNames:
+                axis = item.getAxis(a)
+                axis.setTextPen(self.labelColor)
+
+    def getStdGraphProperties(self):
+        return cp.deepcopy(self.standardGraphProp)
+    
+    def getGraphProperties(self, row, col):
+        for d in self.figData:
+            gp = d['GraphProp']
+            if gp['Row'] == row and col == gp['Column']:
+                return gp
+        return None
+
+    def updateScatterSize(self, value, row, col):
+        try:
+            value = int(value)
+        except ValueError:
+            return None
+        
+        if self.scatterSizeMin <= value and self.scatterSizeMax >= value:
+            graphProp = {}
+            graphProp['ScatterSize'] = value
+            self.updatePlotProperties(graphProp, row, col)
+
+    def updateLabelSize(self, value, row, col):
+        value = float(value)
+        if self.labelSizeMin <= value and self.labelSizeMax >= value:
+            graphProp = {}
+            graphProp['LabelSize'] = value
+            self.updatePlotProperties(graphProp, row, col)
+
+    def updateLineWidth(self, value, row, col):
+        value = float(value)
+        if self.lineWidthMin <= value and self.lineWidthMax >= value:
+            graphProp = {}
+            graphProp['LineWidth'] = value
+            self.updatePlotProperties(graphProp, row, col)
+
+    def updateScatterStyle(self, value, row, col):
+        if value in self.scatterLookup:
+            graphProp = {}
+            graphProp['ScatterStyle'] = value
+            self.updatePlotProperties(graphProp, row, col)
+
+    def updateLineStyle(self, value, row, col):
+        if value in list(self.lineLookup.keys()):
+            graphProp = {}
+            graphProp['LineStyle'] = value
+            self.updatePlotProperties(graphProp, row, col)
+            
+    def updateStyle(self, value, row, col):
+        if value in list(self.styleLookup):
+            graphProp = {}
+            graphProp['Style'] = value
+            self.updatePlotProperties(graphProp, row, col)
+            
+    
+    def _updateColorTable(self, name):
+        cmapTemp = mpl.colormaps[name]
+        cmap = []
+        mult=255
+        for c in cmapTemp.colors:
+            cmap.append((int(mult*c[0]),int(mult*c[1]),int(mult*c[2])))
+
+        return cmap
+
+    def updateColorTable(self, name):
+        cmap = self._updateColorTable(name)
+        
+        graphProp = {}
+        graphProp['ColorTable'] = cmap
+        self.updatePlotProperties(graphProp)
+
+
+    def graphDefinitions(self):
+        self.lineLookup = {}
+        self.lineLookup["-"] = QtCore.Qt.SolidLine
+        self.lineLookup["--"] = QtCore.Qt.DashLine
+        self.lineLookup["."] = QtCore.Qt.DotLine
+        self.lineLookup["-."] = QtCore.Qt.DashDotLine
+        self.lineLookup["-.."] = QtCore.Qt.DashDotDotLine
+
+        self.scatterLookup = ["o", "s", "t", "d", "+", "t1", "t2", "t3", "p", "h", "star", "x", "arrow_up", "arrow_right", "arrow_down", "arrow_left", "crosshair"]
+        
+        self.styleLookup = ['Line', "Scatter"]
+
+        self.labelSizeMin = 5
+        self.labelSizeStep = 1
+        self.labelSizeMax = 25
+
+        self.labelSizeLookup = list(np.arange(self.labelSizeMin,self.labelSizeMax+self.labelSizeMin, self.labelSizeStep))
+        self.labelSizeLookup = [x for x in self.labelSizeLookup]
+
+        self.lineWidthMin = 0.5
+        self.lineWidthStep = 0.5
+        self.lineWidthMax = 5
+        self.lineWidthLookup = list(np.arange(self.lineWidthMin,self.lineWidthMax+self.lineWidthMin, self.lineWidthStep))
+        self.lineWidthLookup = [x for x in self.lineWidthLookup]
+        
+        self.scatterSizeMin = 1
+        self.scatterSizeStep = 1
+        self.scatterSizeMax = 12
+        self.scatterSizeLookup = list(np.arange(self.scatterSizeMin,self.scatterSizeMax+self.scatterSizeMin, self.scatterSizeStep))
+        self.scatterSizeLookup = [x for x in self.scatterSizeLookup]
+
+        colorMapName = "tab10"
+        
+        self.standardGraphProp = {}
+        self.standardGraphProp['ColorTable'] = self._updateColorTable(colorMapName)
+        self.standardGraphProp['Xlabel'] = "A.U."
+        self.standardGraphProp['Ylabel'] = "A.U."
+        #self.standardGraphProp['Clabel'] = "Resistance ($\Omega$)"
+        self.standardGraphProp['Legend'] = None
+        self.standardGraphProp['Title'] = ""
+        self.standardGraphProp['X'] = True
+        self.standardGraphProp['Map'] = False
+        self.standardGraphProp['Xscale'] = 'lin'
+        self.standardGraphProp['Yscale'] = 'lin'
+        self.standardGraphProp['ValueName'] = ''
+        self.standardGraphProp['Filename'] = 'test'
+        self.standardGraphProp['Row'] = None
+        self.standardGraphProp['Column'] = None
+        self.standardGraphProp['Rowspan'] = 1
+        self.standardGraphProp['Colspan'] = 1
+        self.standardGraphProp['Append'] = False
+
+        self.standardGraphProp['Style'] = "Scatter"
+        self.standardGraphProp['LineStyle'] = list(self.lineLookup.keys())[0]
+        self.standardGraphProp['ScatterStyle'] = self.scatterLookup[0]
+        self.standardGraphProp['LineWidth'] = 5
+        self.standardGraphProp['ScatterSize'] = 8
+        
+        
+    def getColorTable(self):
+        return self.colorTable
+    
+    def getLineStyleOptions(self):
+        return list(self.lineLookup.keys())
+    
+    def getScatterStyleOptions(self):
+        return list(self.scatterLookup)
+    
+    def getStyleOptions(self):
+        return list(self.styleLookup)
+    
+    def getLabelSizeOptions(self):
+        return list(self.labelSizeLookup)
+    
+    def getLineWidthOptions(self):
+        return list(self.lineWidthLookup)
+        
+    def getScatterSizeOptions(self):
+        return list(self.scatterSizeLookup)
+    
+    def updateAppendGraph(self, state):
+        self.appendGraph = state

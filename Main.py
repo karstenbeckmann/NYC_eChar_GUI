@@ -1,6 +1,7 @@
 
 import sys
 from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5.QtCore import QFileInfo
 from ctypes import *
 import win32api
 import win32con
@@ -33,8 +34,12 @@ import Qt_Tables as Qt_TB
 import Qt_B1500A as Qt_B1500A
 import Qt_E5274A as Qt_E5274A
 import Qt_MainWindow as Qt_Main
-
-
+import qdarktheme as qtdt
+import darkdetect
+import ctypes
+myappid = 'mycompany.myproduct.subproduct.version' 
+ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+time.sleep(0.1)
 
 def hideConsole():
     """
@@ -68,8 +73,21 @@ except SystemError as e:
     print(e)
     sys.exit()
 
+qtdt.enable_hi_dpi()
+app = QtWidgets.QApplication(sys.argv + ['-platform', 'windows:darkmode=2'])
 
-app = QtWidgets.QApplication(sys.argv)
+# Force the style to be the same on all OSs:
+app.setStyle("Fusion")
+
+#set Icon
+iconPath = "etc/icon.ico"
+iconPath =  os.path.join(os.getcwd(),iconPath)
+app.setWindowIcon(QtGui.QIcon(iconPath))
+
+#set Dark Mode based on System
+qtdt.setup_theme("auto")
+
+
 app.setQuitOnLastWindowClosed(False)
 desk = QtWidgets.QDesktopWidget()
 
@@ -108,7 +126,7 @@ updateTime = 0.2
 threads = qu.Queue()
 
 
-ui = Qt_Main.MainUI(app, size,"Wafer Map",Configuration, eChar, Instruments, threads)
+ui = Qt_Main.MainUI(app, size,"Wafer Map",Configuration, eChar, Instruments, threads,icon=iconPath)
 ui.show()
 
 sys.exit(app.exec_())

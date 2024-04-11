@@ -74,7 +74,7 @@ class ProberWindow(QtWidgets.QMainWindow):
         self._main = stdObj.stdFrameGrid(self, self.MainGI, self.columns, self.rows, self.__width, self.__height)
         
         self._main.setFont(self.QFont)
-        self._main.setContentsMargins(*self.QMargin)
+        self._main.setContentsMargins(self.QMargin)
         self.resize(int(self.__width), int(self.__height))
         self._main.resize(int(self.__width), int(self.__height))
         self.layout = self._main.layout

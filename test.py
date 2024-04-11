@@ -8,9 +8,14 @@ import time as tm
 import numpy as np
 from ctypes import *
 from Exceptions import *
+import pyqtgraph as pg
 
+import inspect
 
+def f():
+    print(inspect.stack()[1][3])
 
-test = {}
-
-print(*test)
+def g():
+    f()
+ 
+g()

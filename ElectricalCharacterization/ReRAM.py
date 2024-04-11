@@ -15,8 +15,6 @@ import copy as cp
 
 def FormingDCE5274A(eChar, SweepSMU, GNDSMU, GateSMU, Vform, Vgate, steps, Compl, GateCompl, hold, delay, DCSMUs, Vdc, DCcompl):
 
-    Typ = 'Forming-DC'
-
     Chns = [SweepSMU, GNDSMU, GateSMU]
     Chns.extend(DCSMUs)
     VorI = [True, True, True]
@@ -53,15 +51,15 @@ def FormingDCE5274A(eChar, SweepSMU, GNDSMU, GateSMU, Vform, Vgate, steps, Compl
     Plot = [out['Data'][-1]]
     Plot.extend([out['Data'][0]])
 
-    eChar.plotIVData({"Add": False, 'Xaxis': True, 'Yscale': 'lin',  "Traces": Plot, 'Xlabel': Xlab, "Ylabel": Ylab, 'Title': "Forming", "MeasurementType": Typ, "ValueName": 'Forming'})
+    eChar.plotIVData({"Add": False, 'Xaxis': True, 'Yscale': 'lin',  "Traces": Plot, 'Xlabel': Xlab, "Ylabel": Ylab, 'Title': "Forming", "ValueName": 'Forming'})
             
     try: 
 
         header = out['Header']
         
         header.insert(0,"TestParameter,Measurement.Type,%s" %(Typ))
-        header.append("Measurement,Device,%s" %(eChar.device))
-        header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
+        header.append("Measurement,Device,%s" %(eChar.getDevice()))
+        header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.getLocalTime())))
         
         DataName = "DataName, Vform, Iform, Ignd, Igate"
         Unit = "Units, V, A, A, A" 
@@ -90,8 +88,6 @@ def FormingDCE5274A(eChar, SweepSMU, GNDSMU, GateSMU, Vform, Vgate, steps, Compl
 
     
 def SetDCE5274A(eChar, SweepSMU, GNDSMU, GateSMU, Vset, Vgate, steps, Compl, GateCompl, hold, delay, DCSMUs, Vdc, DCcompl):
-
-    Typ = 'set-DC'
     
     Chns = [SweepSMU, GNDSMU, GateSMU]
     VorI = [True, True, True]
@@ -130,15 +126,11 @@ def SetDCE5274A(eChar, SweepSMU, GNDSMU, GateSMU, Vset, Vgate, steps, Compl, Gat
     Plot = [out['Data'][-1]]
     Plot.extend([out['Data'][0]])
 
-    eChar.plotIVData({"Add": False, 'Xaxis': True, 'Yscale': 'lin',  "Traces": Plot, 'Xlabel': Xlab, "Ylabel": Ylab, 'Title': "Set", "MeasurementType": Typ, "ValueName": 'Set'})
+    eChar.plotIVData({"Add": False, 'Xaxis': True, 'Yscale': 'lin',  "Traces": Plot, 'Xlabel': Xlab, "Ylabel": Ylab, 'Title': "Set", "ValueName": 'Set'})
             
     try: 
 
         header = out['Header']
-        
-        header.insert(0,"TestParameter,Measurement.Type,%s" %(Typ))
-        header.append("Measurement,Device,%s" %(eChar.device))
-        header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
         
         DataName = "DataName, Vreset, Ireset, Ignd, Igate"
         Unit = "Units, V, A, A, A" 
@@ -162,7 +154,7 @@ def SetDCE5274A(eChar, SweepSMU, GNDSMU, GateSMU, Vset, Vgate, steps, Compl, Gat
         
         data.append(line)
 
-    eChar.writeDataToFile(header, data, Typ=Typ, startCyc=CycStart, endCyc=eChar.curCycle-1)
+    eChar.writeDataToFile(header, data, startCyc=CycStart, endCyc=eChar.curCycle-1)
            
     #resis = []
     #resis.append(eChar.dhValue(calcRes, name, DoYield=eChar.DoYield, Unit='ohm'))
@@ -171,8 +163,6 @@ def SetDCE5274A(eChar, SweepSMU, GNDSMU, GateSMU, Vset, Vgate, steps, Compl, Gat
     #eChar.StatOutValues.addRow(row)
 
 def ResetDCE5274A(eChar, SweepSMU, GNDSMU, GateSMU, Vreset, Vgate, steps, Compl, GateCompl, hold, delay, DCSMUs, Vdc, DCcompl):
-
-    Typ = 'reset-DC'
     
     Chns = [SweepSMU, GNDSMU, GateSMU]
     VorI = [True, True, True]
@@ -212,15 +202,11 @@ def ResetDCE5274A(eChar, SweepSMU, GNDSMU, GateSMU, Vreset, Vgate, steps, Compl,
     Plot = [out['Data'][-1]]
     Plot.extend([out['Data'][0]])
 
-    eChar.plotIVData({"Add": False, 'Xaxis': True, 'Yscale': 'lin',  "Traces": Plot, 'Xlabel': Xlab, "Ylabel": Ylab, 'Title': "Reset", "MeasurementType": Typ, "ValueName": 'Reset'})
+    eChar.plotIVData({"Add": False, 'Xaxis': True, 'Yscale': 'lin',  "Traces": Plot, 'Xlabel': Xlab, "Ylabel": Ylab, 'Title': "Reset", "ValueName": 'Reset'})
             
     try: 
 
         header = out['Header']
-        
-        header.insert(0,"TestParameter,Measurement.Type,%s" %(Typ))
-        header.append("Measurement,Device,%s" %(eChar.device))
-        header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
         
         DataName = "DataName, Vreset, Ireset, Ignd, Igate"
         Unit = "Units, V, A, A, A" 
@@ -244,11 +230,9 @@ def ResetDCE5274A(eChar, SweepSMU, GNDSMU, GateSMU, Vreset, Vgate, steps, Compl,
         
         data.append(line)
 
-    eChar.writeDataToFile(header, data, Typ=Typ, startCyc=CycStart)
+    eChar.writeDataToFile(header, data, startCyc=CycStart)
            
 def FormingDC(eChar, SweepSMU, GNDSMU, GateSMU, Vform, Vgate, steps, Compl, GateCompl, hold, delay, DCSMUs, Vdc, DCcompl):
-
-    Typ = 'Forming-DC'
 
     Chns = [SweepSMU, GNDSMU, GateSMU]
     Chns.extend(DCSMUs)
@@ -286,15 +270,11 @@ def FormingDC(eChar, SweepSMU, GNDSMU, GateSMU, Vform, Vgate, steps, Compl, Gate
     Plot = [out['Data'][-1]]
     Plot.extend([out['Data'][0]])
 
-    eChar.plotIVData({"Add": False, 'Xaxis': True, 'Yscale': 'lin',  "Traces": Plot, 'Xlabel': Xlab, "Ylabel": Ylab, 'Title': "Forming", "MeasurementType": Typ, "ValueName": 'Forming'})
+    eChar.plotIVData({"Add": False, 'Xaxis': True, 'Yscale': 'lin',  "Traces": Plot, 'Xlabel': Xlab, "Ylabel": Ylab, 'Title': "Forming", "ValueName": 'Forming'})
             
     try: 
 
         header = out['Header']
-        
-        header.insert(0,"TestParameter,Measurement.Type,%s" %(Typ))
-        header.append("Measurement,Device,%s" %(eChar.device))
-        header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
         
         DataName = "DataName, Vform, Iform, Ignd, Igate"
         Unit = "Units, V, A, A, A" 
@@ -335,13 +315,12 @@ def FormingDC(eChar, SweepSMU, GNDSMU, GateSMU, Vform, Vgate, steps, Compl, Gate
     val2 = eChar.dhValue(HRS, "FirstHRS", Unit="V")
     val3 = eChar.dhValue(LRS, "FirstLRS", Unit="V")
     
-    eChar.dhAddRow([val1, val2, val3], Typ)
+    eChar.dhAddRow([val1, val2, val3])
 
-    eChar.writeDataToFile(header, data, Typ=Typ, startCyc=0, endCyc=1)
+    eChar.writeDataToFile(header, data, startCyc=0, endCyc=1)
     
 def SetDC(eChar, SweepSMU, GNDSMU, GateSMU, Vset, Vgate, steps, Compl, GateCompl, hold, delay, DCSMUs, Vdc, DCcompl):
 
-    Typ = 'set-DC'
     
     Chns = [SweepSMU, GNDSMU, GateSMU]
     VorI = [True, True, True]
@@ -380,16 +359,12 @@ def SetDC(eChar, SweepSMU, GNDSMU, GateSMU, Vset, Vgate, steps, Compl, GateCompl
     Plot = [out['Data'][-1]]
     Plot.extend([out['Data'][0]])
 
-    eChar.plotIVData({"Add": False, 'Xaxis': True, 'Yscale': 'lin',  "Traces": Plot, 'Xlabel': Xlab, "Ylabel": Ylab, 'Title': "Set", "MeasurementType": Typ, "ValueName": 'Set'})
+    eChar.plotIVData({"Add": False, 'Xaxis': True, 'Yscale': 'lin',  "Traces": Plot, 'Xlabel': Xlab, "Ylabel": Ylab, 'Title': "Set",  "ValueName": 'Set'})
             
     try: 
 
         header = out['Header']
-        
-        header.insert(0,"TestParameter,Measurement.Type,%s" %(Typ))
-        header.append("Measurement,Device,%s" %(eChar.device))
-        header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
-        
+                
         DataName = "DataName, Vreset, Ireset, Ignd, Igate"
         Unit = "Units, V, A, A, A" 
         
@@ -429,9 +404,9 @@ def SetDC(eChar, SweepSMU, GNDSMU, GateSMU, Vset, Vgate, steps, Compl, GateCompl
     val2 = eChar.dhValue(HRS, "HRS", Unit="V")
     val3 = eChar.dhValue(LRS, "LRS", Unit="V")
     
-    eChar.dhAddRow([val1, val2, val3], Typ)
+    eChar.dhAddRow([val1, val2, val3])
 
-    eChar.writeDataToFile(header, data, Typ=Typ, startCyc=CycStart, endCyc=eChar.curCycle-1)
+    eChar.writeDataToFile(header, data, startCyc=CycStart, endCyc=eChar.curCycle-1)
            
     #resis = []
     #resis.append(eChar.dhValue(calcRes, name, DoYield=eChar.DoYield, Unit='ohm'))
@@ -439,8 +414,6 @@ def SetDC(eChar, SweepSMU, GNDSMU, GateSMU, Vset, Vgate, steps, Compl, GateCompl
     #row = eChar.dhAddRow(resis,Typ)
 
 def ResetDC(eChar, SweepSMU, GNDSMU, GateSMU, Vreset, Vgate, steps, Compl, GateCompl, hold, delay, DCSMUs, Vdc, DCcompl):
-
-    Typ = 'reset-DC'
     
     Chns = [SweepSMU, GNDSMU, GateSMU]
     VorI = [True, True, True]
@@ -480,15 +453,10 @@ def ResetDC(eChar, SweepSMU, GNDSMU, GateSMU, Vreset, Vgate, steps, Compl, GateC
     Plot = [out['Data'][-1]]
     Plot.extend([out['Data'][0]])
 
-    eChar.plotIVData({"Add": False, 'Xaxis': True, 'Yscale': 'lin',  "Traces": Plot, 'Xlabel': Xlab, "Ylabel": Ylab, 'Title': "Reset", "MeasurementType": Typ, "ValueName": 'Reset'})
+    eChar.plotIVData({"Add": False, 'Xaxis': True, 'Yscale': 'lin',  "Traces": Plot, 'Xlabel': Xlab, "Ylabel": Ylab, 'Title': "Reset", "ValueName": 'Reset'})
             
     try: 
-
         header = out['Header']
-        
-        header.insert(0,"TestParameter,Measurement.Type,%s" %(Typ))
-        header.append("Measurement,Device,%s" %(eChar.device))
-        header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
         
         DataName = "DataName, Vreset, Ireset, Ignd, Igate"
         Unit = "Units, V, A, A, A" 
@@ -529,9 +497,9 @@ def ResetDC(eChar, SweepSMU, GNDSMU, GateSMU, Vreset, Vgate, steps, Compl, GateC
     val2 = eChar.dhValue(HRS, "HRS", Unit="V")
     val3 = eChar.dhValue(LRS, "LRS", Unit="V")
     
-    eChar.dhAddRow([val1, val2, val3], Typ)
+    eChar.dhAddRow([val1, val2, val3])
 
-    eChar.writeDataToFile(header, data, Typ=Typ, startCyc=CycStart)
+    eChar.writeDataToFile(header, data, startCyc=CycStart)
            
            
 def PulseRead(eChar, PulseChn, GroundChn, Vread, delay, tread, tbase, WriteHeader=True):
@@ -548,10 +516,9 @@ def PulseRead(eChar, PulseChn, GroundChn, Vread, delay, tread, tbase, WriteHeade
     tbase:     base time   (s)
     WriteHeader: Enable/Disable writing the header into overlaying summary output files
     """
-    MeasType = 'PulseRead'
     tfall = tread * 0.1
     trise = tread * 0.1
-    eChar.localtime = tm.localtime()
+    eChar.updateTime()
 
     tmstart = tbase/2 + trise*2
     tmend = tbase/2 + trise + tread-tfall
@@ -575,25 +542,10 @@ def PulseRead(eChar, PulseChn, GroundChn, Vread, delay, tread, tbase, WriteHeade
     header = []
     header = eChar.wgfmu.getHeader()
 
-    header.insert(0,"TestParameter,Measurement.Type,%s" %(MeasType))
-    header.append("Measurement,Device,%s" %(eChar.device))
-    header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
+    header.append("Measurement,Device,%s" %(eChar.getDevice()))
+    header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.getLocalTime())))
     
     header.append('MeasurmentResult,Resistance,%f' %(resistance))
-    
-    if not eChar.AdditionalHeader == []:
-        header.extend(eChar.AdditionalHeader)
-    else:
-        header.append("Measurement,Type.Primary,%s" %(MeasType))
-
-    if WriteHeader:
-        eChar.Combinedheader.extend(header)
-
-    if not eChar.ExternalHeader == []:
-        header.extend(eChar.ExternalHeader)
-    
-    if not eChar.DCHeader == None:
-        header.extend(eChar.DCHeader)
 
     newline = [None]*2
     newline[0] = 'DataName, Cycle'
@@ -620,17 +572,17 @@ def PulseRead(eChar, PulseChn, GroundChn, Vread, delay, tread, tbase, WriteHeade
 
     header.extend(newline)
 
-    eChar.writeDataToFile(header, [dataStr], Typ=MeasType)
+    eChar.writeDataToFile(header, [dataStr])
            
-    res = {'Header':header, 'IVdata':data, 'Type': MeasType}
-    eChar.Results.append(res)
+    res = {'Header':header, 'IVdata':data}
 
 
     resis = eChar.dhValue(resistance, 'Resistance', Unit='ohm')
-    row = eChar.dhAddRow([resis],MeasType,eChar.curCycle,eChar.curCycle)
+    row = eChar.dhAddRow([resis],eChar.curCycle)
 
 
     eChar.curCycle = eChar.curCycle+1
+
     return res
 
 ###########################################################################################################################
@@ -660,7 +612,7 @@ def PulseForming(eChar, PulseChn, GroundChn, Vform, delay, trise, tfall, twidth,
     WriteHeader: Enable/Disable writing the header into overlaying summary output files
     """
     
-    eChar.localtime = tm.localtime()
+    eChar.updateTime()
     tfallread = tread * 0.1
     triseread = tread * 0.1
 
@@ -713,27 +665,14 @@ def PulseForming(eChar, PulseChn, GroundChn, Vform, delay, trise, tfall, twidth,
     header = []
     header = eChar.wgfmu.getHeader()
 
-    header.insert(0,"TestParameter,Measurement.Type,PulseForming")
-    header.append("Measurement,Device,%s" %(eChar.device))
-    header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
     if read:
         header.append('MeasurmentResult,HRS,%f' %(SepData['HRS'][0]))
         header.append('MeasurmentResult,LRS,%f' %(SepData['LRS'][0]))
     header.append('MeasurmentResult,AvgImaxForm,%f' %(SepData['ImaxSet'][0]))
 
-    if not eChar.AdditionalHeader == []:
-        header.extend(eChar.AdditionalHeader)
-    else:
-        header.append('Measurement,Type.Primary,PulseForming')
-
     if WriteHeader:
-        eChar.Combinedheader.extend(header)
+        eChar.extendHeader("Combined", header)
 
-    if not eChar.ExternalHeader == []:
-        header.extend(eChar.ExternalHeader)
-    
-    if not eChar.DCHeader == None:
-        header.extend(eChar.DCHeader)
 
     newline = [None]*2
     newline[0] = 'DataName, Cycle'
@@ -747,22 +686,20 @@ def PulseForming(eChar, PulseChn, GroundChn, Vform, delay, trise, tfall, twidth,
     
     PulseIVDataPrepAndExport(eChar, SepData, header, eChar.curCycle, MeasPoints, 'PulseForming')
 
-    Typ = 'PulseForming'
-    res = {'Header':header, 'IVdata': SepData['IVdata'], 'Vform':SepData['Vset'], 'LRS':SepData['LRS'], 'HRS':SepData['HRS'], 'ImaxSet': SepData['ImaxSet'], 'Type': Typ}
-    eChar.Results.append(res)
+    res = {'Header':header, 'IVdata': SepData['IVdata'], 'Vform':SepData['Vset'], 'LRS':SepData['LRS'], 'HRS':SepData['HRS'], 'ImaxSet': SepData['ImaxSet']}
 
     if ret[3]["Name"][0].lower() == "i":
         Trac = [SepData['IVdata'][1],SepData['IVdata'][3]] 
     else:
         Trac = [SepData['IVdata'][3],SepData['IVdata'][1]] 
         
-    eChar.plotIVData({"Traces":Trac, 'Xaxis': True, 'Xlabel': 'Voltage (V)', "Ylabel": 'Current (A)', 'Title': "Forming", "MeasurementType": Typ, "ValueName": 'IV'})
+    eChar.plotIVData({"Traces":Trac, 'Xaxis': True, 'Xlabel': 'Voltage (V)', "Ylabel": 'Current (A)', 'Title': "Forming", "ValueName": 'IV'})
     HRS = eChar.dhValue(eChar, SepData['HRS'][0], 'FirstHRS', Unit='ohm')
     LRS = eChar.dhValue(eChar, SepData['LRS'][0], 'FirstLRS', Unit='ohm')
     ImaxForm = eChar.dhValue(eChar, SepData['ImaxSet'][0], 'ImaxForm', Unit='A')
     Vform = eChar.dhValue(eChar, SepData['Vset'][0], 'Vform', Unit='V')
     
-    row = eChar.dhAddRow([HRS,LRS,ImaxForm,Vform],'PulseForming',eChar.curCycle,eChar.curCycle)
+    row = eChar.dhAddRow([HRS,LRS,ImaxForm,Vform], eChar.curCycle,eChar.curCycle)
 
     eChar.curCycle = eChar.curCycle+1
     return res
@@ -794,7 +731,7 @@ def PulseSet(eChar, PulseChn, GroundChn, Vform, delay, trise, tfall, twidth, tba
     WriteHeader: Enable/Disable writing the header into overlaying summary output files
     """
     
-    eChar.localtime = tm.localtime()
+    eChar.updateTime()
     tfallread = tread * 0.1
     triseread = tread * 0.1
 
@@ -839,9 +776,6 @@ def PulseSet(eChar, PulseChn, GroundChn, Vform, delay, trise, tfall, twidth, tba
     header = eChar.wgfmu.getHeader()
 
 
-    header.insert(0,"TestParameter,Measurement.Type,PulseSet")
-    header.append("Measurement,Device,%s" %(eChar.device))
-    header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
     if read:
         if initialRead:
             header.append('MeasurmentResult,HRS,%f' %(SepData['HRS'][0]))
@@ -849,19 +783,9 @@ def PulseSet(eChar, PulseChn, GroundChn, Vform, delay, trise, tfall, twidth, tba
     
     header.append('MeasurmentResult,AvgImaxSet,%f' %(SepData['ImaxSet'][0]))
 
-    if not eChar.AdditionalHeader == []:
-        header.extend(eChar.AdditionalHeader)
-    else:
-        header.append('Measurement,Type.Primary,PulseSet')
-    
+
     if WriteHeader:
-        eChar.Combinedheader.extend(header)
-
-    if not eChar.ExternalHeader == []:
-        header.extend(eChar.ExternalHeader)
-
-    if not eChar.DCHeader == None:
-        header.extend(eChar.DCHeader)
+        eChar.extendHeader("Combined", header)
 
     newline = [None]*2
     newline[0] = 'DataName, Cycle'
@@ -875,16 +799,13 @@ def PulseSet(eChar, PulseChn, GroundChn, Vform, delay, trise, tfall, twidth, tba
 
     PulseIVDataPrepAndExport(eChar, SepData, header, eChar.curCycle, MeasPoints, 'PulseSet')
 
-    Typ = 'PulseSet'
-    res = {'Header':header, 'IVdata': SepData['IVdata'], 'LRS':SepData['LRS'], 'HRS':SepData['HRS'], 'ImaxSet': SepData['ImaxSet'], 'Type': Typ}
-    eChar.Results.append(res)
-
+    res = {'Header':header, 'IVdata': SepData['IVdata'], 'LRS':SepData['LRS'], 'HRS':SepData['HRS'], 'ImaxSet': SepData['ImaxSet']}
 
     if ret[3]["Name"][0].lower() == "i":
         Trac = [SepData['IVdata'][1],SepData['IVdata'][3]] 
     else:
         Trac = [SepData['IVdata'][3],SepData['IVdata'][1]] 
-    eChar.plotIVData({"Traces":Trac, 'Xaxis': True, 'Xlabel': 'Voltage (V)', "Ylabel": 'Current (A)', 'Title': "Set", "MeasurementType": Typ, "ValueName": 'IV'})
+    eChar.plotIVData({"Traces":Trac, 'Xaxis': True, 'Xlabel': 'Voltage (V)', "Ylabel": 'Current (A)', 'Title': "Set", "ValueName": 'IV'})
 
     LRS = eChar.dhValue(SepData['LRS'][0], 'LRS', Unit='ohm')
     ImaxSet = eChar.dhValue(SepData['ImaxSet'][0], 'ImaxSet', Unit='A')
@@ -892,9 +813,9 @@ def PulseSet(eChar, PulseChn, GroundChn, Vform, delay, trise, tfall, twidth, tba
 
     if initialRead:
         HRS = eChar.dhValue(SepData['HRS'][0], 'HRS', Unit='ohm')
-        row = eChar.dhAddRow([HRS,LRS,ImaxSet,Vset],'PulseSet',eChar.curCycle,eChar.curCycle)
+        row = eChar.dhAddRow([HRS,LRS,ImaxSet,Vset],eChar.curCycle,eChar.curCycle)
     else:
-        row = eChar.dhAddRow([LRS,ImaxSet,Vset],'PulseSet',eChar.curCycle,eChar.curCycle)
+        row = eChar.dhAddRow([LRS,ImaxSet,Vset],eChar.curCycle,eChar.curCycle)
 
     eChar.curCycle = eChar.curCycle+1
 
@@ -925,7 +846,7 @@ def PulseReset(eChar, PulseChn, GroundChn, Vform, delay, trise, tfall, twidth, t
     WriteHeader: Enable/Disable writing the header into overlaying summary output files
     """
 
-    eChar.localtime = tm.localtime()
+    eChar.updateTime()
     tfallread = tread * 0.1
     triseread = tread * 0.1
 
@@ -976,10 +897,6 @@ def PulseReset(eChar, PulseChn, GroundChn, Vform, delay, trise, tfall, twidth, t
     SepData = getSepDataPulseIV(eChar, ret, MeasPoints, read, initialRead, True)
     header = eChar.wgfmu.getHeader()
 
-
-    header.insert(0,"TestParameter,Measurement.Type,PulseReset")
-    header.append("Measurement,Device,%s" %(eChar.device))
-    header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
     if read:
         if initialRead:
             header.append('MeasurmentResult,HRS,%f' %(SepData['LRS'][0]))
@@ -987,19 +904,8 @@ def PulseReset(eChar, PulseChn, GroundChn, Vform, delay, trise, tfall, twidth, t
     
     header.append('MeasurmentResult,AvgImaxReset,%f' %(SepData['ImaxReset'][0]))
 
-    if not eChar.AdditionalHeader == []:
-        header.extend(eChar.AdditionalHeader)
-    else:
-        header.append('Measurement,Type.Primary,PulseReset')
-    
     if WriteHeader:
-        eChar.Combinedheader.extend(header)
-
-    if not eChar.ExternalHeader == []:
-        header.extend(eChar.ExternalHeader)
-
-    if not eChar.DCHeader == None:
-        header.extend(eChar.DCHeader)
+        eChar.extendHeader("Combined", header)
 
     newline = [None]*2
     newline[0] = 'DataName, Cycle'
@@ -1013,20 +919,17 @@ def PulseReset(eChar, PulseChn, GroundChn, Vform, delay, trise, tfall, twidth, t
 
     PulseIVDataPrepAndExport(eChar, SepData, header, eChar.curCycle, MeasPoints, 'PulseReset')
 
-    Typ = "PulseReset"
-    res = {'Header':header, 'IVdata': SepData['IVdata'], 'LRS':SepData['LRS'], 'HRS':SepData['HRS'], 'ImaxReset': SepData['ImaxReset'], 'Type': Typ}
-    eChar.Results.append(res)
-
+    res = {'Header':header, 'IVdata': SepData['IVdata'], 'LRS':SepData['LRS'], 'HRS':SepData['HRS'], 'ImaxReset': SepData['ImaxReset']}
 
 
     if ret[3]["Name"][0].lower() == "i":
         Trac = [SepData['IVdata'][1],SepData['IVdata'][3]] 
     else:
         Trac = [SepData['IVdata'][3],SepData['IVdata'][1]] 
-    eChar.plotIVData({"Traces":Trac, 'Xaxis': True, 'Xlabel': 'Voltage (V)', "Ylabel": 'Current (A)', 'Title': "Reset", "MeasurementType": Typ, "ValueName": 'IV'})
+    eChar.plotIVData({"Traces":Trac, 'Xaxis': True, 'Xlabel': 'Voltage (V)', "Ylabel": 'Current (A)', 'Title': "Reset", "ValueName": 'IV'})
     
     Trac = [SepData['IVdata'][2],SepData['IVdata'][3]]
-    eChar.plotIVData({"Traces":Trac, 'Xaxis': True, 'Xlabel': 'Time (s)', "Ylabel": 'Current (A)', 'Title': "Reset: t-I", "MeasurementType": Typ, "ValueName": 'tI'})
+    eChar.plotIVData({"Traces":Trac, 'Xaxis': True, 'Xlabel': 'Time (s)', "Ylabel": 'Current (A)', 'Title': "Reset: t-I", "ValueName": 'tI'})
     
     HRS = eChar.dhValue(SepData['HRS'][0], 'HRS', Unit='ohm')
     ImaxReset = eChar.dhValue(SepData['ImaxReset'][0], 'ImaxReset', Unit='A')
@@ -1034,9 +937,9 @@ def PulseReset(eChar, PulseChn, GroundChn, Vform, delay, trise, tfall, twidth, t
 
     if initialRead:
         LRS = eChar.dhValue(SepData['LRS'][0], 'LRS', Unit='ohm')
-        row = eChar.dhAddRow([HRS,LRS,ImaxReset,Vreset],'PulseReset',eChar.curCycle,eChar.curCycle)
+        row = eChar.dhAddRow([HRS,LRS,ImaxReset,Vreset],eChar.curCycle,eChar.curCycle)
     else:
-        row = eChar.dhAddRow([HRS,ImaxReset,Vreset],'PulseReset',eChar.curCycle,eChar.curCycle)
+        row = eChar.dhAddRow([HRS,ImaxReset,Vreset],eChar.curCycle,eChar.curCycle)
     eChar.curCycle = eChar.curCycle+1
 
     return res
@@ -1075,7 +978,6 @@ def PulseIV(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tfallS, twi
     if count > 100:
         eChar.ValError("Maximum of 100 for standard PulseIV, use endurance for more cycles")
 
-    eChar.localtime = tm.localtime()
     #count-=1
     tfallread = tread * 0.1
     triseread = tread * 0.1
@@ -1164,11 +1066,8 @@ def PulseIV(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tfallS, twi
     
     header = eChar.wgfmu.getHeader()
     
-    header.insert(0,"TestParameter,Measurement.Type,PulseIV")
     if WriteHeader:
-        eChar.Combinedheader.extend(header)
-    header.append("Measurement,Device,%s" %(eChar.device))
-    header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
+        eChar.extendHeader("Combined", header)
 
     if read:
         AvgHRS  = sum(SepData['HRS'])/float(len(SepData['HRS']))
@@ -1182,18 +1081,8 @@ def PulseIV(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tfallS, twi
     header.append('MeasurmentResult,Average.AvgImaxSet,%f' %(AvgImSet))
     header.append('MeasurmentResult,Average.AvgImaxReset,%f' %(AvgImReset))
 
-    if not eChar.AdditionalHeader == []:
-        header.extend(eChar.AdditionalHeader)
-    else:
-        header.append('Measurement,Type.Primary,PulseIV')
-        header.append('Measurement,Endurance.StartPoint,%d' %(1))
-        header.append('Measurement,Endurance.EndPoint,%d' %(count))
-
-    if not eChar.ExternalHeader == []:
-        header.extend(eChar.ExternalHeader)
-
-    if not eChar.DCHeader == None:
-        header.extend(eChar.DCHeader)
+    header.append('Measurement,Endurance.StartPoint,%d' %(1))
+    header.append('Measurement,Endurance.EndPoint,%d' %(count))
 
     newline = [None]*2
     newline[0] = 'DataName, Cycle'
@@ -1207,19 +1096,16 @@ def PulseIV(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tfallS, twi
 
     PulseIVDataPrepAndExport(eChar, SepData, header, eChar.curCycle, MeasPoints, 'PulseIV')
 
-    Typ = "PulseIV"
-
     if ret[3]["Name"][0].lower() == "i":
         Trac = [SepData['IVdata'][1],SepData['IVdata'][3]] 
     else:
         Trac = [SepData['IVdata'][3],SepData['IVdata'][1]] 
-    eChar.plotIVData({"Traces":Trac,  'Xaxis': True, 'Xlabel': 'Voltage (V)', "Ylabel": 'Current (A)', 'Title': "Pulse IV", "MeasurementType": Typ, "ValueName": 'IV'})
+    eChar.plotIVData({"Traces":Trac,  'Xaxis': True, 'Xlabel': 'Voltage (V)', "Ylabel": 'Current (A)', 'Title': "Pulse IV", "ValueName": 'IV'})
     
     Trac = [SepData['LRS'],SepData['HRS']]
-    eChar.plotIVData({"Add": True,  "lineStyle": 'o', "lineWidth":0.5, 'Yscale': 'log', "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of cycles', "Ylabel": 'resistance (ohm)', 'Title': "HRS/LRS", "MeasurementType": Typ, "ValueName": 'HRS/LRS'})
+    eChar.plotIVData({"Add": True,  "lineStyle": 'o', "lineWidth":0.5, 'Yscale': 'log', "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of cycles', "Ylabel": 'resistance (ohm)', 'Title': "HRS/LRS", "ValueName": 'HRS/LRS'})
 
-    res = {'Header':header, 'IVdata': SepData['IVdata'], 'LRS':SepData['LRS'], 'HRS':SepData['HRS'], 'Vset':SepData['Vset'], 'Vreset':SepData['Vreset'], 'ImaxSet': SepData['ImaxSet'], 'ImaxReset': SepData['ImaxReset'], 'Type': Typ}
-    eChar.Results.append(res)
+    res = {'Header':header, 'IVdata': SepData['IVdata'], 'LRS':SepData['LRS'], 'HRS':SepData['HRS'], 'Vset':SepData['Vset'], 'Vreset':SepData['Vreset'], 'ImaxSet': SepData['ImaxSet'], 'ImaxReset': SepData['ImaxReset']}
 
     if Primary:
         HRS = eChar.dhValue(SepData['HRS'], 'HRS', Unit='ohm')
@@ -1229,13 +1115,13 @@ def PulseIV(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tfallS, twi
         Vreset = eChar.dhValue(SepData['Vreset'], 'Vreset', Unit='V')
         Vset = eChar.dhValue(SepData['Vset'], 'Vset', Unit='V')
 
-        row = eChar.dhAddRow([HRS,LRS,ImaxReset,ImaxSet,Vreset,Vset],'PulseIV',eChar.curCycle,eChar.curCycle+count-1)
+        row = eChar.dhAddRow([HRS,LRS,ImaxReset,ImaxSet,Vreset,Vset],eChar.curCycle,eChar.curCycle+count-1)
 
     eChar.curCycle = eChar.curCycle+count
 
     return res 
 
-def PulseIVDataPrepAndExport(eChar, SepData, header, PulseStart, MeasPoints, cat):
+def PulseIVDataPrepAndExport(eChar, SepData, header, PulseStart, MeasPoints):
     
     OutputData = []
     SepData2 = cp.deepcopy(SepData)
@@ -1245,7 +1131,7 @@ def PulseIVDataPrepAndExport(eChar, SepData, header, PulseStart, MeasPoints, cat
         for da in SepData2['IVdata']:
             OutputData[n] = '%s,%.2E' %(OutputData[n],da[n])
     #print("OD", OutputData)
-    eChar.writeDataToFile(header, OutputData, Typ=cat, startCyc=eChar.curCycle)
+    eChar.writeDataToFile(header, OutputData, startCyc=eChar.curCycle)
 
 ###########################################################################################################################
 
@@ -1309,7 +1195,7 @@ def DyChar(eChar, SMUs, Vdc, DCcompl, PulseChn, GroundChn, Vset, Vreset, delay, 
         for n in range(0,s):
             Vreset = float(iteratable)
             # Reset Measurement
-            eChar.localtime = tm.localtime()
+            eChar.updateTime()
             tfallread = tread * 0.1
             triseread = tread * 0.1
 
@@ -1380,7 +1266,7 @@ def DyChar(eChar, SMUs, Vdc, DCcompl, PulseChn, GroundChn, Vset, Vreset, delay, 
                 #break   # saves Vreset and breaks out of def and then we will run Pulse IV and then Endurance
 
                 # Set Measurement
-                eChar.localtime = tm.localtime()
+                eChar.updateTime()
                 tfallread = tread * 0.1
                 triseread = tread * 0.1
 
@@ -1460,7 +1346,7 @@ def CompareSpecs(eChar, Setret, Resret, Specs):
 
 ###########################################################################################################################
 
-def RetentionTest(eChar, PulseChn, GroundChn, Vread, delay, tread,  tbase, t_total, MeasPoints, Log=False, tdelta_start=1e-1,  WriteHeader=True):
+def PulseRetention(eChar, PulseChn, GroundChn, Vread, delay, tread,  tbase, t_total, MeasPoints, Log=False, tdelta_start=1e-1,  WriteHeader=True):
     """
     please set the appropriate Channel properties beforehand via 'setChannelParameter()'
     GroundChn: Ground channel number
@@ -1476,10 +1362,9 @@ def RetentionTest(eChar, PulseChn, GroundChn, Vread, delay, tread,  tbase, t_tot
     WriteHeader: Enable/Disable writing the header into overlaying summary output files
     """
 
-    MeasType = 'PulseRetention'
     tfall = tread * 0.1
     trise = tread * 0.1
-    eChar.localtime = tm.localtime()
+    eChar.updateTime()
     
     tdelta = t_total/MeasPoints
     
@@ -1559,7 +1444,7 @@ def RetentionTest(eChar, PulseChn, GroundChn, Vread, delay, tread,  tbase, t_tot
         resistances.append(resis)
         times.append(tim)
         Trac = [[tim], [resis]]
-        eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': True, 'Xlabel': 'Time (s)', "Xscale": Xscale, "Ylabel": 'Resistance (ohm)', "Yscale": 'log', 'Title': "Retention", "MeasurementType": MeasType, "ValueName": 'Rt'})
+        eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': True, 'Xlabel': 'Time (s)', "Xscale": Xscale, "Ylabel": 'Resistance (ohm)', "Yscale": 'log', 'Title': "Retention", "ValueName": 'Rt'})
 
             
 
@@ -1569,24 +1454,9 @@ def RetentionTest(eChar, PulseChn, GroundChn, Vread, delay, tread,  tbase, t_tot
     header = []
     header = eChar.wgfmu.getHeader()
 
-    header.insert(0,"TestParameter,Measurement.Type,%s" %(MeasType))
-    header.append("Measurement,Device,%s" %(eChar.device))
-    header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
-    
-    if not eChar.AdditionalHeader == []:
-        header.extend(eChar.AdditionalHeader)
-    else:
-        header.append("Measurement,Type.Primary,%s" %(MeasType))
-
     if WriteHeader:
-        eChar.Combinedheader.extend(header)
-
-    if not eChar.ExternalHeader == []:
-        header.extend(eChar.ExternalHeader)
+        eChar.extendHeader("Combined", header)
     
-    if not eChar.DCHeader == None:
-        header.extend(eChar.DCHeader)
-
     newline = [None]*2
     newline[0] = 'DataName'
     newline[1] = 'Dimension'
@@ -1600,13 +1470,13 @@ def RetentionTest(eChar, PulseChn, GroundChn, Vread, delay, tread,  tbase, t_tot
     
     header.extend(newline)
 
-    eChar.writeDataToFile(header, dataStr, Typ=MeasType)
+    eChar.writeDataToFile(header, dataStr)
            
-    res = {'Header':header, 'Rtdata':[times,resistances], 'Type': MeasType}
-    eChar.Results.append(res)
+    res = {'Header':header, 'Rtdata':[times,resistances]}
+
 
     resis = eChar.dhValue(resistances, 'Resistance', Unit='ohm')
-    row = eChar.dhAddRow([resis],MeasType,eChar.curCycle,eChar.curCycle)
+    row = eChar.dhAddRow([resis],eChar.curCycle,eChar.curCycle)
 
     eChar.curCycle = eChar.curCycle+1
     return res
@@ -1643,13 +1513,13 @@ def performEndurance(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tf
     DCcompl:   Array of DC comliances
     """
 
-    eChar.localtime = tm.localtime()
+    eChar.updateTime()
     CurCount = 1
     initialRead = True
     if IVIteration ==0: 
         IVcount =0
 
-    eChar.threads.append(th.Thread(target = saveDataEndurance, args=(eChar, WriteHeader,DoYield, eChar.MaxRowsPerFile, eChar.MaxDataPerPlot)))
+    eChar.threads.append(th.Thread(target = saveDataEndurance, args=(eChar, WriteHeader,DoYield, eChar.getMaxRowsPerFile(), eChar.getMaxDataPerPlot())))
     eChar.threads[-1].start()
 
     stop =  False
@@ -1665,11 +1535,11 @@ def performEndurance(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tf
 
         #IV characterization + Endurance
         if IVIteration > 20:
-            eChar.AdditionalHeader = []
-            eChar.AdditionalHeader.append('Measurement,Type.Primary,Endurance')
-            eChar.AdditionalHeader.append('Measurement,Type.Secondary,PulseIV')
-            eChar.AdditionalHeader.append('Measurement,Endurance.StartPoint,%d' %(eChar.curCycle))
-            eChar.AdditionalHeader.append('Measurement,Endurance.EndPoint,%d' %(eChar.curCycle+IVcount))
+            addHeader= []
+            addHeader.append('Measurement,Type.Primary,Endurance')
+            addHeader.append('Measurement,Type.Secondary,PulseIV')
+            addHeader.append('Measurement,Endurance.StartPoint,%d' %(eChar.curCycle))
+            addHeader.append('Measurement,Endurance.EndPoint,%d' %(eChar.curCycle+IVcount))
 
             WrHead = False
             if initialRead:
@@ -1688,7 +1558,7 @@ def performEndurance(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tf
 
             if initialRead:
                 CurCount += 1
-                eChar.EnduranceHeader = eChar.wgfmu.getHeader()
+                eChar.writeHeader("Endurance", eChar.wgfmu.getHeader())
                 initialRead = False
             
             while not eChar.Stop.empty():
@@ -1703,8 +1573,8 @@ def performEndurance(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tf
                     break
                 
                 #Less cycles left than in one iteration
-                if IVIteration > eChar.maxNumSingleEnduranceRun and ReadEndurance:
-                    sol = IVIteration/eChar.maxNumSingleEnduranceRun
+                if IVIteration > eChar.getMaxNumSingleEnduranceRun() and ReadEndurance:
+                    sol = IVIteration/eChar.getMaxNumSingleEnduranceRun()
                     frac, whole = ma.modf(sol)
                     for n in range(int(whole)):
                         
@@ -1714,7 +1584,7 @@ def performEndurance(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tf
                             break
 
                         createEndurancePulse(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tfallS, twidthS, triseR, tfallR, twidthR, 
-                                                        tbase, eChar.maxNumSingleEnduranceRun, read=ReadEndurance, tread=tread, Vread=Vread, 
+                                                        tbase, eChar.getMaxNumSingleEnduranceRun(), read=ReadEndurance, tread=tread, Vread=Vread, 
                                                         initialRead=initialRead)
                         
                         if ReadEndurance:
@@ -1722,16 +1592,16 @@ def performEndurance(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tf
                             ret = getSepEnduranceData(ret)
                             eChar.rawData.put({'Name': ret['Name'], 'Channel': ret['Channel'], 'Length': ret['Length'], 'Data': ret['Data'], 'Type':'Endurance'})
                             eChar.RDstart.put(eChar.curCycle)
-                            eChar.RDstop.put(eChar.curCycle + eChar.maxNumSingleEnduranceRun-1)
+                            eChar.RDstop.put(eChar.curCycle + eChar.getMaxNumSingleEnduranceRun()-1)
                         else:
                             eChar.wgfmu.executeMeasurement(GetData=False)
 
-                        eChar.curCycle += eChar.maxNumSingleEnduranceRun
-                        CurCount += eChar.maxNumSingleEnduranceRun
+                        eChar.curCycle += eChar.getMaxNumSingleEnduranceRun()
+                        CurCount += eChar.getMaxNumSingleEnduranceRun()
                         initialRead = False
 
                     if frac > 0:
-                        count_Last = int(frac*eChar.maxNumSingleEnduranceRun)
+                        count_Last = int(frac*eChar.getMaxNumSingleEnduranceRun())
                         createEndurancePulse(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tfallS, twidthS, triseR, tfallR, twidthR, 
                                                         tbase, count_Last, read=ReadEndurance, tread=tread, Vread=Vread)
 
@@ -1769,8 +1639,8 @@ def performEndurance(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tf
             else:
                 
                 #Less cycles left than in one iteration
-                if IVIteration > eChar.maxNumSingleEnduranceRun and ReadEndurance:
-                    sol = IVIteration/eChar.maxNumSingleEnduranceRun
+                if IVIteration > eChar.getMaxNumSingleEnduranceRun() and ReadEndurance:
+                    sol = IVIteration/eChar.getMaxNumSingleEnduranceRun()
                     frac, whole = ma.modf(sol)
                     for n in range(int(whole)):
                         
@@ -1780,22 +1650,22 @@ def performEndurance(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tf
                             break
 
                         createEndurancePulse(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tfallS, twidthS, triseR, tfallR, twidthR, 
-                                                        tbase, eChar.maxNumSingleEnduranceRun, read=ReadEndurance, tread=tread, Vread=Vread, 
+                                                        tbase, eChar.getMaxNumSingleEnduranceRun(), read=ReadEndurance, tread=tread, Vread=Vread, 
                                                         initialRead=initialRead)
                         if ReadEndurance:
                             ret = eChar.wgfmu.executeMeasurement()
                             ret = getSepEnduranceData(ret)
                             eChar.rawData.put({'Name': ret['Name'], 'Channel': ret['Channel'], 'Length': ret['Length'], 'Data': ret['Data'], 'Type':'Endurance'})
                             eChar.RDstart.put(eChar.curCycle)
-                            eChar.RDstop.put(eChar.curCycle + eChar.maxNumSingleEnduranceRun-1)
+                            eChar.RDstop.put(eChar.curCycle + eChar.getMaxNumSingleEnduranceRun()-1)
                         else:
                             eChar.wgfmu.executeMeasurement(GetData=False)
-                        eChar.curCycle += eChar.maxNumSingleEnduranceRun
-                        CurCount += eChar.maxNumSingleEnduranceRun
+                        eChar.curCycle += eChar.getMaxNumSingleEnduranceRun()
+                        CurCount += eChar.getMaxNumSingleEnduranceRun()
                         initialRead = False
 
                     if frac > 0:
-                        count_Last = int(frac*eChar.maxNumSingleEnduranceRun)
+                        count_Last = int(frac*eChar.getMaxNumSingleEnduranceRun())
                         createEndurancePulse(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tfallS, twidthS, triseR, tfallR, twidthR, 
                                                         tbase, count_Last, read=ReadEndurance, tread=tread, Vread=Vread)
 
@@ -1830,8 +1700,8 @@ def performEndurance(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tf
         #only endurance
         else:
             #Run as many 2e6 cycles as you need to get to IVIteration
-            if Count > eChar.maxNumSingleEnduranceRun and ReadEndurance:
-                sol = Count/eChar.maxNumSingleEnduranceRun
+            if Count > eChar.getMaxNumSingleEnduranceRun() and ReadEndurance:
+                sol = Count/eChar.getMaxNumSingleEnduranceRun()
                 frac, whole = ma.modf(sol)
                 
                 for n in range(int(whole)):
@@ -1842,21 +1712,21 @@ def performEndurance(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tf
                         break
 
                     createEndurancePulse(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tfallS, twidthS, triseR, tfallR, twidthR, 
-                                                    tbase, eChar.maxNumSingleEnduranceRun, read=ReadEndurance, tread=10e-6, Vread=-0.2, initialRead=initialRead)
+                                                    tbase, eChar.getMaxNumSingleEnduranceRun(), read=ReadEndurance, tread=10e-6, Vread=-0.2, initialRead=initialRead)
 
                     if ReadEndurance:
                         ret = eChar.wgfmu.executeMeasurement()
                         ret = getSepEnduranceData(ret)
                         eChar.rawData.put({'Name': ret['Name'], 'Channel': ret['Channel'], 'Length': ret['Length'], 'Data': ret['Data'], 'Type':'Endurance'})
                         eChar.RDstart.put(eChar.curCycle)
-                        eChar.RDstop.put(eChar.curCycle + eChar.maxNumSingleEnduranceRun-1)
+                        eChar.RDstop.put(eChar.curCycle + eChar.getMaxNumSingleEnduranceRun()-1)
                     else:
                         eChar.wgfmu.executeMeasurement(GetData=False)
-                    CurCount += eChar.maxNumSingleEnduranceRun
-                    eChar.curCycle += eChar.maxNumSingleEnduranceRun
+                    CurCount += eChar.getMaxNumSingleEnduranceRun()
+                    eChar.curCycle += eChar.getMaxNumSingleEnduranceRun()
 
                 if frac > 0:
-                    count_Last = int(frac*eChar.maxNumSingleEnduranceRun)
+                    count_Last = int(frac*eChar.getMaxNumSingleEnduranceRun())
                     createEndurancePulse(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tfallS, twidthS, triseR, tfallR, twidthR, 
                                                     tbase, count_Last, read=ReadEndurance, tread=10e-6, Vread=-0.2)
 
@@ -1890,15 +1760,16 @@ def performEndurance(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tf
 
         if initialRead:
             CurCount+=1
-            eChar.EnduranceHeader = eChar.wgfmu.getHeader()
+            eChar.writeHeader("Endurance", eChar.wgfmu.getHeader())
             initialRead = False
 
     if IVIteration > 0:
-        eChar.AdditionalHeader = []
-        eChar.AdditionalHeader.append('Measurement,Type.Primary,Endurance')
-        eChar.AdditionalHeader.append('Measurement,Type.Secondary,PulseIV')
-        eChar.AdditionalHeader.append('Measurement,Endurance.StartPoint,%d' %(eChar.curCycle))
-        eChar.AdditionalHeader.append('Measurement,Endurance.EndPoint,%d' %(eChar.curCycle+IVcount))
+        addHeader = []
+        addHeader.append('Measurement,Type.Primary,Endurance')
+        addHeader.append('Measurement,Type.Secondary,PulseIV')
+        addHeader.append('Measurement,Endurance.StartPoint,%d' %(eChar.curCycle))
+        addHeader.append('Measurement,Endurance.EndPoint,%d' %(eChar.curCycle+IVcount))
+        eChar.extendHeader("Additional",addHeader)
         
         if not stop:
 
@@ -1941,7 +1812,7 @@ def performEndurance(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tf
             break
 
     if WriteHeader:
-        eChar.Combinedheader.extend(eChar.EnduranceHeader)
+        eChar.extendHeader("Combined",eChar.getHeader("Endurance"))
 
     return True 
 
@@ -2082,73 +1953,69 @@ def saveDataEndurance(eChar, WriteHeader, DoYield, MaxRowsPerFile, MaxDataPerPlo
             else:
                 Trac = [LRS,HRS]
 
-            eChar.plotIVData({"Add": True, "lineStyle": 'o', "lineWidth":0.5, 'Yscale': 'log',  "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of cycles', "Ylabel": 'resistance (ohm)', 'Title': "HRS/LRS", "MeasurementType": Typ, "ValueName": 'HRS/LRS'})
+            eChar.plotIVData({"Add": True, "lineStyle": 'o', "lineWidth":0.5, 'Yscale': 'log',  "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of cycles', "Ylabel": 'resistance (ohm)', 'Title': "HRS/LRS",  "ValueName": 'HRS/LRS'})
             
         except (TypeError, ValueError, IndexError, NameError, qu.Empty) as e:
             eChar.ErrorQueue.put("E-Char Endurance Data Analysis, Queue Empty: %s, Finished %s, Error %s" %(eChar.rawData.empty(), finished, e))
         
         try:
             if usedPulsedIV:
-                if len(eChar.IVHRS) > MaxRowsPerFile or (finished and eChar.rawData.empty()): 
-                    header = eChar.EnduranceHeader[:]
-                    header.append('Measurement,Endurance.StartPoint,%d' %(eChar.IVcyc[0]))
-                    header.append('Measurement,Endurance.EndPoint,%d' %(eChar.IVcyc[-1]))
-                    if not eChar.ExternalHeader == []:
-                        header.extend(eChar.ExternalHeader)
+                with eChar.DataAnalysisLock:
+                    if len(eChar.IVHRS) > MaxRowsPerFile or (finished and eChar.rawData.empty()): 
+                        header = eChar.getHeader("Endurance")
+                        header.append('Measurement,Endurance.StartPoint,%d' %(eChar.IVcyc[0]))
+                        header.append('Measurement,Endurance.EndPoint,%d' %(eChar.IVcyc[-1]))
+                        header.extend(eChar.getHeader("External"))
+                        header.extend(eChar.getHeader("DC"))
 
-                    if not eChar.DCHeader == None:
-                        header.extend(eChar.DCHeader)
+                        header.append('DataName, Cycle, LRS, HRS, ImaxSet, ImaxReset')
+                        header.append('Dimension, %d,%d,%d,%d,%d' %(len(eChar.IVcyc), len(eChar.IVLRS), len(eChar.IVHRS), len(eChar.ImaxSet), len(eChar.ImaxReset)))
+                        
+                        outputData = getOutputFormat([eChar.IVcyc,eChar.IVLRS,eChar.IVHRS,eChar.ImaxSet,eChar.ImaxReset])
+                        print("writeEnd")
+                        eChar.writeDataToFile(header, outputData, subFolder="Endurance", Typ="IVSummaryEndurance", startCyc=1)
 
-                    header.append('DataName, Cycle, LRS, HRS, ImaxSet, ImaxReset')
-                    header.append('Dimension, %d,%d,%d,%d,%d' %(len(eChar.IVcyc), len(eChar.IVLRS), len(eChar.IVHRS), len(eChar.ImaxSet), len(eChar.ImaxReset)))
-                    
-                    outputData = getOutputFormat([eChar.IVcyc,eChar.IVLRS,eChar.IVHRS,eChar.ImaxSet,eChar.ImaxReset])
-                    print("writeEnd")
-                    eChar.writeDataToFile(header, outputData, subFolder="Endurance", Typ="IVSummaryEndurance", startCyc=1)
-
-                    eChar.IVLRS = []
-                    eChar.IVHRS = []
-                    eChar.ImaxReset = []
-                    eChar.ImaxSet = []
-                    eChar.Vset = []
-                    eChar.Vreset = []
+                        eChar.IVLRS = []
+                        eChar.IVHRS = []
+                        eChar.ImaxReset = []
+                        eChar.ImaxSet = []
+                        eChar.Vset = []
+                        eChar.Vreset = []
 
             if first:
                 first = False
 
             tm.sleep(0.1)
 
-            if len(eChar.HRS) > MaxRowsPerFile or (finished and eChar.rawData.empty()): 
-                header = eChar.EnduranceHeader[:]
-                header.append('Measurement,Endurance.StartPoint,%d' %(eChar.cyc[0]))
-                header.append('Measurement,Endurance.EndPoint,%d' %(eChar.cyc[-1]))
-                if not eChar.ExternalHeader == []:
-                    header.extend(eChar.ExternalHeader)
+            with eChar.DataAnalysisLock:
+                if len(eChar.HRS) > MaxRowsPerFile or (finished and eChar.rawData.empty()): 
+                    header = eChar.getHeader("Endurance")
+                    header.append('Measurement,Endurance.StartPoint,%d' %(eChar.cyc[0]))
+                    header.append('Measurement,Endurance.EndPoint,%d' %(eChar.cyc[-1]))
+                    header.extend(eChar.getHeader("External"))
+                    header.extend(eChar.getHeader("DC"))
+
+                    header.append('DataName, Cycle, LRS, HRS')
+                    header.append('Dimension, %d,%d,%d' %(len(eChar.cyc), len(eChar.LRS), len(eChar.HRS)))
                     
-                if not eChar.DCHeader == None:
-                    header.extend(eChar.DCHeader)
-
-                header.append('DataName, Cycle, LRS, HRS')
-                header.append('Dimension, %d,%d,%d' %(len(eChar.cyc), len(eChar.LRS), len(eChar.HRS)))
+                    outputData = getOutputFormat([eChar.cyc,eChar.LRS,eChar.HRS])
                 
-                outputData = getOutputFormat([eChar.cyc,eChar.LRS,eChar.HRS])
-            
-                eChar.writeDataToFile(header, outputData, Typ='Endurance', startCyc=RDcycStartOutput, endCyc=RDcycStop, subFolder="Endurance")
+                    eChar.writeDataToFile(header, outputData, startCyc=RDcycStartOutput, endCyc=RDcycStop, subFolder="Endurance")
 
-                eChar.cyc = []
-                eChar.LRS = []
-                eChar.HRS = []
+                    eChar.cyc = []
+                    eChar.LRS = []
+                    eChar.HRS = []
 
-                OutputStart = True
+                    OutputStart = True
 
         except (TypeError, ValueError, IndexError, NameError) as e:
             eChar.ErrorQueue.put("E-Char Endurance Data Analysis, Queue Empty: %s, Finished %s, Error %s" %(eChar.rawData.empty(), finished, e))
         
     RDcycStop = eChar.curCycle
     if usedPulsedIV:
-        row = eChar.dhAddRow([HRSVal,LRSVal,ImaxResetVal,ImaxSetVal,VresetVal,VsetVal],'Endurance',RDcycStart,RDcycStop)
+        row = eChar.dhAddRow([HRSVal,LRSVal,ImaxResetVal,ImaxSetVal,VresetVal,VsetVal],RDcycStart,RDcycStop)
     else:
-        row = eChar.dhAddRow([HRSVal,LRSVal],'Endurance',RDcycStart,RDcycStop)
+        row = eChar.dhAddRow([HRSVal,LRSVal],RDcycStart,RDcycStop)
 
     eChar.SubProcessThread.put({'Finished': True})
     eChar.LogData.put("Endurance: Finished Data Storage.")
@@ -2269,11 +2136,9 @@ def createEndurancePulse(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS
     eChar.wgfmu.synchronize()
     
     header = eChar.wgfmu.getHeader()
-    header.append("Measurement,Device,%s" %(eChar.device))
-    header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
     header.append("Measurement,Type.Primary,Endurance")
 
-    eChar.EnduranceHeader = header
+    eChar.writeHeader("Endurance", header)
     
     return header
 
@@ -2395,7 +2260,6 @@ def AnalogRetention(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent, V
         Vreset = 2*Vreset
         Vread = 2*Vread
 
-    Typ = 'AnalogRetention'
     settrise = 0.8e-9
     #settrise = 2e-9
     NumOfPul = int(duration/tseperation)
@@ -2565,9 +2429,9 @@ def AnalogRetention(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent, V
 
             R = abs(V/I)
             Trac = [[1/R]]  
-            eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change", "MeasurementType": Typ, "ValueName": 'C'})
+            eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change", "ValueName": 'C'})
             Trac = [[R]]
-            eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'R'})
+            eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "ValueName": 'R'})
             
             C = 1/R
             Pdev = (abs(R-Rgoal)/Rgoal)
@@ -2704,9 +2568,9 @@ def AnalogRetention(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent, V
             PercDelCompl[-1].append(Pdev)
             
             Trac = [[1/R]]  
-            eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change", "MeasurementType": Typ, "ValueName": 'C'})
+            eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change", "ValueName": 'C'})
             Trac = [[R]]
-            eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'R'})
+            eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "ValueName": 'R'})
             
 
             r = 1
@@ -2834,9 +2698,9 @@ def AnalogRetention(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent, V
                 PercDelCompl[-1].append(Pdev)
 
                 Trac = [[1/R]]  
-                eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change", "MeasurementType": Typ, "ValueName": 'C'})
+                eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change", "ValueName": 'C'})
                 Trac = [[R]]
-                eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'R'})
+                eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "ValueName": 'R'})
                 r = r+1
             
 
@@ -2903,9 +2767,9 @@ def AnalogRetention(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent, V
                 PercDelCompl[-1].append(Pdev)
 
                 Trac = [[1/R]]  
-                eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change", "MeasurementType": Typ, "ValueName": 'C'})
+                eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change",  "ValueName": 'C'})
                 Trac = [[R]]
-                eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'R'})
+                eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change",  "ValueName": 'R'})
                 r = r+1
                 while True:
 
@@ -3073,9 +2937,9 @@ def AnalogRetention(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent, V
 
             R = abs(V/I)
             Trac = [[1/R]]  
-            eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change", "MeasurementType": Typ, "ValueName": 'C'})
+            eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change",  "ValueName": 'C'})
             Trac = [[R]]
-            eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'R'})
+            eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change",  "ValueName": 'R'})
             
             C = 1/R
             Pdev = (abs(R-Rgoal)/Rgoal)
@@ -3198,9 +3062,9 @@ def AnalogRetention(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent, V
             PercDelCompl[-1].append(Pdev)
             
             Trac = [[1/R]]  
-            eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change", "MeasurementType": Typ, "ValueName": 'C'})
+            eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change",  "ValueName": 'C'})
             Trac = [[R]]
-            eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'R'})
+            eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change",  "ValueName": 'R'})
             
 
             r = 1
@@ -3315,9 +3179,9 @@ def AnalogRetention(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent, V
                 PercDelCompl[-1].append(Pdev)
 
                 Trac = [[1/R]]  
-                eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change", "MeasurementType": Typ, "ValueName": 'C'})
+                eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change",  "ValueName": 'C'})
                 Trac = [[R]]
-                eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'R'})
+                eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change",  "ValueName": 'R'})
                 r = r+1
             
 
@@ -3382,9 +3246,9 @@ def AnalogRetention(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent, V
                 PercDelCompl[-1].append(Pdev)
 
                 Trac = [[1/R]]  
-                eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change", "MeasurementType": Typ, "ValueName": 'C'})
+                eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change",  "ValueName": 'C'})
                 Trac = [[R]]
-                eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'R'})
+                eChar.plotIVData({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of Pulses', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change",  "ValueName": 'R'})
                 r = r+1
                 while True:
 
@@ -3404,7 +3268,7 @@ def AnalogRetention(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent, V
     ################################################################################
 
     if not WriteHeader:
-        header = eChar.Combinedheader
+        header = eChar.getHeader("Combined")
     else:
         header = []
 
@@ -3413,8 +3277,8 @@ def AnalogRetention(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent, V
     
     header.append("Instrument,Oscilloscope,%s" %(OscName.strip()))
     header.append("Instrument,PulseGenerator,%s" %(PGName.strip()))
-    header.append("Measurement,Device,%s" %(eChar.device))
-    header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
+    header.append("Measurement,Device,%s" %(eChar.getDevice()))
+    header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.getLocalTime())))
     header.append("Measurement,PGPulseChannel, %s" %(PGPulseChn))
     header.append("Measurement,OscPulseChn, %s" %(OscPulseChn))
     header.append("Measurement,OscGNDChn, %s" %(OscGNDChn))
@@ -3432,13 +3296,10 @@ def AnalogRetention(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent, V
     header.append("Measurement,PowerSplitter, %s" %(PS))
 
     if WriteHeader:
-        eChar.Combinedheader.extend(header)
+        eChar.extendHeader("Combined", header)
 
-    if not eChar.ExternalHeader == []:
-        header.extend(eChar.ExternalHeader)
-    
-    if not eChar.DCHeader == None:
-        header.extend(eChar.DCHeader)
+    header.extend(eChar.getHeader("External"))
+    header.extend(eChar.getHeader("DC"))
 
     newline = [None]*3
     newline[0] = 'DataName'
@@ -3537,7 +3398,7 @@ def AnalogRetention(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurrent, V
             None
         AvgRret.extend(Rret[n])
 
-    row = eChar.dhAddRow([AvgLRS,AvgHRS,AvgRret, Avgtfail],'AnalogRetention')
+    row = eChar.dhAddRow([AvgLRS,AvgHRS,AvgRret, Avgtfail])
 
 
 ###########################################################################################################################
@@ -3725,9 +3586,9 @@ def IncrementalSwitching(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurre
         R0 = abs(V/I)
         R = R0
         Trac = [[R]]
-        eChar.IVplotData.put({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'R'})
+        eChar.IVplotData.put({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change",  "ValueName": 'R'})
         Trac = [[1/R]]  
-        eChar.IVplotData.put({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change", "MeasurementType": Typ, "ValueName": 'C'})
+        eChar.IVplotData.put({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change",  "ValueName": 'C'})
 
         Rcompl.append(R)
         Ccompl.append(1/R)
@@ -3892,9 +3753,9 @@ def IncrementalSwitching(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurre
                     r = 1
                     Rgoal = Rgoal + RstepReset
                     Trac = [[R]]
-                    eChar.IVplotData.put({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'R'})
+                    eChar.IVplotData.put({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change",  "ValueName": 'R'})
                     Trac = [[1/R]]  
-                    eChar.IVplotData.put({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change", "MeasurementType": Typ, "ValueName": 'C'})
+                    eChar.IVplotData.put({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change",  "ValueName": 'C'})
                     Rwrote = True
                 else:
                     r = r+1
@@ -3907,9 +3768,9 @@ def IncrementalSwitching(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurre
                 PercDelReset[n].append(abs((R-Rgoal)/R))
 
                 Trac = [[R]]
-                eChar.IVplotData.put({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'R'})
+                eChar.IVplotData.put({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change",  "ValueName": 'R'})
                 Trac = [[1/R]]  
-                eChar.IVplotData.put({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change", "MeasurementType": Typ, "ValueName": 'C'})
+                eChar.IVplotData.put({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change",  "ValueName": 'C'})
                     
             s = 1
             
@@ -4040,9 +3901,9 @@ def IncrementalSwitching(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurre
                     PercDelSet[n].append(abs((R-Rgoal)/R))
                     
                     Trac = [[R]]
-                    eChar.IVplotData.put({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'R'})
+                    eChar.IVplotData.put({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change",  "ValueName": 'R'})
                     Trac = [[1/R]]  
-                    eChar.IVplotData.put({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change", "MeasurementType": Typ, "ValueName": 'C'})
+                    eChar.IVplotData.put({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change",  "ValueName": 'C'})
                     s = 1
                     Rgoal = Rgoal - RstepSet
                     Swrote = True
@@ -4057,9 +3918,9 @@ def IncrementalSwitching(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurre
                 PercDelSet[n].append(abs((R-Rgoal)/R))
                                 
                 Trac = [[R]]
-                eChar.IVplotData.put({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'R'})
+                eChar.IVplotData.put({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change",  "ValueName": 'R'})
                 Trac = [[1/R]]  
-                eChar.IVplotData.put({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change", "MeasurementType": Typ, "ValueName": 'C'})
+                eChar.IVplotData.put({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change",  "ValueName": 'C'})
 
             eChar.curCycle = eChar.curCycle + 1
 
@@ -4196,9 +4057,9 @@ def IncrementalSwitching(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurre
         R0 = abs(V/I)
         R = R0
         Trac = [[R]]
-        eChar.IVplotData.put({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'R'})
+        eChar.IVplotData.put({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change",  "ValueName": 'R'})
         Trac = [[1/R]]  
-        eChar.IVplotData.put({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change", "MeasurementType": Typ, "ValueName": 'C'})
+        eChar.IVplotData.put({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change",  "ValueName": 'C'})
 
         Rcompl.append(R)
         Ccompl.append(1/R)
@@ -4348,9 +4209,9 @@ def IncrementalSwitching(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurre
                     r = 1
                     Rgoal = Rgoal + RstepReset
                     Trac = [[R]]
-                    eChar.IVplotData.put({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'R'})
+                    eChar.IVplotData.put({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change",  "ValueName": 'R'})
                     Trac = [[1/R]]  
-                    eChar.IVplotData.put({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change", "MeasurementType": Typ, "ValueName": 'C'})
+                    eChar.IVplotData.put({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change",  "ValueName": 'C'})
                     Rwrote = True
                 else:
                     r = r+1
@@ -4363,9 +4224,9 @@ def IncrementalSwitching(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurre
                 PercDelReset[n].append(abs((R-Rgoal)/R))
 
                 Trac = [[R]]
-                eChar.IVplotData.put({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'R'})
+                eChar.IVplotData.put({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change",  "ValueName": 'R'})
                 Trac = [[1/R]]  
-                eChar.IVplotData.put({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change", "MeasurementType": Typ, "ValueName": 'C'})
+                eChar.IVplotData.put({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change",  "ValueName": 'C'})
                     
             s = 1
             
@@ -4481,9 +4342,9 @@ def IncrementalSwitching(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurre
                     PercDelSet[n].append(abs((R-Rgoal)/R))
                     
                     Trac = [[R]]
-                    eChar.IVplotData.put({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'R'})
+                    eChar.IVplotData.put({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change",  "ValueName": 'R'})
                     Trac = [[1/R]]  
-                    eChar.IVplotData.put({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change", "MeasurementType": Typ, "ValueName": 'C'})
+                    eChar.IVplotData.put({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change",  "ValueName": 'C'})
                     s = 1
                     Rgoal = Rgoal - RstepSet
                     Swrote = True
@@ -4498,9 +4359,9 @@ def IncrementalSwitching(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurre
                 PercDelSet[n].append(abs((R-Rgoal)/R))
                                 
                 Trac = [[R]]
-                eChar.IVplotData.put({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change", "MeasurementType": Typ, "ValueName": 'R'})
+                eChar.IVplotData.put({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Resistance (R)', 'Title': "Resistance Change",  "ValueName": 'R'})
                 Trac = [[1/R]]  
-                eChar.IVplotData.put({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change", "MeasurementType": Typ, "ValueName": 'C'})
+                eChar.IVplotData.put({"Add": True, "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Iteration', "Ylabel": 'Conductance (s)', 'Title': "Conductance Change",  "ValueName": 'C'})
 
             eChar.curCycle = eChar.curCycle + 1
 
@@ -4516,7 +4377,7 @@ def IncrementalSwitching(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurre
 
 
     if not WriteHeader:
-        header = eChar.Combinedheader
+        header = eChar.getHeader("Combined")
     else:
         header = []
 
@@ -4524,8 +4385,8 @@ def IncrementalSwitching(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurre
     
     header.append("Instrument,Oscilloscope,%s" %(OscName.strip()))
     header.append("Instrument,PulseGenerator,%s" %(PGName.strip()))
-    header.append("Measurement,Device,%s" %(eChar.device))
-    header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
+    header.append("Measurement,Device,%s" %(eChar.getDevice()))
+    header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.getLocalTime())))
     header.append("Measurement,Vset, %.2e" %(Vset))
     header.append("Measurement,Set Pulse Width, %.2e" %(twidthSet))
     header.append("Measurement,Set Max Pulses Per Step,  %d" %(MaxPulsesPerStepSet))
@@ -4541,13 +4402,11 @@ def IncrementalSwitching(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurre
     header.append("Measurement,PowerSplitter, %s" %(PS))
 
     if WriteHeader:
-        eChar.Combinedheader.extend(header)
+        eChar.writeHeader("Combined", header)
 
-    if not eChar.ExternalHeader == []:
-        header.extend(eChar.ExternalHeader)
-    
-    if not eChar.DCHeader == None:
-        header.extend(eChar.DCHeader)
+    header.extend(eChar.getHeader("External"))
+    header.extend(eChar.getHeader("DC"))
+
 
     newline = [None]*3
     newline[0] = 'DataName'
@@ -4633,7 +4492,7 @@ def IncrementalSwitching(eChar, PGPulseChn, OscPulseChn, OscGNDChn, ExpReadCurre
         AvgResetPul.extend(n)
 
     AvgRratio = eChar.dhValue(Rdelta, 'ImaxForm', Unit='A')
-    row = eChar.dhAddRow([AvgSetPul,AvgResetPul,AvgRratio],'PulseForming',eChar.curCycle,eChar.curCycle)    
+    row = eChar.dhAddRow([AvgSetPul,AvgResetPul,AvgRratio],eChar.curCycle,eChar.curCycle)    
     
 
 ###########################################################################################################################
@@ -4667,13 +4526,13 @@ def EndurancePartialRead(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS
     DCcompl:   Array of DC comliances
     """
 
-    eChar.localtime = tm.localtime()
+    eChar.updateTime()
     CurCount = 1
     initialRead = True
     if IVIteration ==0: 
         IVcount =0
 
-    eChar.threads.append(th.Thread(target = saveDataEndurance, args=(eChar, WriteHeader,DoYield, eChar.MaxRowsPerFile, eChar.MaxDataPerPlot)))
+    eChar.threads.append(th.Thread(target = saveDataEndurance, args=(eChar, WriteHeader,DoYield, eChar.getMaxRowsPerFile(), eChar.getMaxDataPerPlot())))
     eChar.threads[-1].start()
 
     stop =  False
@@ -4689,18 +4548,23 @@ def EndurancePartialRead(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS
 
         #IV characterization + Endurance
         if IVIteration > 0:
-            eChar.AdditionalHeader = []
-            eChar.AdditionalHeader.append('Measurement,Type.Primary,Endurance')
-            eChar.AdditionalHeader.append('Measurement,Type.Secondary,PulseIV')
-            eChar.AdditionalHeader.append('Measurement,Endurance.StartPoint,%d' %(eChar.curCycle))
-            eChar.AdditionalHeader.append('Measurement,Endurance.EndPoint,%d' %(eChar.curCycle+IVcount))
+            addHeader = []
+            addHeader.append('Measurement,Type.Primary,Endurance')
+            addHeader.append('Measurement,Type.Secondary,PulseIV')
+            with eChar.CycleLock:
+                addHeader.append('Measurement,Endurance.StartPoint,%d' %(eChar.curCycle))
+                addHeader.append('Measurement,Endurance.EndPoint,%d' %(eChar.curCycle+IVcount))
+            eChar.extendHeader("Additional",addHeader)
+
 
             WrHead = False
             if initialRead:
                 WrHead = True
             
-            eChar.RDstart.put(eChar.curCycle)
-            eChar.RDstop.put(eChar.curCycle + IVcount-1)
+            with eChar.CycleLock:
+                eChar.RDstart.put(eChar.curCycle)
+                eChar.RDstop.put(eChar.curCycle + IVcount-1)
+                
             ret = PulseIV(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tfallS, twidthS, triseR, tfallR, twidthR, tbase, 
                                 MeasPoints=MeasPoints, count=IVcount, read=True, initialRead=initialRead, tread=tread, Vread=Vread, SMUs=SMUs, 
                                 Vdc=Vdc, DCcompl=DCcompl,WriteHeader=WrHead, Primary=False)
@@ -4712,7 +4576,7 @@ def EndurancePartialRead(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS
 
             if initialRead:
                 CurCount += 1
-                eChar.EnduranceHeader = eChar.wgfmu.getHeader()
+                eChar.writeHeader("Endurance", eChar.wgfmu.getHeader())
                 initialRead = False
             
             while not eChar.Stop.empty():
@@ -4727,8 +4591,8 @@ def EndurancePartialRead(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS
                     break
                 
                 #Less cycles left than in one iteration
-                if IVIteration > eChar.maxNumSingleEnduranceRun and ReadEndurance:
-                    sol = IVIteration/eChar.maxNumSingleEnduranceRun
+                if IVIteration > eChar.getMaxNumSingleEnduranceRun() and ReadEndurance:
+                    sol = IVIteration/eChar.getMaxNumSingleEnduranceRun()
                     frac, whole = ma.modf(sol)
                     for n in range(int(whole)):
                         
@@ -4738,24 +4602,25 @@ def EndurancePartialRead(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS
                             break
 
                         createEndurancePulse(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tfallS, twidthS, triseR, tfallR, twidthR, 
-                                                        tbase, eChar.maxNumSingleEnduranceRun, read=ReadEndurance, tread=tread, Vread=Vread, 
+                                                        tbase, eChar.getMaxNumSingleEnduranceRun(), read=ReadEndurance, tread=tread, Vread=Vread, 
                                                         initialRead=initialRead)
                         
                         if ReadEndurance:
                             ret = eChar.wgfmu.executeMeasurement()
                             ret = getSepEnduranceData(ret)
                             eChar.rawData.put({'Name': ret['Name'], 'Channel': ret['Channel'], 'Length': ret['Length'], 'Data': ret['Data'], 'Type':'Endurance'})
-                            eChar.RDstart.put(eChar.curCycle)
-                            eChar.RDstop.put(eChar.curCycle + eChar.maxNumSingleEnduranceRun-1)
+                            with eChar.CycleLock:
+                                eChar.RDstart.put(eChar.curCycle)
+                                eChar.RDstop.put(eChar.curCycle + eChar.getMaxNumSingleEnduranceRun()()-1)
                         else:
                             eChar.wgfmu.executeMeasurement(GetData=False)
 
-                        eChar.curCycle += eChar.maxNumSingleEnduranceRun
-                        CurCount += eChar.maxNumSingleEnduranceRun
+                        eChar.curCycle += eChar.getMaxNumSingleEnduranceRun()
+                        CurCount += eChar.getMaxNumSingleEnduranceRun()
                         initialRead = False
 
                     if frac > 0:
-                        count_Last = int(frac*eChar.maxNumSingleEnduranceRun)
+                        count_Last = int(frac*eChar.getMaxNumSingleEnduranceRun())
                         createEndurancePulse(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tfallS, twidthS, triseR, tfallR, twidthR, 
                                                         tbase, count_Last, read=ReadEndurance, tread=tread, Vread=Vread)
 
@@ -4793,8 +4658,8 @@ def EndurancePartialRead(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS
             else:
                 
                 #Less cycles left than in one iteration
-                if IVIteration > eChar.maxNumSingleEnduranceRun and ReadEndurance:
-                    sol = IVIteration/eChar.maxNumSingleEnduranceRun
+                if IVIteration > eChar.getMaxNumSingleEnduranceRun() and ReadEndurance:
+                    sol = IVIteration/eChar.getMaxNumSingleEnduranceRun()
                     frac, whole = ma.modf(sol)
                     for n in range(int(whole)):
                         
@@ -4804,22 +4669,22 @@ def EndurancePartialRead(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS
                             break
 
                         createEndurancePulse(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tfallS, twidthS, triseR, tfallR, twidthR, 
-                                                        tbase, eChar.maxNumSingleEnduranceRun, read=ReadEndurance, tread=tread, Vread=Vread, 
+                                                        tbase, eChar.getMaxNumSingleEnduranceRun(), read=ReadEndurance, tread=tread, Vread=Vread, 
                                                         initialRead=initialRead)
                         if ReadEndurance:
                             ret = eChar.wgfmu.executeMeasurement()
                             ret = getSepEnduranceData(ret)
                             eChar.rawData.put({'Name': ret['Name'], 'Channel': ret['Channel'], 'Length': ret['Length'], 'Data': ret['Data'], 'Type':'Endurance'})
                             eChar.RDstart.put(eChar.curCycle)
-                            eChar.RDstop.put(eChar.curCycle + eChar.maxNumSingleEnduranceRun-1)
+                            eChar.RDstop.put(eChar.curCycle + eChar.getMaxNumSingleEnduranceRun()-1)
                         else:
                             eChar.wgfmu.executeMeasurement(GetData=False)
-                        eChar.curCycle += eChar.maxNumSingleEnduranceRun
-                        CurCount += eChar.maxNumSingleEnduranceRun
+                        eChar.curCycle += eChar.getMaxNumSingleEnduranceRun()
+                        CurCount += eChar.getMaxNumSingleEnduranceRun()
                         initialRead = False
 
                     if frac > 0:
-                        count_Last = int(frac*eChar.maxNumSingleEnduranceRun)
+                        count_Last = int(frac*eChar.getMaxNumSingleEnduranceRun())
                         createEndurancePulse(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tfallS, twidthS, triseR, tfallR, twidthR, 
                                                         tbase, count_Last, read=ReadEndurance, tread=tread, Vread=Vread)
 
@@ -4854,8 +4719,8 @@ def EndurancePartialRead(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS
         #only endurance
         else:
             #Run as many 2e6 cycles as you need to get to IVIteration
-            if Count > eChar.maxNumSingleEnduranceRun and ReadEndurance:
-                sol = Count/eChar.maxNumSingleEnduranceRun
+            if Count > eChar.getMaxNumSingleEnduranceRun() and ReadEndurance:
+                sol = Count/eChar.getMaxNumSingleEnduranceRun()
                 frac, whole = ma.modf(sol)
                 
                 for n in range(int(whole)):
@@ -4866,21 +4731,21 @@ def EndurancePartialRead(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS
                         break
 
                     createEndurancePulse(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tfallS, twidthS, triseR, tfallR, twidthR, 
-                                                    tbase, eChar.maxNumSingleEnduranceRun, read=ReadEndurance, tread=10e-6, Vread=-0.2, initialRead=initialRead)
+                                                    tbase, eChar.getMaxNumSingleEnduranceRun(), read=ReadEndurance, tread=10e-6, Vread=-0.2, initialRead=initialRead)
 
                     if ReadEndurance:
                         ret = eChar.wgfmu.executeMeasurement()
                         ret = getSepEnduranceData(ret)
                         eChar.rawData.put({'Name': ret['Name'], 'Channel': ret['Channel'], 'Length': ret['Length'], 'Data': ret['Data'], 'Type':'Endurance'})
                         eChar.RDstart.put(eChar.curCycle)
-                        eChar.RDstop.put(eChar.curCycle + eChar.maxNumSingleEnduranceRun-1)
+                        eChar.RDstop.put(eChar.curCycle + eChar.getMaxNumSingleEnduranceRun()-1)
                     else:
                         eChar.wgfmu.executeMeasurement(GetData=False)
-                    CurCount += eChar.maxNumSingleEnduranceRun
-                    eChar.curCycle += eChar.maxNumSingleEnduranceRun
+                    CurCount += eChar.getMaxNumSingleEnduranceRun()
+                    eChar.curCycle += eChar.getMaxNumSingleEnduranceRun()
 
                 if frac > 0:
-                    count_Last = int(frac*eChar.maxNumSingleEnduranceRun)
+                    count_Last = int(frac*eChar.getMaxNumSingleEnduranceRun())
                     createEndurancePulse(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tfallS, twidthS, triseR, tfallR, twidthR, 
                                                     tbase, count_Last, read=ReadEndurance, tread=10e-6, Vread=-0.2)
 
@@ -4914,15 +4779,16 @@ def EndurancePartialRead(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS
 
         if initialRead:
             CurCount+=1
-            eChar.EnduranceHeader = eChar.wgfmu.getHeader()
+            eChar.writeHeader("Endurance", eChar.wgfmu.getHeader())
             initialRead = False
 
     if IVIteration > 0:
-        eChar.AdditionalHeader = []
-        eChar.AdditionalHeader.append('Measurement,Type.Primary,Endurance')
-        eChar.AdditionalHeader.append('Measurement,Type.Secondary,PulseIV')
-        eChar.AdditionalHeader.append('Measurement,Endurance.StartPoint,%d' %(eChar.curCycle))
-        eChar.AdditionalHeader.append('Measurement,Endurance.EndPoint,%d' %(eChar.curCycle+IVcount))
+        addHeader= []
+        addHeader.append('Measurement,Type.Primary,Endurance')
+        addHeader.append('Measurement,Type.Secondary,PulseIV')
+        addHeader.append('Measurement,Endurance.StartPoint,%d' %(eChar.curCycle))
+        addHeader.append('Measurement,Endurance.EndPoint,%d' %(eChar.curCycle+IVcount))
+        eChar.writeHeader("Additional", addHeader)
         
         if not stop:
 
@@ -4963,7 +4829,7 @@ def EndurancePartialRead(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS
             break
 
     if WriteHeader:
-        eChar.Combinedheader.extend(eChar.EnduranceHeader)
+        eChar.extendHeader('Combined',eChar.getHeader("Endurance"))
 
     return True 
 
@@ -4997,7 +4863,7 @@ def AnalogEndurance(eChar, PulseChn, GroundChn, SMUs, Vg, NumLevels, Vgstep, Vse
     DCcompl:   Array of DC comliances
     """
 
-    eChar.localtime = tm.localtime()
+    eChar.updateTime()
     CurCount = 1
     initialRead = True
     #DCcompl = 0.01
@@ -5012,7 +4878,7 @@ def AnalogEndurance(eChar, PulseChn, GroundChn, SMUs, Vg, NumLevels, Vgstep, Vse
         VgLevels.append(j)
     print("Vg all: ", VgLevels)
 
-    eChar.threads.append(th.Thread(target = saveDataEndurance, args=(eChar, WriteHeader,DoYield, eChar.MaxRowsPerFile, eChar.MaxDataPerPlot)))
+    eChar.threads.append(th.Thread(target = saveDataEndurance, args=(eChar, WriteHeader,DoYield, eChar.getMaxRowsPerFile(), eChar.getMaxDataPerPlot())))
     eChar.threads[-1].start()
 
     stop =  False
@@ -5051,8 +4917,8 @@ def AnalogEndurance(eChar, PulseChn, GroundChn, SMUs, Vg, NumLevels, Vgstep, Vse
 
         #only endurance
         #Run as many 2e6 cycles as you need to get to IVIteration
-        if Count > eChar.maxNumSingleEnduranceRun and ReadEndurance:
-            sol = Count/eChar.maxNumSingleEnduranceRun
+        if Count > eChar.getMaxNumSingleEnduranceRun() and ReadEndurance:
+            sol = Count/eChar.getMaxNumSingleEnduranceRun()
             frac, whole = ma.modf(sol)
             
             for n in range(int(whole)):
@@ -5063,21 +4929,21 @@ def AnalogEndurance(eChar, PulseChn, GroundChn, SMUs, Vg, NumLevels, Vgstep, Vse
                     break
 
                 createEndurancePulse(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tfallS, twidthS, triseR, tfallR, twidthR, 
-                                                tbase, eChar.maxNumSingleEnduranceRun, read=ReadEndurance, tread=10e-6, Vread=-0.2, initialRead=initialRead)
+                                                tbase, eChar.getMaxNumSingleEnduranceRun(), read=ReadEndurance, tread=10e-6, Vread=-0.2, initialRead=initialRead)
 
                 if ReadEndurance:
                     ret = eChar.wgfmu.executeMeasurement()
                     ret = getSepEnduranceData(ret)
                     eChar.rawData.put({'Name': ret['Name'], 'Channel': ret['Channel'], 'Length': ret['Length'], 'Data': ret['Data'], 'Type':'Endurance'})
                     eChar.RDstart.put(eChar.curCycle)
-                    eChar.RDstop.put(eChar.curCycle + eChar.maxNumSingleEnduranceRun-1)
+                    eChar.RDstop.put(eChar.curCycle + eChar.getMaxNumSingleEnduranceRun()-1)
                 else:
                     eChar.wgfmu.executeMeasurement(GetData=False)
-                CurCount += eChar.maxNumSingleEnduranceRun
-                eChar.curCycle += eChar.maxNumSingleEnduranceRun
+                CurCount += eChar.getMaxNumSingleEnduranceRun()
+                eChar.curCycle += eChar.getMaxNumSingleEnduranceRun()
 
             if frac > 0:
-                count_Last = int(frac*eChar.maxNumSingleEnduranceRun)
+                count_Last = int(frac*eChar.getMaxNumSingleEnduranceRun())
                 createEndurancePulse(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tfallS, twidthS, triseR, tfallR, twidthR, 
                                                 tbase, count_Last, read=ReadEndurance, tread=10e-6, Vread=-0.2)
 
@@ -5112,7 +4978,7 @@ def AnalogEndurance(eChar, PulseChn, GroundChn, SMUs, Vg, NumLevels, Vgstep, Vse
 
         if initialRead:
             CurCount+=1
-            eChar.EnduranceHeader = eChar.wgfmu.getHeader()
+            eChar.writeHeader("Endurance",eChar.wgfmu.getHeader())
             initialRead = False
         lvlaa += 1
 
@@ -5146,7 +5012,7 @@ def AnalogEndurance(eChar, PulseChn, GroundChn, SMUs, Vg, NumLevels, Vgstep, Vse
             break
 
     if WriteHeader:
-        eChar.Combinedheader.extend(eChar.EnduranceHeader)
+        eChar.extendHeader('Combined',eChar.getHeader("Endurance"))
 
     return True 
 
@@ -5181,7 +5047,7 @@ def AnalogEnduranceVreset(eChar, PulseChn, GroundChn, Vreset, NumLevels, Vresets
     DCcompl:   Array of DC comliances
     """
 
-    eChar.localtime = tm.localtime()
+    eChar.updateTime()
     CurCount = 1
     #initialRead = True
     initialRead = False
@@ -5197,7 +5063,7 @@ def AnalogEnduranceVreset(eChar, PulseChn, GroundChn, Vreset, NumLevels, Vresets
         VresetLevels.append(j)
     print("Vreset all: ", VresetLevels)
 
-    eChar.threads.append(th.Thread(target = saveDataEndurance, args=(eChar, WriteHeader,DoYield, eChar.MaxRowsPerFile, eChar.MaxDataPerPlot)))
+    eChar.threads.append(th.Thread(target = saveDataEndurance, args=(eChar, WriteHeader,DoYield, eChar.getMaxRowsPerFile(), eChar.getMaxDataPerPlot())))
     eChar.threads[-1].start()
 
     stop =  False
@@ -5244,8 +5110,8 @@ def AnalogEnduranceVreset(eChar, PulseChn, GroundChn, Vreset, NumLevels, Vresets
         '''
         #only endurance
         #Run as many 2e6 cycles as you need to get to IVIteration
-        if Count > eChar.maxNumSingleEnduranceRun and ReadEndurance:
-            sol = Count/eChar.maxNumSingleEnduranceRun
+        if Count > eChar.getMaxNumSingleEnduranceRun() and ReadEndurance:
+            sol = Count/eChar.getMaxNumSingleEnduranceRun()
             frac, whole = ma.modf(sol)
             
             for n in range(int(whole)):
@@ -5256,21 +5122,21 @@ def AnalogEnduranceVreset(eChar, PulseChn, GroundChn, Vreset, NumLevels, Vresets
                     break
 
                 createEndurancePulse(eChar, PulseChn, GroundChn, Vset, VresetLevels[lvlaa], delay, triseS, tfallS, twidthS, triseR, tfallR, twidthR, 
-                                                tbase, eChar.maxNumSingleEnduranceRun, read=ReadEndurance, tread=10e-6, Vread=-0.2, initialRead=initialRead)
+                                                tbase, eChar.getMaxNumSingleEnduranceRun(), read=ReadEndurance, tread=10e-6, Vread=-0.2, initialRead=initialRead)
 
                 if ReadEndurance:
                     ret = eChar.wgfmu.executeMeasurement()
                     ret = getSepEnduranceData(ret)
                     eChar.rawData.put({'Name': ret['Name'], 'Channel': ret['Channel'], 'Length': ret['Length'], 'Data': ret['Data'], 'Type':'Endurance'})
                     eChar.RDstart.put(eChar.curCycle)
-                    eChar.RDstop.put(eChar.curCycle + eChar.maxNumSingleEnduranceRun-1)
+                    eChar.RDstop.put(eChar.curCycle + eChar.getMaxNumSingleEnduranceRun()-1)
                 else:
                     eChar.wgfmu.executeMeasurement(GetData=False)
-                CurCount += eChar.maxNumSingleEnduranceRun
-                eChar.curCycle += eChar.maxNumSingleEnduranceRun
+                CurCount += eChar.getMaxNumSingleEnduranceRun()
+                eChar.curCycle += eChar.getMaxNumSingleEnduranceRun()
 
             if frac > 0:
-                count_Last = int(frac*eChar.maxNumSingleEnduranceRun)
+                count_Last = int(frac*eChar.getMaxNumSingleEnduranceRun())
                 createEndurancePulse(eChar, PulseChn, GroundChn, Vset, VresetLevels[lvlaa], delay, triseS, tfallS, twidthS, triseR, tfallR, twidthR, 
                                                 tbase, count_Last, read=ReadEndurance, tread=10e-6, Vread=-0.2)
 
@@ -5286,12 +5152,13 @@ def AnalogEnduranceVreset(eChar, PulseChn, GroundChn, Vreset, NumLevels, Vresets
                 eChar.curCycle += count_Last
             
             if IVIteration == True:
-                eChar.AdditionalHeader = []
-                #eChar.AdditionalHeader.append('Measurement,Type.Primary,Endurance')
-                eChar.AdditionalHeader.append('Measurement,Type.Secondary,PulseIV')
-                #eChar.AdditionalHeader.append('Measurement,Endurance.StartPoint,%d' %(eChar.curCycle))
-                #eChar.AdditionalHeader.append('Measurement,Endurance.EndPoint,%d' %(eChar.curCycle+IVcount))
-            
+                addHeader= []
+                #addHeader.append('Measurement,Type.Primary,Endurance')
+                addHeader.append('Measurement,Type.Secondary,PulseIV')
+                #addHeader.append('Measurement,Endurance.StartPoint,%d' %(eChar.curCycle))
+                #addHeader.append('Measurement,Endurance.EndPoint,%d' %(eChar.curCycle+IVcount))
+                eChar.writeHeader("Additional", addHeader)
+
             if not stop:
 
                 #eChar.RDstart.put(eChar.curCycle)
@@ -5321,16 +5188,17 @@ def AnalogEnduranceVreset(eChar, PulseChn, GroundChn, Vreset, NumLevels, Vresets
 
         if initialRead:
             CurCount+=1
-            eChar.EnduranceHeader = eChar.wgfmu.getHeader()
+            eChar.writeHeader("Endurance", eChar.wgfmu.getHeader())
             initialRead = False
 
         if IVIteration == True:
-            eChar.AdditionalHeader = []
-            #eChar.AdditionalHeader.append('Measurement,Type.Primary,Endurance')
-            eChar.AdditionalHeader.append('Measurement,Type.Secondary,PulseIV')
-            #eChar.AdditionalHeader.append('Measurement,Endurance.StartPoint,%d' %(eChar.curCycle))
-            #eChar.AdditionalHeader.append('Measurement,Endurance.EndPoint,%d' %(eChar.curCycle+IVcount))
-            
+            addHeader= []
+            #addHeader.append('Measurement,Type.Primary,Endurance')
+            addHeader.append('Measurement,Type.Secondary,PulseIV')
+            #addHeader.append('Measurement,Endurance.StartPoint,%d' %(eChar.curCycle))
+            #addHeader.append('Measurement,Endurance.EndPoint,%d' %(eChar.curCycle+IVcount))
+            eChar.writeHeader("Additional", addHeader)
+
             if not stop:
 
                 #eChar.RDstart.put(eChar.curCycle)
@@ -5374,7 +5242,7 @@ def AnalogEnduranceVreset(eChar, PulseChn, GroundChn, Vreset, NumLevels, Vresets
             break
 
     if WriteHeader:
-        eChar.Combinedheader.extend(eChar.EnduranceHeader)
+        eChar.extendHeader('Combined',eChar.getHeader("Endurance"))
 
     return True 
 
@@ -5409,7 +5277,7 @@ def AnalogEnduranceVset(eChar, PulseChn, GroundChn, Vset, NumLevels, Vsetstep, V
     DCcompl:   Array of DC comliances
     """
 
-    eChar.localtime = tm.localtime()
+    eChar.updateTime()
     CurCount = 1
     #initialRead = True
     initialRead = False
@@ -5425,7 +5293,7 @@ def AnalogEnduranceVset(eChar, PulseChn, GroundChn, Vset, NumLevels, Vsetstep, V
         VsetLevels.append(j)
     print("Vset all: ", VsetLevels)
 
-    eChar.threads.append(th.Thread(target = saveDataEndurance, args=(eChar, WriteHeader,DoYield, eChar.MaxRowsPerFile, eChar.MaxDataPerPlot)))
+    eChar.threads.append(th.Thread(target = saveDataEndurance, args=(eChar, WriteHeader,DoYield, eChar.getMaxRowsPerFile(), eChar.getMaxDataPerPlot())))
     eChar.threads[-1].start()
 
     stop =  False
@@ -5472,8 +5340,8 @@ def AnalogEnduranceVset(eChar, PulseChn, GroundChn, Vset, NumLevels, Vsetstep, V
         '''
         #only endurance
         #Run as many 2e6 cycles as you need to get to IVIteration
-        if Count > eChar.maxNumSingleEnduranceRun and ReadEndurance:
-            sol = Count/eChar.maxNumSingleEnduranceRun
+        if Count > eChar.getMaxNumSingleEnduranceRun() and ReadEndurance:
+            sol = Count/eChar.getMaxNumSingleEnduranceRun()
             frac, whole = ma.modf(sol)
             
             for n in range(int(whole)):
@@ -5484,21 +5352,21 @@ def AnalogEnduranceVset(eChar, PulseChn, GroundChn, Vset, NumLevels, Vsetstep, V
                     break
 
                 createEndurancePulse(eChar, PulseChn, GroundChn, VsetLevels[lvlaa], Vreset, delay, triseS, tfallS, twidthS, triseR, tfallR, twidthR, 
-                                                tbase, eChar.maxNumSingleEnduranceRun, read=ReadEndurance, tread=10e-6, Vread=-0.2, initialRead=initialRead)
+                                                tbase, eChar.getMaxNumSingleEnduranceRun(), read=ReadEndurance, tread=10e-6, Vread=-0.2, initialRead=initialRead)
 
                 if ReadEndurance:
                     ret = eChar.wgfmu.executeMeasurement()
                     ret = getSepEnduranceData(ret)
                     eChar.rawData.put({'Name': ret['Name'], 'Channel': ret['Channel'], 'Length': ret['Length'], 'Data': ret['Data'], 'Type':'Endurance'})
                     eChar.RDstart.put(eChar.curCycle)
-                    eChar.RDstop.put(eChar.curCycle + eChar.maxNumSingleEnduranceRun-1)
+                    eChar.RDstop.put(eChar.curCycle + eChar.getMaxNumSingleEnduranceRun()-1)
                 else:
                     eChar.wgfmu.executeMeasurement(GetData=False)
-                CurCount += eChar.maxNumSingleEnduranceRun
-                eChar.curCycle += eChar.maxNumSingleEnduranceRun
+                CurCount += eChar.getMaxNumSingleEnduranceRun()
+                eChar.curCycle += eChar.getMaxNumSingleEnduranceRun()
 
             if frac > 0:
-                count_Last = int(frac*eChar.maxNumSingleEnduranceRun)
+                count_Last = int(frac*eChar.getMaxNumSingleEnduranceRun())
                 createEndurancePulse(eChar, PulseChn, GroundChn, VsetLevels[lvlaa], Vreset, delay, triseS, tfallS, twidthS, triseR, tfallR, twidthR, 
                                                 tbase, count_Last, read=ReadEndurance, tread=10e-6, Vread=-0.2)
 
@@ -5514,12 +5382,13 @@ def AnalogEnduranceVset(eChar, PulseChn, GroundChn, Vset, NumLevels, Vsetstep, V
                 eChar.curCycle += count_Last
             
             if IVIteration == True:
-                eChar.AdditionalHeader = []
-                #eChar.AdditionalHeader.append('Measurement,Type.Primary,Endurance')
-                eChar.AdditionalHeader.append('Measurement,Type.Secondary,PulseIV')
-                #eChar.AdditionalHeader.append('Measurement,Endurance.StartPoint,%d' %(eChar.curCycle))
-                #eChar.AdditionalHeader.append('Measurement,Endurance.EndPoint,%d' %(eChar.curCycle+IVcount))
-            
+                addHeader= []
+                #addHeader.append('Measurement,Type.Primary,Endurance')
+                addHeader.append('Measurement,Type.Secondary,PulseIV')
+                #addHeader.append('Measurement,Endurance.StartPoint,%d' %(eChar.curCycle))
+                #addHeader.append('Measurement,Endurance.EndPoint,%d' %(eChar.curCycle+IVcount))
+                eChar.writeHeader("Additional", addHeader)
+
             if not stop:
 
                 #eChar.RDstart.put(eChar.curCycle)
@@ -5549,11 +5418,12 @@ def AnalogEnduranceVset(eChar, PulseChn, GroundChn, Vset, NumLevels, Vsetstep, V
             eChar.curCycle += Count
 
             if IVIteration == True:
-                eChar.AdditionalHeader = []
-                #eChar.AdditionalHeader.append('Measurement,Type.Primary,Endurance')
-                eChar.AdditionalHeader.append('Measurement,Type.Secondary,PulseIV')
-                #eChar.AdditionalHeader.append('Measurement,Endurance.StartPoint,%d' %(eChar.curCycle))
-                #eChar.AdditionalHeader.append('Measurement,Endurance.EndPoint,%d' %(eChar.curCycle+IVcount))
+                addHeader= []
+                #addHeader.append('Measurement,Type.Primary,Endurance')
+                addHeader.append('Measurement,Type.Secondary,PulseIV')
+                #addHeader.append('Measurement,Endurance.StartPoint,%d' %(eChar.curCycle))
+                #addHeader.append('Measurement,Endurance.EndPoint,%d' %(eChar.curCycle+IVcount))
+                eChar.writeHeader("Additional", addHeader)
             
             if not stop:
 
@@ -5567,7 +5437,7 @@ def AnalogEnduranceVset(eChar, PulseChn, GroundChn, Vset, NumLevels, Vsetstep, V
 
         if initialRead:
             CurCount+=1
-            eChar.EnduranceHeader = eChar.wgfmu.getHeader()
+            eChar.writeHeader("Endurance", eChar.wgfmu.getHeader())
             initialRead = False
         lvlaa += 1
 
@@ -5601,7 +5471,7 @@ def AnalogEnduranceVset(eChar, PulseChn, GroundChn, Vset, NumLevels, Vsetstep, V
             break
 
     if WriteHeader:
-        eChar.Combinedheader.extend(eChar.EnduranceHeader)
+        eChar.extendHeader('Combined',eChar.getHeader("Endurance"))
 
     return True 
 
@@ -5638,8 +5508,9 @@ def AnalogStepEnduranceIV(eChar, PulseChn, GroundChn, Cycles, Vset, Vsetstep, Vr
     DCcompl:   Array of DC comliances
     """
 
-    eChar.localtime = tm.localtime()
+    eChar.updateTime()
     CurCount = 1
+    Count = 1
     #initialRead = True
     initialRead = False
     #DCcompl = 0.01
@@ -5663,7 +5534,7 @@ def AnalogStepEnduranceIV(eChar, PulseChn, GroundChn, Cycles, Vset, Vsetstep, Vr
         VresetLevels.append(j)
     print("Vreset all: ", VresetLevels)
 
-    eChar.threads.append(th.Thread(target = saveDataEndurance, args=(eChar, WriteHeader,DoYield, eChar.MaxRowsPerFile, eChar.MaxDataPerPlot)))
+    eChar.threads.append(th.Thread(target = saveDataEndurance, args=(eChar, WriteHeader,DoYield, eChar.getMaxRowsPerFile(), eChar.getMaxDataPerPlot())))
     eChar.threads[-1].start()
 
     stop =  False
@@ -5710,8 +5581,8 @@ def AnalogStepEnduranceIV(eChar, PulseChn, GroundChn, Cycles, Vset, Vsetstep, Vr
         '''
         #only endurance
         #Run as many 2e6 cycles as you need to get to IVIteration
-        if Count > eChar.maxNumSingleEnduranceRun and ReadEndurance:
-            sol = Count/eChar.maxNumSingleEnduranceRun
+        if Count > eChar.getMaxNumSingleEnduranceRun() and ReadEndurance:
+            sol = Count/eChar.getMaxNumSingleEnduranceRun()
             frac, whole = ma.modf(sol)
             
             for n in range(int(whole)):
@@ -5722,21 +5593,21 @@ def AnalogStepEnduranceIV(eChar, PulseChn, GroundChn, Cycles, Vset, Vsetstep, Vr
                     break
 
                 createEndurancePulse(eChar, PulseChn, GroundChn, VsetLevels[lvlaa], Vreset, delay, triseS, tfallS, twidthS, triseR, tfallR, twidthR, 
-                                                tbase, eChar.maxNumSingleEnduranceRun, read=ReadEndurance, tread=10e-6, Vread=-0.2, initialRead=initialRead)
+                                                tbase, eChar.getMaxNumSingleEnduranceRun(), read=ReadEndurance, tread=10e-6, Vread=-0.2, initialRead=initialRead)
 
                 if ReadEndurance:
                     ret = eChar.wgfmu.executeMeasurement()
                     ret = getSepEnduranceData(ret)
                     eChar.rawData.put({'Name': ret['Name'], 'Channel': ret['Channel'], 'Length': ret['Length'], 'Data': ret['Data'], 'Type':'Endurance'})
                     eChar.RDstart.put(eChar.curCycle)
-                    eChar.RDstop.put(eChar.curCycle + eChar.maxNumSingleEnduranceRun-1)
+                    eChar.RDstop.put(eChar.curCycle + eChar.getMaxNumSingleEnduranceRun()-1)
                 else:
                     eChar.wgfmu.executeMeasurement(GetData=False)
-                CurCount += eChar.maxNumSingleEnduranceRun
-                eChar.curCycle += eChar.maxNumSingleEnduranceRun
+                CurCount += eChar.getMaxNumSingleEnduranceRun()
+                eChar.curCycle += eChar.getMaxNumSingleEnduranceRun()
 
             if frac > 0:
-                count_Last = int(frac*eChar.maxNumSingleEnduranceRun)
+                count_Last = int(frac*eChar.getMaxNumSingleEnduranceRun())
                 createEndurancePulse(eChar, PulseChn, GroundChn, VsetLevels[lvlaa], Vreset, delay, triseS, tfallS, twidthS, triseR, tfallR, twidthR, 
                                                 tbase, count_Last, read=ReadEndurance, tread=10e-6, Vread=-0.2)
 
@@ -5752,11 +5623,8 @@ def AnalogStepEnduranceIV(eChar, PulseChn, GroundChn, Cycles, Vset, Vsetstep, Vr
                 eChar.curCycle += count_Last
             
             if IVIteration == True:
-                eChar.AdditionalHeader = []
-                #eChar.AdditionalHeader.append('Measurement,Type.Primary,Endurance')
-                eChar.AdditionalHeader.append('Measurement,Type.Secondary,PulseIV')
-                #eChar.AdditionalHeader.append('Measurement,Endurance.StartPoint,%d' %(eChar.curCycle))
-                #eChar.AdditionalHeader.append('Measurement,Endurance.EndPoint,%d' %(eChar.curCycle+IVcount))
+                eChar.writeHeader("Additional", [])
+                eChar.appendHeader("Additional", 'Measurement,Type.Secondary,PulseIV')
             
             if not stop:
 
@@ -5787,11 +5655,12 @@ def AnalogStepEnduranceIV(eChar, PulseChn, GroundChn, Cycles, Vset, Vsetstep, Vr
             eChar.curCycle += Count
 
             if IVIteration == True:
-                eChar.AdditionalHeader = []
-                #eChar.AdditionalHeader.append('Measurement,Type.Primary,Endurance')
-                eChar.AdditionalHeader.append('Measurement,Type.Secondary,PulseIV')
-                #eChar.AdditionalHeader.append('Measurement,Endurance.StartPoint,%d' %(eChar.curCycle))
-                #eChar.AdditionalHeader.append('Measurement,Endurance.EndPoint,%d' %(eChar.curCycle+IVcount))
+                addHeader= []
+                #addHeader.append('Measurement,Type.Primary,Endurance')
+                addHeader.append('Measurement,Type.Secondary,PulseIV')
+                #addHeader.append('Measurement,Endurance.StartPoint,%d' %(eChar.curCycle))
+                #addHeader.append('Measurement,Endurance.EndPoint,%d' %(eChar.curCycle+IVcount))
+                eChar.writeHeader("Additional", addHeader)
             
             if not stop:
 
@@ -5805,7 +5674,7 @@ def AnalogStepEnduranceIV(eChar, PulseChn, GroundChn, Cycles, Vset, Vsetstep, Vr
 
         if initialRead:
             CurCount+=1
-            eChar.EnduranceHeader = eChar.wgfmu.getHeader()
+            eChar.writeHeader("Endurance", eChar.wgfmu.getHeader())
             initialRead = False
         lvlaa += 1
 
@@ -5839,7 +5708,7 @@ def AnalogStepEnduranceIV(eChar, PulseChn, GroundChn, Cycles, Vset, Vsetstep, Vr
             break
 
     if WriteHeader:
-        eChar.Combinedheader.extend(eChar.EnduranceHeader)
+        eChar.extendHeader('Combined',eChar.getHeader("Endurance"))
 
     return True 
 
@@ -5874,14 +5743,14 @@ def ShortIntermittentReadEndurance(eChar, PulseChn, GroundChn, SMUs, Vg, NumRead
     DCcompl:   Array of DC comliances
     """
 
-    eChar.localtime = tm.localtime()
+    eChar.updateTime()
     CurCount = 1
     initialRead = True
     #DCcompl = 0.01
 
     InterCount = int(Count/NumReads)
     print("InterCount: ", InterCount)
-    if NumReads > eChar.maxNumSingleEnduranceRun:
+    if NumReads > eChar.getMaxNumSingleEnduranceRun():
         raise ValueError("Can't have more than 2e6 data points")
 
     CountIter = []
@@ -5894,7 +5763,7 @@ def ShortIntermittentReadEndurance(eChar, PulseChn, GroundChn, SMUs, Vg, NumRead
             CountIter.append(j)
     print("CountIter: ", CountIter)
 
-    eChar.threads.append(th.Thread(target = saveDataEndurance, args=(eChar, WriteHeader,DoYield, eChar.MaxRowsPerFile, eChar.MaxDataPerPlot)))
+    eChar.threads.append(th.Thread(target = saveDataEndurance, args=(eChar, WriteHeader,DoYield, eChar.getMaxRowsPerFile(), eChar.getMaxDataPerPlot())))
     eChar.threads[-1].start()
 
     stop =  False
@@ -6029,7 +5898,7 @@ def ShortIntermittentReadEndurance(eChar, PulseChn, GroundChn, SMUs, Vg, NumRead
         
         if initialRead:
             CurCount+=1
-            eChar.EnduranceHeader = eChar.wgfmu.getHeader()
+            eChar.writeHeader("Endurance", eChar.wgfmu.getHeader())
             initialRead = False
         lvlaa += 1
 
@@ -6063,7 +5932,7 @@ def ShortIntermittentReadEndurance(eChar, PulseChn, GroundChn, SMUs, Vg, NumRead
             break
 
     if WriteHeader:
-        eChar.Combinedheader.extend(eChar.EnduranceHeader)
+        eChar.extendHeader("Combined", eChar.getHeader("Endurance"))
 
     return True 
 
@@ -6097,14 +5966,14 @@ def LongIntermittentReadEndurance(eChar, PulseChn, GroundChn, SMUs, Vg, NumReads
     DCcompl:   Array of DC comliances
     """
 
-    eChar.localtime = tm.localtime()
+    eChar.updateTime()
     CurCount = 1
     initialRead = True
     #DCcompl = 0.01
 
     InterCount = int(Count/NumReads)
     print("InterCount: ", InterCount)
-    if NumReads > eChar.maxNumSingleEnduranceRun:
+    if NumReads > eChar.getMaxNumSingleEnduranceRun():
         raise ValueError("Can't have more than 2e6 data points")
 
     CountIter = []
@@ -6122,7 +5991,7 @@ def LongIntermittentReadEndurance(eChar, PulseChn, GroundChn, SMUs, Vg, NumReads
 
 
 
-    eChar.threads.append(th.Thread(target = saveDataEndurance, args=(eChar, WriteHeader,DoYield, eChar.MaxRowsPerFile, eChar.MaxDataPerPlot)))
+    eChar.threads.append(th.Thread(target = saveDataEndurance, args=(eChar, WriteHeader,DoYield, eChar.getMaxRowsPerFile(), eChar.getMaxDataPerPlot())))
     eChar.threads[-1].start()
 
     stop =  False
@@ -6273,7 +6142,7 @@ def LongIntermittentReadEndurance(eChar, PulseChn, GroundChn, SMUs, Vg, NumReads
         
         if initialRead:
             CurCount+=1
-            eChar.EnduranceHeader = eChar.wgfmu.getHeader()
+            eChar.writeHeader("Endurance", eChar.wgfmu.getHeader())
             initialRead = False
         lvlaa += 1
 
@@ -6307,7 +6176,7 @@ def LongIntermittentReadEndurance(eChar, PulseChn, GroundChn, SMUs, Vg, NumReads
             break
 
     if WriteHeader:
-        eChar.Combinedheader.extend(eChar.EnduranceHeader)
+        eChar.extendHeader("Combined", eChar.getHeader("Endurance"))
 
     return True 
 
@@ -6437,10 +6306,10 @@ def createInterEndurancePulse(eChar, PulseChn, GroundChn, Vset, Vreset, delay, t
     eChar.wgfmu.synchronize()
     
     header = eChar.wgfmu.getHeader()
-    header.append("Measurement,Device,%s" %(eChar.device))
-    header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
+    header.append("Measurement,Device,%s" %(eChar.getDevice()))
+    header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.getLocalTime())))
     header.append("Measurement,Type.Primary,Endurance")
 
-    eChar.EnduranceHeader = header
+    eChar.writeHeader("Endurance", header)
     
     return header

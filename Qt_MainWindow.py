@@ -28,6 +28,9 @@ import Qt_MainButtons as Qt_MB
 import screeninfo as scrInfo
 import glob, imp
 import os as os
+import darkdetect
+import cssutils
+from pprint import pprint
 
 import ResultHandling as RH
 
@@ -116,11 +119,14 @@ class MainUI(QtWidgets.QMainWindow):
         #self.eChar = ElectricalCharacterization
         #self.Configuration = Configuration
 
+        #print(self.app.styleSheet())
+
         self._main = QtWidgets.QWidget(self)
         self.QFont = QtGui.QFont()
         self.QPainter = QtGui.QPainter()
         self.Qpalette = QtGui.QPalette()
         self.interval = 10 #update inverval in milliseconds
+        self.darkMode = darkdetect.isDark()
 
         self.homeDirectory = os.getcwd()
 
@@ -144,21 +150,21 @@ class MainUI(QtWidgets.QMainWindow):
             self.__width = 400
             self.__height = 300
             self.QFont.setPointSize(7)
-            self.QMargin = [0,0,0,0]
+            self.QMargin = QtCore.QMargins(0,0,0,0)
             self.QSpacing = 0
             
         elif size.lower() == "large":
             self.__width = 800
             self.__height = 600
             self.QFont.setPointSize(12)
-            self.QMargin = [5,5,5,5]
+            self.QMargin = QtCore.QMargins(5,5,5,5)
             self.QSpacing = 5
 
         elif size.lower() == "extralarge":
             self.__width = 1024
             self.__height = 768
             self.QFont.setPointSize(14)
-            self.QMargin = [5,5,5,5]
+            self.QMargin = QtCore.QMargins(5,5,5,5)
             self.QSpacing = 5
         
         # standard is medium
@@ -166,7 +172,7 @@ class MainUI(QtWidgets.QMainWindow):
             self.__width = 600
             self.__height = 450
             self.QFont.setPointSize(10)
-            self.QMargin = [5,1,5,1]
+            self.QMargin = QtCore.QMargins(5,1,5,1)
             self.QSpacing = 2
         
         defColor = self.palette().color(QtGui.QPalette.Background)
@@ -191,7 +197,7 @@ class MainUI(QtWidgets.QMainWindow):
         self.icon = QtGui.QIcon(icon)
 
         try: 
-            self.setWindowIcon(self.icon)
+            self.setWindowIcon(QtGui.QIcon(self.icon))
         except:
             self.__ErrorQu.put("Icon not found in window %s" %(title))
 
@@ -251,28 +257,28 @@ class MainUI(QtWidgets.QMainWindow):
 
         ###### Create WaferMapTab and add to TabsWidget
         self.WaferMapTab = Qt_WM.WaferMap(self.tabs, self, 9, 17, self.__widthTab, tabHeight, dieFolder=self.dieFolder)
-        self.WaferMapTab.layout.setContentsMargins(*(self.QMargin))
+        self.WaferMapTab.layout.setContentsMargins(self.QMargin)
         self.WaferMapTab.layout.setSpacing(self.QSpacing)
         self.tabs.insertTab(self.WaferMapTabID, self.WaferMapTab, "Wafer Map")
 
         ###### Create measurement Tab and add to TabsWidget
         self.MeasurementTab = Qt_MT.MainMeasurementFrame(self.tabs, self, self.__widthTab, tabHeight)
-        self.MeasurementTab.layout.setContentsMargins(*(self.QMargin))
+        self.MeasurementTab.layout.setContentsMargins(self.QMargin)
         self.MeasurementTab.layout.setSpacing(self.QSpacing)
         self.tabs.insertTab(self.MeasurementTabID, self.MeasurementTab, "Measurement")
 
         self.B1500Tab = Qt_B1500A.B1500AFrame(self.tabs, self, self.__widthTab, tabHeight)
-        self.B1500Tab.layout.setContentsMargins(*(self.QMargin))
+        self.B1500Tab.layout.setContentsMargins(self.QMargin)
         self.B1500Tab.layout.setSpacing(self.QSpacing)
         self.tabs.insertTab(self.B1500TabID,self.B1500Tab, "B1500A")
         
         self.E5274ATab = Qt_E5274A.E5274AFrame(self.tabs, self, self.__widthTab, tabHeight)
-        self.E5274ATab.layout.setContentsMargins(*(self.QMargin))
+        self.E5274ATab.layout.setContentsMargins(self.QMargin)
         self.E5274ATab.layout.setSpacing(self.QSpacing)
         self.tabs.insertTab(self.E5274ATabID,self.E5274ATab, "E5274A")
 
         self.ConfigTab = Qt_CF.ConfigurationFrame(self.tabs, self, 9, 17, self.__widthTab, tabHeight)
-        self.ConfigTab.layout.setContentsMargins(*(self.QMargin))
+        self.ConfigTab.layout.setContentsMargins(self.QMargin)
         self.ConfigTab.layout.setSpacing(self.QSpacing)
         self.tabs.insertTab(self.ConfigTabID, self.ConfigTab, "Configuration")
 
@@ -338,6 +344,64 @@ class MainUI(QtWidgets.QMainWindow):
         window.move(posX, posY)
         scList = QtGui.QGuiApplication.screens()
         window.windowHandle().setScreen(scList[screen])
+
+    def getBackgroundColor(self, HEX=False):
+
+        css = self.app.styleSheet()
+        search = "QWidget {background:rgba("
+        loc1 = css.find(search)
+        loc2 = css.find(");", loc1+len(search))
+        bcRGBA = css[loc1+len(search):loc2]
+        
+        print(bcRGBA)
+        if HEX:
+            rgbaSp = bcRGBA.split(",")
+            if len(rgbaSp) == 3:
+                r = int(float(rgbaSp[0]))
+                g = int(float(rgbaSp[1]))
+                b = int(float(rgbaSp[2]))
+                return "#{:02x}{:02x}{:02x}".format(r,g,b)
+            if len(rgbaSp) == 4:
+                r = int(float(rgbaSp[0]))
+                g = int(float(rgbaSp[1]))
+                b = int(float(rgbaSp[2]))
+                a = int(float(rgbaSp[3]))*255
+                return "#{:02x}{:02x}{:02x}{:02x}".format(r,g,b,a)
+
+        rgbaSp = bcRGBA.split(",")
+        if len(rgbaSp) == 3:
+            return "rgb(%s)" %(bcRGBA)
+        if len(rgbaSp) == 4:
+            return "rgba(%s)" %(bcRGBA)
+        
+        
+    def getLabelColor(self, HEX=False):
+
+        css = self.app.styleSheet()
+        search = ");color:rgba("
+        loc1 = css.find(search)
+        loc2 = css.find(");", loc1+len(search))
+        bcRGBA = css[loc1+len(search):loc2]
+        
+        if HEX:
+            rgbaSp = bcRGBA.split(",")
+            if len(rgbaSp) == 3:
+                r = int(float(rgbaSp[0]))
+                g = int(float(rgbaSp[1]))
+                b = int(float(rgbaSp[2]))
+                return "#{:02x}{:02x}{:02x}".format(r,g,b)
+            if len(rgbaSp) == 4:
+                r = int(float(rgbaSp[0]))
+                g = int(float(rgbaSp[1]))
+                b = int(float(rgbaSp[2]))
+                a = int(float(rgbaSp[3]))*255
+                return "#{:02x}{:02x}{:02x}{:02x}".format(r,g,b,a)
+
+        rgbaSp = bcRGBA.split(",")
+        if len(rgbaSp) == 3:
+            return "rgb(%s)" %(bcRGBA)
+        if len(rgbaSp) == 4:
+            return "rgba(%s)" %(bcRGBA)
 
     def setResultWindowPosition(self):
 
@@ -619,10 +683,9 @@ class MainUI(QtWidgets.QMainWindow):
         for frame in self.LogFrame:
             frame.clear()
 
-    def startExecution(self, MeasType):
+    def startExecution(self):
         self.DateFolder = self.getEChar().updateDateFolder()
         self.MainButtons.reset()
-        self.WaferMapTab.CreateCanvas()
         MeasTypeClass = self.WaferMapTab
         ConfigCopy = cp.deepcopy(self.Configuration)
         self.eChar.updateConfiguration(ConfigCopy)
@@ -675,6 +738,11 @@ class MainUI(QtWidgets.QMainWindow):
         return True
 
     def update(self):
+        
+        if self.darkMode != darkdetect.isDark():
+            self.darkMode = darkdetect.isDark()
+            self.WaferMapTab.update(BackgroundColor=self.getBackgroundColor(True), LabelColor=self.getLabelColor(True))
+            self.ResultWindow.update(BackgroundColor=self.getBackgroundColor(True), LabelColor=self.getLabelColor(True))
 
         if self.instClose != None:
 
@@ -699,7 +767,6 @@ class MainUI(QtWidgets.QMainWindow):
 
         if write:
             self.WaferMapTab.WaferMap.update()
-            self.WaferMapTab.DrawCanvas()
         
         if self.Instruments != None:
             self.Instruments.update(self)

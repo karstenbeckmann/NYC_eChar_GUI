@@ -43,6 +43,7 @@ class Configuration:
         self.DieSizeX = 25
         self.DieSizeY = 32
         self.WaferSize = 300
+        self.WaferRotation = 180
         self.WaferMapVariable = ""
         self.CenterLocationX = 0
         self.CenterLocationY = 0
@@ -133,7 +134,12 @@ class Configuration:
                 try: 
                     self.WaferSize = int(wp[key])
                 except:
-                    self.ErrorQueue.put("Wafer Size is not of type float.")
+                    self.ErrorQueue.put("Wafer Size is not of type int.")
+            if key == "WaferRotation":
+                try: 
+                    self.WaferRotation = int(wp[key])
+                except:
+                    self.ErrorQueue.put("Wafer Rotation is not of type int.")
             if key == "WaferMapVariable":
                 self.WaferMapVariable = wp[key]
             if key == "WGFMUUseGUI": 
@@ -556,7 +562,7 @@ class Configuration:
         if self.DieFile == "":
             if self.DieMap == -1:
                 self.DieMap = 0
-            self.Dies = std.CreateDiePattern(self.DieMap,self.WaferSize,self.DieSizeX,self.DieSizeY, [self.CenterLocationX,self.CenterLocationY])
+            self.Dies = std.CreateDiePattern(self.DieMap,self.WaferSize,self.DieSizeX,self.DieSizeY, [self.CenterLocationX/100,self.CenterLocationY/100])
         else:
             Dies = []
             try:
@@ -629,7 +635,7 @@ class Configuration:
         return self.GPIBMatrix
 
     def getMainFolder(self):
-        return self.Mainfolder
+        return os.path.join(self.Mainfolder)
 
     def getSubfolder(self):
         return self.Subfolder
@@ -647,8 +653,11 @@ class Configuration:
         return self.DieSizeY
 
     def getWaferSize(self):
-        return float(self.WaferSize)
+        return int(self.WaferSize)
     
+    def getWaferRotation(self):
+        return int(self.WaferRotation)
+
     def getWaferVariable(self):
         return self.WaferMapVariable
 
@@ -860,6 +869,16 @@ class Configuration:
             raise TypeError("Die Size must be an Integer bigger than 1")
         self.WaferSize = int(WaferSize)
     
+    def setWaferRotation(self, WaferRotation):
+        try:
+            WaferRotation = int(WaferRotation)
+        except:
+            raise TypeError("Wafer Rotation must be an Integer")
+        if not WaferRotation in [0,90,180,270]:
+            raise TypeError("WaferRotation must be either 0, 90, 180 or 270")
+        self.WaferRotation = int(WaferRotation)
+    
+
     def setWaferMapVariable(self, WaferMapVariable):
         if isinstance(WaferMapVariable, str): 
             if len(WaferMapVariable) < 21:

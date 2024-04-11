@@ -24,8 +24,6 @@ def SpotMeas(eChar, SMUs, VorI, Val, Compl, hold, delay):
     # hold - hold before the value is forced in s (float)
     # delay - delay after the value is forced and before the measurement is taken in s (float)
 
-
-    Typ = 'SpotMeasurement'
     title = "IV Spot"
 
     IComp = []
@@ -51,15 +49,12 @@ def SpotMeas(eChar, SMUs, VorI, Val, Compl, hold, delay):
     data = out['Data']
     lat = data[0][-1]
 
-    eChar.plotIVData({"Add": True, 'Yscale': 'log',  "Traces": lat, 'Xlabel': Xlab, "Ylabel": Ylab, 'Title': title, "MeasurementType": Typ, "ValueName": title})
+    eChar.plotIVData({"Add": True, 'Yscale': 'log',  "Traces": lat, 'Xlabel': Xlab, "Ylabel": Ylab, 'Title': title, "ValueName": title})
     
     try: 
 
         header = out['Header']
         
-        header.insert(0,"TestParameter,Measurement.Type,%s" %(Typ))
-        header.append("Measurement,Device,%s" %(eChar.device))
-        header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
         header.append("Measurement,Initial Delay,%d" %(delay))
 
         DataName = "DataName" 
@@ -86,7 +81,7 @@ def SpotMeas(eChar, SMUs, VorI, Val, Compl, hold, delay):
         header.append(Dimension)
 
     except UnboundLocalError as e: 
-        print(eChar.ErrorQueue.put("IVmeas = %s: %s" %(Typ, e)))
+        print(eChar.ErrorQueue.put("IVmeas: %s" %(e)))
         
     output = []
     if type(data) == list:
@@ -113,7 +108,7 @@ def SpotMeas(eChar, SMUs, VorI, Val, Compl, hold, delay):
 
                 output.append(line)
 
-    eChar.writeDataToFile(header, output, Typ=Typ, startCyc=0, endCyc=1)
+    eChar.writeDataToFile(header, output, startCyc=0, endCyc=1)
     
     values = []
 
@@ -140,13 +135,12 @@ def SpotMeas(eChar, SMUs, VorI, Val, Compl, hold, delay):
             unit = "V"
 
         values.append(eChar.dhValue(data[m], name, Unit=unit))
-    eChar.dhAddRow(values, Typ)
+    eChar.dhAddRow(values)
 
 
 
 
 def SpotMeasE5274A(eChar, SMUs, VorI, Val, Compl, delay):
-    Typ = 'SpotMeasurementE5274A'
 
     IComp = []
     VComp = []
@@ -170,15 +164,12 @@ def SpotMeasE5274A(eChar, SMUs, VorI, Val, Compl, delay):
     
     Plot = out['Data'][0]
 
-    eChar.plotIVData({"Add": False, 'Yscale': 'lin',  "Traces": Plot, 'Xlabel': Xlab, "Ylabel": Ylab, 'Title': "IV Spot", "MeasurementType": Typ, "ValueName": 'IV Spot'})
+    eChar.plotIVData({"Add": False, 'Yscale': 'lin',  "Traces": Plot, 'Xlabel': Xlab, "Ylabel": Ylab, 'Title': "I-V Spot", "ValueName": 'I-V'})
             
     try: 
 
         header = out['Header']
         
-        header.insert(0,"TestParameter,Measurement.Type,%s" %(Typ))
-        header.append("Measurement,Device,%s" %(eChar.device))
-        header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
 
         DataName = "DataName" 
         Unit = "Units" 
@@ -212,7 +203,7 @@ def SpotMeasE5274A(eChar, SMUs, VorI, Val, Compl, delay):
                 
                 data.append(line)
 
-    eChar.writeDataToFile(header, data, Typ=Typ, startCyc=0, endCyc=1)
+    eChar.writeDataToFile(header, data, startCyc=0, endCyc=1)
     
     for n in range(len(out['Data'][0])):
         name = "R%d" %(SMUs[n])
@@ -237,12 +228,10 @@ def SpotMeasE5274A(eChar, SMUs, VorI, Val, Compl, delay):
         values = []
         values.append(eChar.dhValue(calcRes, name,Unit='ohm'))
         values.append(eChar.dhValue(out['Data'][0][n], name, Unit=unit))
-        eChar.dhAddRow(values, Typ)
+        eChar.dhAddRow(values)
 
 
 def IVsweep(eChar, SweepSMU, start, stop, steps, VorI, Compl, Double, Log, DCSMUs, DCval, DCVorI, DCCompl, hold, delay):
-
-    Typ = 'IV-sweep'
     
     Chns = [SweepSMU]
     Chns.extend(DCSMUs)
@@ -267,11 +256,15 @@ def IVsweep(eChar, SweepSMU, start, stop, steps, VorI, Compl, Double, Log, DCSMU
     step = (stop-start)/(steps-1)
 
     if VorI:
-        Xlab = "Voltage (V)"
-        Ylab = "Current (A)"
+        Xlab = "Voltage"
+        xUnit = "V"
+        Ylab = "Current"
+        yUnit = "I"
     else:
-        Xlab = "Current (A)"
-        Ylab = "Voltage (V)"
+        Xlab = "Current"
+        xUnit = "I"
+        Ylab = "Voltage"
+        yUnit = "V"
 
     for n in range(len(DCval)+1):
         if n == 0:
@@ -312,15 +305,12 @@ def IVsweep(eChar, SweepSMU, start, stop, steps, VorI, Compl, Double, Log, DCSMU
     except IndexError:
         return None
 
-    eChar.plotIVData({"Add": False, 'Xaxis': True, 'Yscale': 'lin',  "Traces": Plot, 'Xlabel': Xlab, "Ylabel": Ylab, 'Title': "IV Sweep", "MeasurementType": Typ, "ValueName": 'IV Sweep'})
+    eChar.plotIVData({"Add": False, 'Xaxis': True, 'Yscale': 'lin',  "Traces": Plot, "Xunit":xUnit, "Yunit":yUnit, 'Xlabel': Xlab, "Ylabel": Ylab, 'Title': "IV Sweep", "ValueName": 'I-V'})
             
     try: 
 
         header = out['Header']
         
-        header.insert(0,"TestParameter,Measurement.Type,%s" %(Typ))
-        header.append("Measurement,Device,%s" %(eChar.device))
-        header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
 
         if VorI[0]:
             DataName = "DataName, V1, I1" 
@@ -361,7 +351,7 @@ def IVsweep(eChar, SweepSMU, start, stop, steps, VorI, Compl, Double, Log, DCSMU
         
         data.append(line)
 
-    eChar.writeDataToFile(header, data, Typ=Typ, startCyc=0, endCyc=1)
+    eChar.writeDataToFile(header, data, startCyc=0, endCyc=1)
 
     iterate = createIterationRange(len(out['Data'][0]))
     values = []     
@@ -387,11 +377,9 @@ def IVsweep(eChar, SweepSMU, start, stop, steps, VorI, Compl, Double, Log, DCSMU
         values.append(eChar.dhValue(out['Data'][0][n], name, Unit=unit))
         values.append(eChar.dhValue(calcRes, nameR, Unit='ohm'))
 
-    eChar.dhAddRow(values, Typ)
+    eChar.dhAddRow(values)
     
 def IVsweepE5274A(eChar, SweepSMU, start, stop, steps, VorI, Compl, Double, Log, DCSMUs, DCval, DCVorI, DCCompl, hold, delay):
-
-    Typ = 'IV-sweepE5274A'
     
     Chns = [SweepSMU]
     Chns.extend(DCSMUs)
@@ -462,16 +450,12 @@ def IVsweepE5274A(eChar, SweepSMU, start, stop, steps, VorI, Compl, Double, Log,
             Plot.append(out['Data'][n+1])
         n = n+1
 
-    eChar.plotIVData({"Add": False, 'Xaxis': True, 'Yscale': 'lin',  "Traces": Plot, 'Xlabel': Xlab, "Ylabel": Ylab, 'Title': "IV Sweep", "MeasurementType": Typ, "ValueName": 'IV Sweep'})
+    eChar.plotIVData({"Add": False, 'Xaxis': True, 'Yscale': 'lin',  "Traces": Plot, 'Xlabel': Xlab, "Ylabel": Ylab, 'Title': "IV Sweep", "ValueName": 'IV Sweep'})
             
     try: 
 
         header = out['Header']
         
-        header.insert(0,"TestParameter,Measurement.Type,%s" %(Typ))
-        header.append("Measurement,Device,%s" %(eChar.device))
-        header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
-
         if VorI:
             DataName = "DataName,V1,I1"
             Unit = "Units,V,A" 
@@ -507,7 +491,7 @@ def IVsweepE5274A(eChar, SweepSMU, start, stop, steps, VorI, Compl, Double, Log,
         
         data.append(line)
 
-    eChar.writeDataToFile(header, data, Typ=Typ, startCyc=0, endCyc=1)
+    eChar.writeDataToFile(header, data, startCyc=0, endCyc=1)
 
     iterate = createIterationRange(len(out['Data'][0]))
        
@@ -534,7 +518,7 @@ def IVsweepE5274A(eChar, SweepSMU, start, stop, steps, VorI, Compl, Double, Log,
         values.append(eChar.dhValue(out['Data'][0][n], name, Unit=unit))
         values.append(eChar.dhValue(calcRes, nameR, Unit='ohm'))
 
-    eChar.dhAddRow(values, Typ)
+    eChar.dhAddRow(values)
     
 def createIterationRange(dataLength):
     
@@ -573,9 +557,9 @@ def setDCVoltages(eChar,SMUs=None, Vdc=None, DCcompl=None, WriteHeader=True):
     ret = eChar.B1500A.SpotMeasurement(SMUs,VorI,Vdc,IVal,IComp=DCcompl,RI=RI)
     eChar.B1500A.remoteExecute()
     eChar.B1500A.setDirectExecute()
-    eChar.DCHeader = ret['Header']
+    eChar.writeHeader("DC",ret['Header'])
     if WriteHeader:
-        eChar.Combinedheader.extend(ret['Header'])
+        eChar.extendHeader("Combined",ret['Header'])
 
 ###########################################################################################################################
 
@@ -592,8 +576,9 @@ def setDCVoltE5274(eChar,SMUs=None, Vdc=None, DCcompl=None, WriteHeader=True):
     ret = eChar.E5274A.SpotMeasurement(SMUs,VorI,Vdc,IVal,IComp=DCcompl,RI=RI)
     eChar.E5274A.remoteExecute()
     eChar.E5274A.setDirectExecute()
+    eChar.writeHeader("DC",ret['Header'])
     if WriteHeader:
-        eChar.Combinedheader.extend(ret['Header'])
+        eChar.extendHeader("Combined", ret['Header'])
 
 ###########################################################################################################################
 
@@ -608,7 +593,6 @@ def RepeatSpotMeas(eChar, SMUs, VorI, Val, Compl, delay, sleep, numOfReapeats):
     # numOfRepeats - number of repeats (int)
     
 
-    Typ = 'RepeatSpotMeasurement'
     title = "IV Spot Repeat"
 
     IComp = []
@@ -642,15 +626,12 @@ def RepeatSpotMeas(eChar, SMUs, VorI, Val, Compl, delay, sleep, numOfReapeats):
 
         lat = data[0][-1]
 
-        eChar.plotIVData({"Add": True, 'Yscale': 'log',  "Traces": lat, 'Xlabel': Xlab, "Ylabel": Ylab, 'Title': title, "MeasurementType": Typ, "ValueName": title})
+        eChar.plotIVData({"Add": True, 'Yscale': 'log',  "Traces": lat, 'Xlabel': Xlab, "Ylabel": Ylab, 'Title': title, "ValueName": title})
         if eChar.checkStop():
             break
 
     try: 
         header = out['Header']
-        header.insert(0,"TestParameter,Measurement.Type,%s" %(Typ))
-        header.append("Measurement,Device,%s" %(eChar.device))
-        header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
         header.append("Measurement,Initial Delay,%d" %(delay))
 
         DataName = "DataName" 
@@ -677,7 +658,7 @@ def RepeatSpotMeas(eChar, SMUs, VorI, Val, Compl, delay, sleep, numOfReapeats):
         header.append(Dimension)
 
     except UnboundLocalError as e: 
-        print(eChar.ErrorQueue.put("IVmeas = %s: %s" %(Typ, e)))
+        print(eChar.ErrorQueue.put("IVmeas: %s" %(e)))
         
     output = []
     if type(data) == list:
@@ -704,7 +685,7 @@ def RepeatSpotMeas(eChar, SMUs, VorI, Val, Compl, delay, sleep, numOfReapeats):
 
                 output.append(line)
 
-    eChar.writeDataToFile(header, output, Typ=Typ, startCyc=0, endCyc=1)
+    eChar.writeDataToFile(header, output, startCyc=0, endCyc=1)
     
     values = []
 
@@ -731,5 +712,5 @@ def RepeatSpotMeas(eChar, SMUs, VorI, Val, Compl, delay, sleep, numOfReapeats):
             unit = "V"
 
         values.append(eChar.dhValue(data[m], name, Unit=unit))
-    eChar.dhAddRow(values, Typ)
+    eChar.dhAddRow(values)
 

@@ -15,6 +15,7 @@ import numpy as np
 from numpy.core.fromnumeric import trace
 import pyvisa as vs
 import math as ma
+import copy as cp
 import sys
 import statistics as stat
 import threading as th
@@ -186,7 +187,6 @@ def MesurementExecutionPS(deviceCharacterization, eChar, Configuration, threads,
         Configuration.setUseMatrix(False)
 
     
-
     NumOfDev = 1
     if Configuration.getMultipleDev():
         lenXDev = Configuration.getNumXDevices()
@@ -286,17 +286,14 @@ def MesurementExecutionPS(deviceCharacterization, eChar, Configuration, threads,
     stop = False
     dies = Configuration.getDies()
     lenDies = len(dies)
-    
-
-    for n in range(4):
-        eChar.ExternalHeader.append('')
-    n=0
 
     MultipleDies = Configuration.getMultipleDies()
-    
+
+
     
     die0 = []
-    for x in initPos[0:2]:
+    for n, x in enumerate(initPos[0:2]):
+        print(Configuration.getCenterLocation(), x)
         die0.append(int(round(float(x)+Configuration.getCenterLocation()[n])))
         n+=1
 
@@ -307,6 +304,11 @@ def MesurementExecutionPS(deviceCharacterization, eChar, Configuration, threads,
     ECharTime = 0
     first = True
     
+    createExternalHeader(eChar, MultipleDies, Configuration.getMultipleDev(), Configuration.getWaferSize(), Configuration.getWaferRotation(), Configuration.getXPitch(), Configuration.getYPitch(), Configuration.getNumXDevices(), Configuration.getNumYDevices(), lenDies, Dies=dies, DiePat=Configuration.getDieMap(), DieFile=Configuration.getDieFile())
+    for n in range(4):
+        eChar.appendHeader("External", "")
+    n=0
+
     ### only create Batches for the Die if more than one wafer gets measured
     if MultipleDies:
         dieBatchPos = dh.batch("DiePositionSummary")
@@ -384,13 +386,13 @@ def MesurementExecutionPS(deviceCharacterization, eChar, Configuration, threads,
                 
                 eChar.writeLog(line)
 
-                eh = len(eChar.ExternalHeader)-4
+                eh = len(eChar.getHeader("External"))-4
                     
-                eChar.ExternalHeader[eh+0] = ('ProbeStation,Device.X,%d' %(xdev+Configuration.getDeviceStartX()))
-                eChar.ExternalHeader[eh+1] = ('ProbeStation,Device.Y,%d' %(ydev+Configuration.getDeviceStartX()))
-
-                eChar.ExternalHeader[eh+2] = ('ProbeStation,Die.X,%d' %(dies[n][0]))
-                eChar.ExternalHeader[eh+3] = ('ProbeStation,Die.Y,%d' %(dies[n][1]))
+                eChar.writeHeader("External",'ProbeStation,Device.X,%d' %(xdev+Configuration.getDeviceStartX()), index=eh+0)
+                eChar.writeHeader("External",'ProbeStation,Device.Y,%d' %(ydev+Configuration.getDeviceStartY()), index=eh+1)
+                
+                eChar.writeHeader("External",'ProbeStation,Die.X,%d' %(dies[n][0]), index=eh+2)
+                eChar.writeHeader("External",'ProbeStation,Die.Y,%d' %(dies[n][1]), index=eh+3)
 
                 MC = MatrixChange(Instruments.getMatrixInstrument(), Configuration.getMatrixConfiguration(), Configuration.getUseMatrix())
                 if Configuration.getUseMatrix():
@@ -412,14 +414,14 @@ def MesurementExecutionPS(deviceCharacterization, eChar, Configuration, threads,
                 eChar.MatDev = 0
                 
                 while MC.setNext():
-                    print("MC")
+                    
                     if Configuration.getUseMatrix():
                         eChar.writeMeasLog(MC.getHeader())
 
                     eChar.MatDev = eChar.MatDev + 1
                     
-                    eChar.MatNormal = MC.getNormalConfiguration()
-                    eChar.MatBit = MC.getBitConfiguration()
+                    eChar.setMatrixConfiguration(MC.getNormalConfiguration(), MC.getBitConfiguration())
+
                     
                     if not GraInterface.continueExecution() or stop:
                         stop = True
@@ -863,10 +865,10 @@ def getStdDeviation(DataList):
     if isinstance(DataList, type(np.array([0]))):
         return np.std(DataList)
 
-def isDieInWafer(wafer, n, m, x, y):
+def isDieInWafer(wafer, n, m, x, y, cenX=0, cenY=0):
     
-    n = abs(n)
-    m = abs(m)
+    n = abs(n + cenX)
+    m = abs(m - cenY)
 
     x1 = (n + 0.55)*x
     y1 = (m + 0.55)*y
@@ -1286,18 +1288,20 @@ def HandleSpecFile(SpecFile, SpecCode, ErrQu):
         output = None
     return output
 
-def CreateDiePattern(pat, waferSize, xDim, yDim, centerDie):
+def CreateDiePattern(pat, waferSize, xDim, yDim, centerLoc):
 
     xNum = ma.trunc(waferSize/xDim/2)
     yNum = ma.trunc(waferSize/yDim/2)
+    centerLocX = centerLoc[0]
+    centerLocY = centerLoc[1]
+
     dies = []
     if pat == 0:
-        
         dies.append([0,0])
     elif pat == 1:
         for x in range(-xNum,xNum,1):
             for y in range(-yNum,yNum,1):
-                if isDieInWafer(waferSize, x, y, xDim, yDim):
+                if isDieInWafer(waferSize, x, y, xDim, yDim, centerLocX, centerLocY):
                     dies.append([x,y])
     elif pat == 2:
         for x in range(-xNum,xNum,1):
@@ -1305,7 +1309,7 @@ def CreateDiePattern(pat, waferSize, xDim, yDim, centerDie):
                 frx, whx = ma.modf(float(x/2))
                 fry, why  = ma.modf(float(y/2))
                 if frx == 0 and fry == 0:
-                    if isDieInWafer(waferSize, x, y, xDim, yDim):
+                    if isDieInWafer(waferSize, x, y, xDim, yDim, centerLocX, centerLocY):
                         dies.append([x,y])
     elif pat == 3:
         for x in range(-xNum,xNum,1):
@@ -1313,7 +1317,7 @@ def CreateDiePattern(pat, waferSize, xDim, yDim, centerDie):
                 frx, whx = ma.modf(float(x/3))
                 fry, why  = ma.modf(float(y/3))
                 if frx == 0 and fry == 0:
-                    if isDieInWafer(waferSize, x, y, xDim, yDim):
+                    if isDieInWafer(waferSize, x, y, xDim, yDim, centerLocX, centerLocY):
                         dies.append([x,y])
     elif pat == 4:
         for x in range(-xNum,xNum,1):
@@ -1321,7 +1325,7 @@ def CreateDiePattern(pat, waferSize, xDim, yDim, centerDie):
                 frx, whx = ma.modf(float(x/4))
                 fry, why  = ma.modf(float(y/4))
                 if frx == 0 and fry == 0:
-                    if isDieInWafer(waferSize, x, y, xDim, yDim):
+                    if isDieInWafer(waferSize, x, y, xDim, yDim, centerLocX, centerLocY):
                         dies.append([x,y])
     return dies
 
@@ -1356,27 +1360,43 @@ def indexMove(oldDie, newDie):
 
     return {'Xmove': x, 'Ymove':y}
 
-def CreateExternalHeader(eChar, WaferSize, XPitch, YPitch, NumXdevices, NumYdevices, DieNum, DieFile, diePat):
-    eChar.ExternalHeader = []
-    eChar.ExternalHeader.append('ProbeStation,Wafer.Size,%d' %(WaferSize))
-    eChar.ExternalHeader.append('ProbeStation,Device.Step.X,%d' %(XPitch))
-    eChar.ExternalHeader.append('ProbeStation,Device.Step.Y,%d' %(YPitch))
-    eChar.ExternalHeader.append('ProbeStation,Device.Count.X,%d' %(NumXdevices))
-    eChar.ExternalHeader.append('ProbeStation,Device.Count.Y,%d' %(NumYdevices))
-    eChar.ExternalHeader.append('ProbeStation,Die.Count,%d' %(DieNum))
-    if not DieFile == None: 
-        eChar.ExternalHeader.append('ProbeStation,Die.FileName,%s' %(DieFile))
-    else:
-        if diePat == 0:
-            eChar.ExternalHeader.append('ProbeStation,Die.Map,MultipleDies')
-        elif diePat == 1:
-            eChar.ExternalHeader.append('ProbeStation,Die.Map,All')
-        elif diePat == 2: 
-            eChar.ExternalHeader.append('ProbeStation,Die.Map,ChessBoard')
-        elif diePat == 3: 
-            eChar.ExternalHeader.append('ProbeStation,Die.Map,ChessBoard_Tier3')
-        elif diePat == 4: 
-            eChar.ExternalHeader.append('ProbeStation,Die.Map,ChessBoard_Tier4')
+def createExternalHeader(eChar, MultipleDies, MultipleDevices, WaferSize, WaferRotation, XPitch, YPitch, NumXdevices, NumYdevices, DieNum, Dies=None, DiePat=None, DieFile=None):
+    ExternalHeader = []
+    ExternalHeader.append('ProbeStation,Wafer.Size,%d' %(WaferSize))
+    ExternalHeader.append('ProbeStation,Wafer Rotation, %ddeg' %(WaferRotation))
+
+    if MultipleDevices:
+        ExternalHeader.append('ProbeStation,Device.Count.X,%d' %(NumXdevices))
+        if NumXdevices > 1:
+            ExternalHeader.append('ProbeStation,Device.Step.X,%d' %(XPitch))
+        ExternalHeader.append('ProbeStation,Device.Count.Y,%d' %(NumYdevices))
+        if NumXdevices > 1:
+            ExternalHeader.append('ProbeStation,Device.Step.Y,%d' %(YPitch))
+        ExternalHeader.append('ProbeStation,Die.Count,%d' %(DieNum))
+        
+    if MultipleDies:
+        if DieFile != None and DieFile != "": 
+            ExternalHeader.append('ProbeStation,Die.FileName,%s' %(DieFile))
+        else:
+            if DiePat != None:
+                if DiePat == 0:
+                    ExternalHeader.append('ProbeStation,Die.Map,MultipleDies')
+                elif DiePat == 1:
+                    ExternalHeader.append('ProbeStation,Die.Map,All')
+                elif DiePat == 2: 
+                    ExternalHeader.append('ProbeStation,Die.Map,ChessBoard')
+                elif DiePat == 3: 
+                    ExternalHeader.append('ProbeStation,Die.Map,ChessBoard_Tier3')
+                elif DiePat == 4: 
+                    ExternalHeader.append('ProbeStation,Die.Map,ChessBoard_Tier4')
+                else: 
+                    ExternalHeader.append('ProbeStation,Die.Map,Custom')
+                
+        if Dies != None and Dies != []: 
+            ExternalHeader.append('ProbeStation,Dies.,%s' %(Dies))
+
+    eChar.writeHeader("External", ExternalHeader)
+    
 
 def rgb2gray(rgb):
     return np.dot(rgb[...,:3],[0.2989, 0.5870, 0.1140])
@@ -1478,10 +1498,9 @@ def createOutputData(DataIn, header):
     return {'header': header1, 'data': data}
 
 def createDeviceOutput(eChar, devRes):
-    header = []
+    header = eChar.getHeader("Combined")
+    header.extend(eChar.getHeader("External"))
 
-    header = eChar.Combinedheader
-    header.extend(eChar.ExternalHeader)
 
     ret = createOutputData(devRes,header)
 
@@ -1494,10 +1513,13 @@ def createDeviceOutput(eChar, devRes):
 
 def createDieOutput(eChar, dieRes, dieX, dieY):
     
-    header = eChar.Combinedheader
-    header.extend(eChar.ExternalHeader[:-3])
-    thread = []
-
+    with eChar.headerLock:
+        header = cp.deepcopy(eChar.getHeader("Combined"))
+        header.extend(eChar.getHeader("External")[:-3])
+    
+    folder = eChar.getFolder()
+    filename = eChar.getFilename('DieComplete')
+        
     #Calculate the average and standard deviation from the combined device Data
     dieResultAvg = dict()
     dieResultStd = dict()
@@ -1572,7 +1594,6 @@ def createDieOutput(eChar, dieRes, dieX, dieY):
 
     data = ret['data']
     header1 = ret['header']
-    
     thread = eChar.writeDataToFile(header1, data, Typ='Die_Device_Avg+Std')
           
     return thread

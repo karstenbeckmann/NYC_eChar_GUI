@@ -10,7 +10,7 @@ import types as tp
 import time as tm
 
 
-def DyChar(self, SMUs, Vdc, DCcompl, PulseChn, GroundChn, Vset, Vreset, delay, trise, tfall, twidth, tbase, MeasPoints, 
+def DyChar(eChar, SMUs, Vdc, DCcompl, PulseChn, GroundChn, Vset, Vreset, delay, trise, tfall, twidth, tbase, MeasPoints, 
                     Specs, read=True, tread=10e-6, Vread=-0.2, initalRead=True):
 
     # PulseChn, GroundChn, Vform, delay, trise, tfall, twidth, tbase, MeasPoints,
@@ -63,7 +63,7 @@ def DyChar(self, SMUs, Vdc, DCcompl, PulseChn, GroundChn, Vset, Vreset, delay, t
         for n in range(0,s):
 
             # Reset Measurement
-            self.localtime = tm.localtime()
+            eChar.updateTime()
             tfallread = tread * 0.1
             triseread = tread * 0.1
 
@@ -71,56 +71,56 @@ def DyChar(self, SMUs, Vdc, DCcompl, PulseChn, GroundChn, Vset, Vreset, delay, t
             tmend = tbase/2 + tfallread + tread
             duration = sum([tbase,tfallread,triseread,tread])
             
-            self.wgfmu.clearLibrary()
+            eChar.wgfmu.clearLibrary()
 
             if read and initalRead:
-                self.wgfmu.programRectangularPulse(PulseChn, tread, tfallread, triseread, tbase, Vread, 0, measure=True, mPoints=1, mStartTime=tmstart, mEndTime=tmend, AddSequence=False, Name="Read", WriteHeader=False)
-                self.wgfmu.programGroundChn(GroundChn, duration, Vg=0, measure=True, mPoints=1, mStartTime=tmstart, mEndTime=tmend, AddSequence=False, Name="Ground", WriteHeader=False)
+                eChar.wgfmu.programRectangularPulse(PulseChn, tread, tfallread, triseread, tbase, Vread, 0, measure=True, mPoints=1, mStartTime=tmstart, mEndTime=tmend, AddSequence=False, Name="Read", WriteHeader=False)
+                eChar.wgfmu.programGroundChn(GroundChn, duration, Vg=0, measure=True, mPoints=1, mStartTime=tmstart, mEndTime=tmend, AddSequence=False, Name="Ground", WriteHeader=False)
                 paReadID = 1
 
             durationF = sum([trise,twidth,tfall,tbase])
             endTime = tbase/2+trise+tfall+twidth
             if twidth == 0: 
-                self.wgfmu.programTriangularPulse(PulseChn, trise, tfall, tbase, Vreset, 0, measure=True, mPoints=MeasPoints, mStartTime=tbase/2, mEndTime=endTime, AddSequence=False, Name="Form")
-                self.wgfmu.programGroundChn(GroundChn, durationF, Vg=0, measure=True, mPoints=MeasPoints, mStartTime=tbase/2, mEndTime=endTime, AddSequence=False, Name="Ground")
+                eChar.wgfmu.programTriangularPulse(PulseChn, trise, tfall, tbase, Vreset, 0, measure=True, mPoints=MeasPoints, mStartTime=tbase/2, mEndTime=endTime, AddSequence=False, Name="Form")
+                eChar.wgfmu.programGroundChn(GroundChn, durationF, Vg=0, measure=True, mPoints=MeasPoints, mStartTime=tbase/2, mEndTime=endTime, AddSequence=False, Name="Ground")
             else: 
-                self.wgfmu.programRectangularPulse(PulseChn, twidth, trise, tfall, tbase, Vreset, 0, measure=True, mPoints=MeasPoints, mStartTime=tbase/2, mEndTime=endTime, AddSequence=False, Name="Form")
-                self.wgfmu.programGroundChn(GroundChn, durationF, Vg=0, measure=True, mPoints=MeasPoints, mStartTime=tbase/2, mEndTime=endTime, AddSequence=False, Name="Ground")
+                eChar.wgfmu.programRectangularPulse(PulseChn, twidth, trise, tfall, tbase, Vreset, 0, measure=True, mPoints=MeasPoints, mStartTime=tbase/2, mEndTime=endTime, AddSequence=False, Name="Form")
+                eChar.wgfmu.programGroundChn(GroundChn, durationF, Vg=0, measure=True, mPoints=MeasPoints, mStartTime=tbase/2, mEndTime=endTime, AddSequence=False, Name="Ground")
 
             paItstart = 1
 
             if read and not initalRead:
-                self.wgfmu.programRectangularPulse(PulseChn, tread, tfallread, triseread, tbase, Vread, 0, measure=True, mPoints=1, mStartTime=tmstart, mEndTime=tmend, AddSequence=False, Name="Read", WriteHeader=False)
-                self.wgfmu.programGroundChn(GroundChn, duration, Vg=0, measure=True, mPoints=1, mStartTime=tmstart, mEndTime=tmend, AddSequence=False, Name="Ground", WriteHeader=False)
+                eChar.wgfmu.programRectangularPulse(PulseChn, tread, tfallread, triseread, tbase, Vread, 0, measure=True, mPoints=1, mStartTime=tmstart, mEndTime=tmend, AddSequence=False, Name="Read", WriteHeader=False)
+                eChar.wgfmu.programGroundChn(GroundChn, duration, Vg=0, measure=True, mPoints=1, mStartTime=tmstart, mEndTime=tmend, AddSequence=False, Name="Ground", WriteHeader=False)
                 paItstart = 1
                 paReadID = 3
 
             if read and initalRead:
-                self.wgfmu.addSequence(PulseChn, "Read_%d_%d" %(paReadID,PulseChn), 1)
-                self.wgfmu.addSequence(GroundChn, "Ground_%d_%d" %(paReadID+1,GroundChn), 1)
+                eChar.wgfmu.addSequence(PulseChn, "Read_%d_%d" %(paReadID,PulseChn), 1)
+                eChar.wgfmu.addSequence(GroundChn, "Ground_%d_%d" %(paReadID+1,GroundChn), 1)
                 paItstart = 3
 
-            self.wgfmu.addSequence(PulseChn, "Form_%d_%d" %(paItstart,PulseChn), 1)
-            self.wgfmu.addSequence(GroundChn, "Ground_%d_%d" %(paItstart+1,GroundChn), 1)
+            eChar.wgfmu.addSequence(PulseChn, "Form_%d_%d" %(paItstart,PulseChn), 1)
+            eChar.wgfmu.addSequence(GroundChn, "Ground_%d_%d" %(paItstart+1,GroundChn), 1)
 
             if read:
-                self.wgfmu.addSequence(PulseChn, "Read_%d_%d" %(paReadID,PulseChn), 1)
-                self.wgfmu.addSequence(GroundChn, "Ground_%d_%d" %(paReadID+1,GroundChn), 1)
+                eChar.wgfmu.addSequence(PulseChn, "Read_%d_%d" %(paReadID,PulseChn), 1)
+                eChar.wgfmu.addSequence(GroundChn, "Ground_%d_%d" %(paReadID+1,GroundChn), 1)
             
-            self.wgfmu.synchronize()
+            eChar.wgfmu.synchronize()
             
-            Resret = self.wgfmu.executeMeasurement()
+            Resret = eChar.wgfmu.executeMeasurement()
 
             # Compare Specs with output data.
-            self.CompareSpecs(Setret, Resret, Specs)
+            eChar.CompareSpecs(Setret, Resret, Specs)
 
 
             if change == 0:
-                #self.Vreset = Vreset  # Change endurance and pulse IV Vreset to this variable
+                #eChar.Vreset = Vreset  # Change endurance and pulse IV Vreset to this variable
                 #break   # saves Vreset and breaks out of def and then we will run Pulse IV and then Endurance
 
                  # Set Measurement
-                self.localtime = tm.localtime()
+                eChar.localtime = tm.localtime()
                 tfallread = tread * 0.1
                 triseread = tread * 0.1
 
@@ -128,44 +128,44 @@ def DyChar(self, SMUs, Vdc, DCcompl, PulseChn, GroundChn, Vset, Vreset, delay, t
                 tmend = tbase/2 + tfallread + tread
                 duration = sum([tbase,tfallread,triseread,tread])
                 
-                self.wgfmu.clearLibrary()
+                eChar.wgfmu.clearLibrary()
 
                 if read:
-                    self.wgfmu.programRectangularPulse(PulseChn, tread, tfallread, triseread, tbase, Vread, 0, measure=True, mPoints=1, mStartTime=tmstart, mEndTime=tmend, AddSequence=False, Name="Read", WriteHeader=False)
-                    self.wgfmu.programGroundChn(GroundChn, duration, Vg=0, measure=True, mPoints=1, mStartTime=tmstart, mEndTime=tmend, AddSequence=False, Name="Ground", WriteHeader=False)
+                    eChar.wgfmu.programRectangularPulse(PulseChn, tread, tfallread, triseread, tbase, Vread, 0, measure=True, mPoints=1, mStartTime=tmstart, mEndTime=tmend, AddSequence=False, Name="Read", WriteHeader=False)
+                    eChar.wgfmu.programGroundChn(GroundChn, duration, Vg=0, measure=True, mPoints=1, mStartTime=tmstart, mEndTime=tmend, AddSequence=False, Name="Ground", WriteHeader=False)
 
                 durationF = sum([trise,twidth,tfall,tbase])
                 endTime = tbase/2+trise+tfall+twidth
                 if twidth == 0: 
-                    self.wgfmu.programTriangularPulse(PulseChn, trise, tfall, tbase, Vset, 0, measure=True, mPoints=MeasPoints, mStartTime=tbase/2, mEndTime=endTime, AddSequence=False, Name="Form")
-                    self.wgfmu.programGroundChn(GroundChn, durationF, Vg=0, measure=True, mPoints=MeasPoints, mStartTime=tbase/2, mEndTime=endTime, AddSequence=False, Name="Ground")
+                    eChar.wgfmu.programTriangularPulse(PulseChn, trise, tfall, tbase, Vset, 0, measure=True, mPoints=MeasPoints, mStartTime=tbase/2, mEndTime=endTime, AddSequence=False, Name="Form")
+                    eChar.wgfmu.programGroundChn(GroundChn, durationF, Vg=0, measure=True, mPoints=MeasPoints, mStartTime=tbase/2, mEndTime=endTime, AddSequence=False, Name="Ground")
                 else: 
-                    self.wgfmu.programRectangularPulse(PulseChn, twidth, trise, tfall, tbase, Vset, 0, measure=True, mPoints=MeasPoints, mStartTime=tbase/2, mEndTime=endTime, AddSequence=False, Name="Form")
-                    self.wgfmu.programGroundChn(GroundChn, durationF, Vg=0, measure=True, mPoints=MeasPoints, mStartTime=tbase/2, mEndTime=endTime, AddSequence=False, Name="Ground")
+                    eChar.wgfmu.programRectangularPulse(PulseChn, twidth, trise, tfall, tbase, Vset, 0, measure=True, mPoints=MeasPoints, mStartTime=tbase/2, mEndTime=endTime, AddSequence=False, Name="Form")
+                    eChar.wgfmu.programGroundChn(GroundChn, durationF, Vg=0, measure=True, mPoints=MeasPoints, mStartTime=tbase/2, mEndTime=endTime, AddSequence=False, Name="Ground")
 
                 paItstart = 1
 
                 if read and initalRead:
-                    self.wgfmu.addSequence(PulseChn, "Read_1_%d" %(PulseChn), 1)
-                    self.wgfmu.addSequence(GroundChn, "Ground_2_%d" %(GroundChn), 1)
+                    eChar.wgfmu.addSequence(PulseChn, "Read_1_%d" %(PulseChn), 1)
+                    eChar.wgfmu.addSequence(GroundChn, "Ground_2_%d" %(GroundChn), 1)
                     paItstart = 3
 
-                self.wgfmu.addSequence(PulseChn, "Form_%d_%d" %(paItstart,PulseChn), 1)
-                self.wgfmu.addSequence(GroundChn, "Ground_%d_%d" %(paItstart+1,GroundChn), 1)
+                eChar.wgfmu.addSequence(PulseChn, "Form_%d_%d" %(paItstart,PulseChn), 1)
+                eChar.wgfmu.addSequence(GroundChn, "Ground_%d_%d" %(paItstart+1,GroundChn), 1)
 
                 if read:
-                    self.wgfmu.addSequence(PulseChn, "Read_1_%d" %(PulseChn), 1)
-                    self.wgfmu.addSequence(GroundChn, "Ground_2_%d" %(GroundChn), 1)
+                    eChar.wgfmu.addSequence(PulseChn, "Read_1_%d" %(PulseChn), 1)
+                    eChar.wgfmu.addSequence(GroundChn, "Ground_2_%d" %(GroundChn), 1)
                 
-                self.wgfmu.synchronize()
+                eChar.wgfmu.synchronize()
                 
-                Setret = self.wgfmu.executeMeasurement()
+                Setret = eChar.wgfmu.executeMeasurement()
 
                 n = 0
                 setnum = setnum + 1
 
                 if setnum == 20:
-                    self.Vreset = Vreset  # Change endurance and pulse IV Vreset to this variable
+                    eChar.Vreset = Vreset  # Change endurance and pulse IV Vreset to this variable
                     DontWork = 0
                     break   # saves Vreset and breaks out of def and then we will run Pulse IV and then Endurance
           
@@ -173,7 +173,7 @@ def DyChar(self, SMUs, Vdc, DCcompl, PulseChn, GroundChn, Vset, Vreset, delay, t
     return DontWork 
 
 # Needs to know which ret data represents LRS and HRS.***************************
-def CompareSpecs(self, Setret, Resret, Specs):
+def CompareSpecs(eChar, Setret, Resret, Specs):
     change = 0
     if Setret == []:
         if Resret['HRS'] > Specs[2] or Resret['HRS'] < Specs[3]:

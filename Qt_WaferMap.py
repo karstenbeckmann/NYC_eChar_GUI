@@ -17,10 +17,21 @@ import StdDefinitions as std
 import copy as dp
 import os as os
 import functools
+import math as ma
+import numpy as np
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
+import darkdetect
 
+import PyQt5
 from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5.QtWidgets import *
+from PyQt5.QtGui import QPalette, QColor
+from PyQt5 import QtGui
+from PyQt5 import QtCore
 import Qt_stdObjects as stdObj
+
+from pyqtgraph import PlotWidget
+import pyqtgraph as pg
 
 import matplotlib._pylab_helpers as plotHelper
 
@@ -28,9 +39,8 @@ class WaferMap(stdObj.stdFrameGrid):
 
     def __init__(self, parent, MainGI, columns, rows, width, height, **kwargs):
 
-
         self.dieFolder = None
-        if 'dieFolder' in kwargs.keys():
+        if 'dieFolder' in kwargs:
             self.dieFolder = kwargs['dieFolder']
             del kwargs['dieFolder']
         else:
@@ -40,37 +50,72 @@ class WaferMap(stdObj.stdFrameGrid):
                 None
 
         super().__init__(parent, MainGI, columns, rows, width, height, **kwargs)
-
+        
         self.Configuration = self.MainGI.getConfiguration()
         self.Entries = []
-        self.WaferMap = None
-        self.__Canvas_1 = None
-        self.CreateCanvas()
 
-        
+        self.Rotations = {}
+        self.Rotations["Down"] = 180
+        self.Rotations["Left"] = 270
+        self.Rotations["Up"] = 0
+        self.Rotations["Right"] = 90
+
+        mapVLayout = QtWidgets.QHBoxLayout()
+        mapVLayout.addStretch()
+
+        plotRowSpan = 10
+        plotColSpan = 5
+        wMwidth = int(plotColSpan*width/columns*0.95)
+        wMheight = int(plotRowSpan*height/rows*0.95)
+
+        if wMwidth > wMheight:
+            wMsize = wMheight
+        else:
+            wMsize = wMwidth
+
+        self.WaferMap = PlotWidget(self, config=self.Configuration, name="WaferMapPlotWidget", backgroundColor=self.MainGI.getBackgroundColor(True), ringColor=self.MainGI.getLabelColor(True), title="Wafer Map")
+        self.WaferMap.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        self.WaferMap.setMinimumWidth(wMsize)
+        self.WaferMap.setMinimumHeight(wMsize)
+
+        mapVLayout.addWidget(self.WaferMap)
+        mapVLayout.addStretch()
+
+        self.centralWaferMapWidget = QtWidgets.QWidget(self)
+        self.centralWaferMapWidget.setLayout(mapVLayout)
+
         row = 1
+        col = 1
+        self.addWidget(self.centralWaferMapWidget, row=row, column=col, columnspan=plotColSpan,  rowspan=plotRowSpan)
+
+        self.darkMode = darkdetect.isDark()
+        
         col = 6
-        self.__SubFolder = stdObj.Entry(self, MainGI, "Subfolder", maxLength=10)
+        self.__SubFolder = stdObj.Entry(self, MainGI, "Subfolder", maxLength=10, sizePolicy=(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding))
         self.addWidget(self.__SubFolder, row=row, column=col+2, columnspan=2)
         self.TxSubFolder = stdObj.Label("Sub Folder:", self, alignment=QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         self.addWidget(self.TxSubFolder, row=row, column=col, columnspan=2, alignment=QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         
         row = row + 1
-        self.__WaferID = stdObj.Entry(self, MainGI, "WaferID", maxLength=15)
+        self.__WaferID = stdObj.Entry(self, MainGI, "WaferID", maxLength=15, sizePolicy=(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding))
         self.addWidget(self.__WaferID, row=row, column=col+2, columnspan=2)
         self.TxWaferID=stdObj.Label("Wafer ID:", self, alignment=QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         self.addWidget(self.TxWaferID, row=row, column=col, columnspan=2, alignment=QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         
         row = row +1
-        self.__DeviceName = stdObj.Entry(self, MainGI, "DeviceName", maxLength=15)
+        self.__DeviceName = stdObj.Entry(self, MainGI, "DeviceName", maxLength=15, sizePolicy=(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding))
         self.addWidget(self.__DeviceName, row=row, column=col+2, columnspan=2)
         self.TxDeviceName= stdObj.Label("Device Name:", self, alignment=QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         self.addWidget(self.TxDeviceName, row=row, column=col, columnspan=2, alignment=QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         
         row = row + 1
-        self.__WaferSize = stdObj.Entry(self, MainGI, "WaferSize", validate='all', validateNumbers="[0-9]+")
-        self.addWidget(self.__WaferSize, row=row, column=col+2, columnspan=2)
-        self.TxWaferSize=stdObj.Label("Wafer Size(mm):", self, alignment=QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+        self.__WaferSize = stdObj.Entry(self, MainGI, "WaferSize", validate='all', validateNumbers="[0-9]+", command=self.MapUpdateDieMap, sizePolicy=(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding))
+        self.addWidget(self.__WaferSize, row=row, column=col+2, columnspan=1)
+        
+        self.__WaferRotation = stdObj.ComboBox(self, MainGI, "WaferRotation", self.Rotations, initValue=list(self.Rotations.values())[0], Type=int, sizePolicy=[QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding], command=self.CallWaferRotation)
+        self.addWidget(self.__WaferRotation, row=row, column=col+3, columnspan=1)
+
+        self.TxWaferSize=stdObj.Label("Wafer Size (mm) / Rot.:", self, alignment=QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         self.addWidget(self.TxWaferSize, row=row, column=col, columnspan=2, alignment=QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         
         row = row + 1
@@ -82,47 +127,47 @@ class WaferMap(stdObj.stdFrameGrid):
         self.addWidget(self.TxY, row=row, column=col+2, columnspan=1)
 
         row = row + 1
-        self.DevStartX = stdObj.Entry(self, MainGI, "DeviceStartX", validate='all', validateNumbers="[0-9]+")
+        self.DevStartX = stdObj.Entry(self, MainGI, "DeviceStartX", validate='all', validateNumbers="[0-9]+", sizePolicy=(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding))
         self.addWidget(self.DevStartX, row=row, column=col+2, columnspan=1)
-        self.DevStartY = stdObj.Entry(self, MainGI, "DeviceStartY", validate='all', validateNumbers="[0-9]+")
+        self.DevStartY = stdObj.Entry(self, MainGI, "DeviceStartY", validate='all', validateNumbers="[0-9]+", sizePolicy=(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding))
         self.addWidget(self.DevStartY, row=row, column=col+3, columnspan=1)
         self.TxDeviceStart=stdObj.Label("Device Start", self, alignment=QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         self.addWidget(self.TxDeviceStart, row=row, column=col, columnspan=2, alignment=QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
 
         row = row + 1
-        self.__DevSizeX = stdObj.Entry(self, MainGI, "DieSizeX", validate='all', validateNumbers="([0-9]+(\.[0-9]+)?|\.[0-9]+)$")
-        self.addWidget(self.__DevSizeX, row=row, column=col+2, columnspan=1)
-        self.__DevSizeY = stdObj.Entry(self, MainGI, "DieSizeY", validate='all', validateNumbers="([0-9]+(\.[0-9]+)?|\.[0-9]+)$")
-        self.addWidget(self.__DevSizeY, row=row, column=col+3, columnspan=1)
+        self.__DieSizeX = stdObj.Entry(self, MainGI, "DieSizeX", validate='all', validateNumbers="([0-9]+(\.[0-9]+)?|\.[0-9]+)$", command=self.MapUpdateDieMap, sizePolicy=(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding))
+        self.addWidget(self.__DieSizeX, row=row, column=col+2, columnspan=1)
+        self.__DieSizeY = stdObj.Entry(self, MainGI, "DieSizeY", validate='all', validateNumbers="([0-9]+(\.[0-9]+)?|\.[0-9]+)$", command=self.MapUpdateDieMap, sizePolicy=(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding))
+        self.addWidget(self.__DieSizeY, row=row, column=col+3, columnspan=1)
         self.TxDieSize=stdObj.Label("Die Size (mm):", self, alignment=QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         self.addWidget(self.TxDieSize, row=row, column=col, columnspan=2, alignment=QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         row = row + 1
         
-        self.__CenLocX = stdObj.Entry(self, MainGI, "CenterLocationX", validate='all', validateNumbers="^[-+]?([0-9]+(\.[0-9]+)?|\.[0-9]+)$")
+        self.__CenLocX = stdObj.Entry(self, MainGI, "CenterLocationX", validate='all', validateNumbers="^[-+]?([0-9]+(\.[0-9]+)?|\.[0-9]+)$", command=self.MapUpdateDieMap, sizePolicy=(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding))
         self.addWidget(self.__CenLocX, row=row, column=col+2, columnspan=1)
-        self.__CenLocY = stdObj.Entry(self, MainGI, "CenterLocationY", validate='all', validateNumbers="^[-+]?([0-9]+(\.[0-9]+)?|\.[0-9]+)$")
+        self.__CenLocY = stdObj.Entry(self, MainGI, "CenterLocationY", validate='all', validateNumbers="^[-+]?([0-9]+(\.[0-9]+)?|\.[0-9]+)$", command=self.MapUpdateDieMap, sizePolicy=(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding))
         self.addWidget(self.__CenLocY, row=row, column=col+3, columnspan=1)
         self.TxCenterLocation=stdObj.Label("Cen. Location (%):", self, alignment=QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         self.addWidget(self.TxCenterLocation, row=row, column=col, columnspan=2, alignment=QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         row = row + 1
         
-        self.__MulipleDevices = stdObj.Checkbutton(self, MainGI, "MultipleDev", command=self.CheckBoxMultDev)
+        self.__MulipleDevices = stdObj.Checkbutton(self, MainGI, "MultipleDev", command=self.CheckBoxMultDev, sizePolicy=(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding))
         self.addWidget(self.__MulipleDevices, row=row, column=col+2, columnspan=1)
         self.TxMultDev = stdObj.Label("Multiple Devices:", self, alignment=QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         self.addWidget(self.TxMultDev, row=row, column=col, columnspan=2, alignment=QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         row = row + 1
 
-        self.__NumOfXDev = stdObj.Entry(self, MainGI, "NumXdevices", validate='all', validateNumbers="[0-9]+")
+        self.__NumOfXDev = stdObj.Entry(self, MainGI, "NumXdevices", validate='all', validateNumbers="[0-9]+", sizePolicy=(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding))
         self.addWidget(self.__NumOfXDev, row=row, column=col+2, columnspan=1)
-        self.__NumOfYDev = stdObj.Entry(self, MainGI, "NumYdevices", validate='all', validateNumbers="[0-9]+")
+        self.__NumOfYDev = stdObj.Entry(self, MainGI, "NumYdevices", validate='all', validateNumbers="[0-9]+", sizePolicy=(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding))
         self.addWidget(self.__NumOfYDev, row=row, column=col+3, columnspan=1)
         self.TxNumOfDev=stdObj.Label("Num. of Devices:", self, alignment=QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         self.addWidget(self.TxNumOfDev, row=row, column=col, columnspan=2, alignment=QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         row = row + 1
 
-        self.__XPitch = stdObj.Entry(self, MainGI, "XPitch", validate='all', validateNumbers="^[-+]?([0-9]+(\.[0-9]+)?|\.[0-9]+)$")
+        self.__XPitch = stdObj.Entry(self, MainGI, "XPitch", validate='all', validateNumbers="^[-+]?([0-9]+(\.[0-9]+)?|\.[0-9]+)$", sizePolicy=(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding))
         self.addWidget(self.__XPitch, row=row, column=col+2, columnspan=1)
-        self.__YPitch = stdObj.Entry(self, MainGI, "YPitch", validate='all', validateNumbers="^[-+]?([0-9]+(\.[0-9]+)?|\.[0-9]+)$")
+        self.__YPitch = stdObj.Entry(self, MainGI, "YPitch", validate='all', validateNumbers="^[-+]?([0-9]+(\.[0-9]+)?|\.[0-9]+)$", sizePolicy=(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding))
         self.addWidget(self.__YPitch, row=row, column=col+3, columnspan=1)
         self.TxDevPitch=stdObj.Label("Dev. Pitch (um):", self, alignment=QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         self.addWidget(self.TxDevPitch, row=row, column=col, columnspan=2, alignment=QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
@@ -132,7 +177,7 @@ class WaferMap(stdObj.stdFrameGrid):
         self.addWidget(self.TxLog, row=row, column=1, columnspan=2, alignment=QtCore.Qt.AlignLeft)
         self.TxLogSave=stdObj.Label("save", self)
         self.addWidget(self.TxLogSave, row=row, column=3, columnspan=1, alignment=QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
-        self.__LogSaveCheckbox = stdObj.Checkbutton(self, self.MainGI, "InfoLogSave")
+        self.__LogSaveCheckbox = stdObj.Checkbutton(self, self.MainGI, "InfoLogSave", sizePolicy=(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding))
         self.addWidget(self.__LogSaveCheckbox, row=row, column=4, columnspan=1, alignment=QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
         self.__LogClearButton = stdObj.PushButton("Clear", self, sizePolicy=[QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding], command=self.clearLogFrame)
         self.addWidget(self.__LogClearButton, row=row, column=5, columnspan=1, alignment=QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
@@ -140,7 +185,7 @@ class WaferMap(stdObj.stdFrameGrid):
         self.addWidget(self.LogFrame, row=row+1, column=1, columnspan=5, rowspan=5)
 
         row = row + 1
-        self.__MultipleDies = stdObj.Checkbutton(self, MainGI, "MultipleDies", command=self.CheckBoxMultDies, alignment=QtCore.Qt.AlignLeft)
+        self.__MultipleDies = stdObj.Checkbutton(self, MainGI, "MultipleDies", command=self.CheckBoxMultDies, alignment=QtCore.Qt.AlignLeft, sizePolicy=(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding))
         self.addWidget(self.__MultipleDies, row=row, column=col+2, columnspan=1, alignment=QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
         self.TxCurDie=stdObj.Label("Multiple Dies:", self)
         self.addWidget(self.TxCurDie, row=row, column=col, columnspan=2, alignment=QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
@@ -150,9 +195,9 @@ class WaferMap(stdObj.stdFrameGrid):
         self.__DieFileButton = stdObj.fileButton(self, MainGI, "DieFile", sizePolicy=[QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding], fileFormat = "CSV file (*.csv)", subFolder=self.dieFolder, command=self.DieFileButton)
 
         DieMaps = self.Configuration.getAllDieMaps()
-        self.__DieMaps = stdObj.ComboBox(self, MainGI, "DieMap", list(DieMaps), Type=int, sizePolicy=[QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding], command=self.CallDieMaps)
+        self.__DieMaps = stdObj.ComboBox(self, MainGI, "DieMap", list(DieMaps), Type=int, sizePolicy=(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding), command=self.CallDieMaps)
         self.addWidget(self.__DieMaps, row=row, column=col+2, columnspan=1)
-        self.__DieMapUpdate = stdObj.PushButton("Update", self, sizePolicy=[QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding], command=self.MapUpdateDieMap)
+        self.__DieMapUpdate = stdObj.PushButton("Update", self, sizePolicy=(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding), command=self.MapUpdateDieMap)
         self.addWidget(self.__DieMapUpdate, row=row, column=col+3, columnspan=1)
 
         self.TxDieMap=stdObj.Label("Die Map:", self)
@@ -166,7 +211,7 @@ class WaferMap(stdObj.stdFrameGrid):
         self.addWidget(self.TxDieFile, row=row, column=col, columnspan=2, alignment=QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         row = row + 1
 
-        self.__SpecCode = stdObj.Entry(self, MainGI, "SpecCode", maxLength=20)
+        self.__SpecCode = stdObj.Entry(self, MainGI, "SpecCode", maxLength=20, sizePolicy=(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding))
         self.addWidget(self.__SpecCode, row=row, column=col+2, columnspan=2)
         self.TxSpecCode=stdObj.Label("Spec Code:", self, alignment=QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         self.addWidget(self.TxSpecCode, row=row, column=col, columnspan=2, alignment=QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
@@ -181,9 +226,11 @@ class WaferMap(stdObj.stdFrameGrid):
         self.CheckBoxMultDev()
         self.CheckBoxMultDies()
         self.CheckBoxMatrix()
-        self.updateCanvas()
 
         self.setLayout(self.layout)
+        self.MapUpdateDieMap()
+
+        self.CallWaferRotation(self.Configuration.getWaferRotation())
 
     def DieFileButton(self):
         self.Configuration.UpdateDies()
@@ -194,57 +241,40 @@ class WaferMap(stdObj.stdFrameGrid):
 
     def MapUpdateDieMap(self):
         if not self.MainGI.running:
-            self.CreateCanvas()
+            self.Configuration.UpdateDies()
+            self.WaferMap.update(locations=self.Configuration.getDies(), Folder=self.Configuration.getMainFolder(), DieSizeX=self.Configuration.getDieSizeX(), DieSizeY=self.Configuration.getDieSizeY(), 
+                                        WaferSize=self.Configuration.getWaferSize(), CenterLocation=self.Configuration.getCenterLocation(), NumOfDies=self.Configuration.getNumOfDies(), 
+                                        NumOfDevices=self.Configuration.getNumOfDevices(), WaferRotation=self.Configuration.getWaferRotation())
         else:
             self.MainGI.WriteError("Measurement is currently running.")
 
-    def update(self):
-
+    def CallWaferRotation(self, rot):
+        self.WaferMap.updateWaferRotation(rot)
+                
+        
+    def update(self,**kwargs):
         if self.Instruments.getMatrixInstrument() == None:
             self.disableMatrix()
         else:
             self.enableMatrix()
-        if self.Instruments.getProberInstrument() == None:
-            self.disableProber()
-        else:
-            self.enableProber()
+        #if self.Instruments.getProberInstrument() == None:
+        #    self.disableProber()
+        #else:
+        #    self.enableProber()
+        
+        self.enableProber()
+        
+        if "BackgroundColor" in kwargs:
+            self.WaferMap.updateBackground(kwargs["BackgroundColor"])
+            
+        if "LabelColor" in kwargs:
+            self.WaferMap.changeRingColor(kwargs["LabelColor"])
+
    
     def clearLogFrame(self):
         self.Configuration.clearLogList()
         self.MainGI.clearLogFrame()
 
-    def CreateCanvas(self, row=1, column=1, rowspan=10, columnspan=5):
-
-        height = int(rowspan*self.RowHeight)
-        width = int(columnspan*self.ColumnWidth)
-        
-        self.WaferMap = PR.WaferMap(self.Configuration.getMainFolder(), self.Configuration.getDieSizeX(), self.Configuration.getDieSizeY(), 
-                                        self.Configuration.getWaferSize(), self.Configuration.getCenterLocation(), self.Configuration.getNumOfDies(), 
-                                        self.Configuration.getNumOfDevices(), width, height)
-
-        dies = self.Configuration.getDies()
-        self.WaferMap.update(locations=dies, value=[0]*len(dies))
-        
-        figure = self.WaferMap.getFigure()
-        self.__Canvas_1 = FigureCanvasQTAgg(figure)
-        self.__Canvas_1.setParent(self)
-        self.__Canvas_1.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-        self.__Canvas_1.updateGeometry()
-        self.__Canvas_1.draw() 
-
-        self.layout.addWidget(self.__Canvas_1, row, column, rowspan, columnspan)
-
-
-    def updateCanvas(self):
-
-        dies = self.Configuration.getDies()
-        self.WaferMap.update(locations=dies, Folder=self.Configuration.getMainFolder(), DieSizeX=self.Configuration.getDieSizeX(), DieSizeY=self.Configuration.getDieSizeY(), 
-                                        WaferSize=self.Configuration.getWaferSize(), CenterLocation=self.Configuration.getCenterLocation(), NumOfDies=self.Configuration.getNumOfDies(), 
-                                        NumOfDevices=self.Configuration.getNumOfDevices())
-        self.__Canvas_1.draw()
-
-    def DrawCanvas(self):
-        self.__Canvas_1.draw()
 
     def CheckBoxMultDev(self):
         if not self.__MulipleDevices.getVariable():
@@ -294,7 +324,6 @@ class WaferMap(stdObj.stdFrameGrid):
             self.Configuration.setMultipleDies(True)
 
     def disableProber(self):
-
         self.__NumOfXDev.setEnabled(False)
         self.__NumOfYDev.setEnabled(False)
         self.__XPitch.setEnabled(False)
@@ -308,11 +337,314 @@ class WaferMap(stdObj.stdFrameGrid):
         self.Configuration.setMultipleDies(False)
     
     def CallDieMaps(self, Map):
-        
         self.Configuration.setDieFile("")
         self.__DieFileButton.setVariable("Browse")
         self.Configuration.UpdateDies()
         if not self.MainGI.running:
-            self.updateCanvas()
+            self.Configuration.UpdateDies()
+            self.WaferMap.update(locations=self.Configuration.getDies(), Folder=self.Configuration.getMainFolder(), DieSizeX=self.Configuration.getDieSizeX(), DieSizeY=self.Configuration.getDieSizeY(), 
+                                        WaferSize=self.Configuration.getWaferSize(), CenterLocation=self.Configuration.getCenterLocation(), NumOfDies=self.Configuration.getNumOfDies(), 
+                                        NumOfDevices=self.Configuration.getNumOfDevices(), WaferRotation=self.Configuration.getWaferRotation())
         return True
     
+
+class PlotWidget(pg.PlotWidget):
+
+    xticks = []
+    yticks = []
+
+    xlow = 0
+    ylow = 0
+
+    xhigh = 0
+    yhigh = 0
+
+    xcenter = 0
+    ycenter = 0
+
+    Type = 'WafProgress'
+    initValue = None
+    title = None
+
+    data = np.array([[]])
+    
+    ticks = 15
+
+    def __init__(self, parent=None, config=None, backgroundColor='default', ringColor='r', name=None, labels=None, title=0, initValue=0, ValueName="", **kwargs):
+
+        super().__init__(parent, background=backgroundColor, *kwargs)
+
+        self.Configuration = config
+        self.valueName = ValueName
+        self.dieSizeX = float(self.Configuration.getDieSizeX())
+        self.dieSizeY = float(self.Configuration.getDieSizeY())
+        self.waferSize = float(self.Configuration.getWaferSize())
+        self.numOfDev = float(self.Configuration.getNumOfDevices())
+        self.mainFolder = self.Configuration.getMainFolder()
+        self.centerLocX = float(self.Configuration.getCenterLocation()[0])/100
+        self.centerLocY = float(self.Configuration.getCenterLocation()[1])/100
+        self.numOfDies = float(self.Configuration.getNumOfDies())
+        self.waferRotation = int(self.Configuration.getWaferRotation())
+        self.initValue = initValue
+        self.ringColor = ringColor
+
+        self.start()
+        self.plotItem.addItem(self.img)
+
+    def getTicks(self, axis):
+        radius = float(self.waferSize)/2
+        if axis == 'X':
+            self.xhigh = int(ma.floor((radius-self.dieSizeX/2-self.centerLocX)/self.dieSizeX))
+            self.xlow = -int(ma.floor((radius-self.dieSizeX/2+self.centerLocX)/self.dieSizeX))
+            Rng = list(range(self.xlow,self.xhigh+1,1))
+        elif axis == 'Y':
+            self.yhigh = int(ma.floor((radius-self.dieSizeY/2-self.centerLocY)/self.dieSizeY))
+            self.ylow = -int(ma.floor((radius-self.dieSizeY/2+self.centerLocY)/self.dieSizeY))
+            Rng = list(range(self.ylow,self.yhigh+1,1))
+        return Rng
+    
+    def start(self):
+            
+        c = ["darkred","red", "tomato","orange","green","darkgreen"]
+        v = [0,0.2,.4,0.6,0.8,1.]
+
+        self.colorMap = pg.ColorMap(v, c)
+
+        self.l = list(zip(v,c))
+
+        self.vmin=0
+        self.vmax=self.numOfDev
+        #self.argb = pg.makeARGB(self.data, levels=[self.vmin, self.vmax], lut=self.colorMap.getLookupTable())
+
+        self.xticks = self.getTicks('X')
+        self.yticks = self.getTicks('Y')
+        self.xlow = self.xticks[0]
+        self.ylow = self.yticks[0]
+        
+        self.data = np.empty((len(self.xticks), len(self.yticks)), np.longdouble)
+        self.data[:] = np.nan
+
+        if not self.initValue == None:
+            for x in range(abs(self.xlow)*2+1):
+                for y in range(abs(self.ylow)*2+1):
+                    #if std.isDieInWafer(self.waferSize, x+self.xlow, y+self.ylow, 12, 15):
+                    self.data[x][y] = self.initValue
+
+        self.img = pg.ImageItem()
+        self.img.setColorMap(self.colorMap)
+        self.img.setImage(self.data, levels=(0,1))
+        tr = QtGui.QTransform()
+        self.img.setTransform(tr)
+        self.axisPrep()
+
+    def calcProp(self):
+        self.vmin=0
+        self.vmax=self.numOfDies
+        self.xticks = self.getTicks('X')
+        self.yticks = self.getTicks('Y')
+        self.xlow = self.xticks[0]
+        self.ylow = self.yticks[0]
+    
+    def update(self, **kwargs):
+        
+        calcUpdate = False
+        for key, value in kwargs.items():
+
+            if key == "Folder":
+                self.Folder = value
+            if key == "DieSizeX":
+                self.dieSizeX = value
+                calcUpdate = True
+            if key == "DieSizeY":
+                self.dieSizeY = value
+                calcUpdate = True
+            if key == "WaferSize":
+                self.waferSize = value
+                calcUpdate = True
+            if key == "CenterLocation":
+                self.centerLocX = value[0]/100
+                self.centerLocY = value[1]/100
+                calcUpdate = True
+            if key == "NumOfDies":
+                self.numOfDies = value
+                calcUpdate = True
+            if key == "NumOfDevices":
+                self.numOfDev = value
+                calcUpdate = True
+            if key == "WaferRotation":
+                self.waferRotation = value
+                calcUpdate = True
+
+        if calcUpdate:
+            self.calcProp()
+            
+            self.data = np.empty((len(self.xticks), len(self.yticks)), np.longdouble)
+            self.data[:] = np.nan
+
+        if "locations" in kwargs:
+            if "value" in kwargs:
+                vals = kwargs['value']
+            else:
+                vals = [0]*len(kwargs['locations'])
+            for loc, val in zip(kwargs["locations"], vals):
+                self.writeToData(loc[0], loc[1], value=val)
+
+
+        ratio = self.dieSizeX/self.dieSizeY
+        if ratio > 1:
+            scX = 1/ratio
+            scY = 1
+        else:
+            scY = 1/ratio
+            scX = 1
+
+
+        self.img.setImage(self.data, levels=(0,1))
+        tr = QtGui.QTransform()
+        self.img.setTransform(tr)
+        #self.plotItem.addItem(self.img)
+        self.axisPrep()
+
+        
+    def writeToData(self, xDie, yDie, add=0, value=None):
+        if value==None:
+            newData = self.data[xDie-self.xlow,-yDie-self.ylow] + float(add)
+            self.data[xDie-self.xlow,-yDie-self.ylow] = float(newData)
+        else:
+            newData = value
+            self.data[xDie-self.xlow,-yDie-self.ylow] = float(value)
+            
+    def axisPrep(self):
+
+        if self.valueName == "":
+            self.valueName = "Measured Dies"
+
+        # We want to show all ticks...
+        xlen = len(self.xticks)
+        ylen = len(self.yticks)
+
+        xSep = int(ma.ceil(xlen/self.ticks))
+        ySep = int(ma.ceil(ylen/self.ticks))
+
+        PrXticks = []
+        PrYticks = []
+
+        for x in self.xticks:
+            if x % xSep:
+                PrXticks.append('')
+            else:
+                PrXticks.append(x)
+        
+        for y in self.yticks:
+            if y % ySep:
+                PrYticks.append('')
+            else:
+                PrYticks.append(-y)
+
+        labelStyle = {'font-size': '11pt', 'font-weight': 'bold', 'color':self.ringColor}
+        self.plotItem.setLabel('left', "Y Die Number", **labelStyle) 
+        self.plotItem.setLabel('bottom', "X Die Number", **labelStyle)
+
+        self.plotItem.showAxis("top", False)
+        self.plotItem.showAxis("left")
+        self.plotItem.showAxis("bottom")
+        self.plotItem.showAxis("right", False)
+
+        axisStyle = {'color':self.ringColor}
+        leftAxis = self.plotItem.getAxis("left")
+        leftTicks = self.getTicks("Y")
+        ticksY = [[]]
+        for n,t in enumerate(PrYticks):
+            ticksY[0].append((n+0.5,"%s" %(t)))
+            if t == 0:
+                self.centDieY = n+0.5
+        leftAxis.setTicks(ticksY)
+        leftAxis.setTextPen(self.ringColor)
+
+        botAxis = self.plotItem.getAxis("bottom")
+        botTicks = self.getTicks("X")
+        
+        ticksX = [[]]
+        for n,t in enumerate(PrXticks):
+            ticksX[0].append((n+0.5,"%s" %(t)))
+            if t == 0:
+                self.centDieX = n+0.5
+        botAxis.setTicks(ticksX)
+        botAxis.setTextPen(self.ringColor)
+
+        self.xOrg = self.centDieX-self.waferSize/self.dieSizeX/2
+        self.yOrg = self.centDieY-self.waferSize/self.dieSizeY/2
+
+        try:
+            self.plotItem.removeItem(self.roi_circle)
+        except AttributeError:
+            pass
+        
+        self.roi_circle = pg.CircleROI([self.xOrg-self.centerLocX, self.yOrg-self.centerLocY], [self.waferSize/self.dieSizeX, self.waferSize/self.dieSizeY], movable=False, rotatable=False,  resizable=False, pen=pg.mkPen(self.ringColor,width=3))
+        self.plotItem.addItem(self.roi_circle)
+        self.roi_circle.removeHandle(0)
+
+        self.updateWaferRotation(self.waferRotation)
+
+
+    def updateBackground(self, background):
+        self.setBackground(background)
+
+    def updateWaferRotation(self, rot):
+
+        nSiz = [self.waferSize/self.dieSizeX/15,self.waferSize/self.dieSizeY/15]
+        if rot == 180:
+            nLoc = [self.centDieX-self.centerLocX,self.yOrg-self.centerLocY]
+            nLoc[0] = nLoc[0] - nSiz[0]/2
+            nLoc[1] = nLoc[1] - nSiz[1]/2
+            stAng=180*16
+        elif rot == 90:
+            nLoc = [self.xOrg + self.waferSize/self.dieSizeX-self.centerLocX, self.centDieY-self.centerLocY]
+            nLoc[0] = nLoc[0] - nSiz[0]/2
+            nLoc[1] = nLoc[1] - nSiz[1]/2
+            stAng=90*16
+        elif rot == 270:
+            nLoc = [self.xOrg-self.centerLocX, self.centDieY-self.centerLocY]
+            nLoc[0] = nLoc[0] - nSiz[0]/2
+            nLoc[1] = nLoc[1] - nSiz[1]/2
+            stAng=270*16
+        else: 
+            nLoc = [self.centDieX-self.centerLocX, self.yOrg+self.waferSize/self.dieSizeY-self.centerLocY]
+            nLoc[0] = nLoc[0] - nSiz[0]/2  
+            nLoc[1] = nLoc[1] - nSiz[1]/2
+            stAng=0*16
+        
+        try:
+            self.plotItem.removeItem(self.roi_Notch)
+        except AttributeError:
+            pass
+        
+        self.roi_Notch = NotchItem(*nLoc, *nSiz, startAngle=stAng,spanAngle=2880, color=self.ringColor)
+        self.plotItem.addItem(self.roi_Notch)
+
+    def changeRingColor(self, ringColor):
+        print(ringColor)
+        if ringColor != None:
+            self.ringColor = ringColor
+            self.axisPrep()
+
+        
+class NotchItem(QtWidgets.QGraphicsEllipseItem):
+    def __init__(self, x, y, w, h, parent=None, **kwargs):
+        super().__init__(x,y,w,h, parent)
+
+        for key, value in kwargs.items():
+            if key == "startAngle":
+                self.setStartAngle(value)
+            if key == "spanAngle":
+                self.setSpanAngle(value)
+            if key == "color":
+                if value != None:
+                    self.color = value
+                else:
+                    self.color = 'r'
+            else:
+                self.color = 'r'
+
+        self.setPen(pg.mkPen((0, 0, 0, 100)))
+        self.setBrush(pg.mkBrush(self.color))

@@ -21,8 +21,6 @@ def ProbeCardCheck2x12(eChar, test):
     IComp = [1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3]
     Typ = 'SpotMeas'
 
-    MeasType = 'ProbeCardCheck2x12'
-
     MC = std.MatrixChange(eChar.Instruments.getMatrixInstrument(), eChar.Configuration.getMatrixConfiguration(), True)
 
     ret = []
@@ -41,18 +39,13 @@ def ProbeCardCheck2x12(eChar, test):
         ret.append([i[0] for i in out['Data']])
 
         Trac = ret[-1][0:3]
-        eChar.plotIVData({"Add": True, "lineStyle": 'o', 'legend': ['GND', 'Vlow', 'Vhigh'], "lineWidth":0.5, 'Yscale': 'log',  "Traces":Trac, 'Xaxis': False, 'Xlabel': "Matrix Iteration", "Ylabel": 'current (A)', 'Title': "input current", "MeasurementType": Typ, "ValueName": 'Current'})
+        eChar.plotIVData({"Add": True, "lineStyle": 'o', 'legend': ['GND', 'Vlow', 'Vhigh'], "lineWidth":0.5, 'Yscale': 'log',  "Traces":Trac, 'Xaxis': False, 'Xlabel': "Matrix Iteration", "Ylabel": 'current (A)', 'Title': "input current", "ValueName": "I-%s" %(typ)})
 
         Trac = ret[-1][3]
-        eChar.plotIVData({"Add": True, "lineStyle": 'o', "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Matrix Iteration', "Ylabel": 'voltage (V)', 'Title': "output voltage", "MeasurementType": Typ, "ValueName": 'voltage'})
+        eChar.plotIVData({"Add": True, "lineStyle": 'o', "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': 'Matrix Iteration', "Ylabel": 'voltage (V)', 'Title': "output voltage", "ValueName": "V-%s" %(typ)})
         n = n+1
 
     header = out['Header']
-
-    header.insert(0,"TestParameter,Measurement.Type,%s" %(MeasType))
-    header.append("Measurement,Device,%s" %(eChar.device))
-    header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
-
     header.append('DataName, Ignd, Ivlow, Ivhigh, Irvt, Isrc, Idrn, Vsense')
     header.append('Dimension, %d, %d, %d, %d, %d, %d, %d' %(n,n,n,n,n,n,n))
 
@@ -65,4 +58,4 @@ def ProbeCardCheck2x12(eChar, test):
 
     
 
-    eChar.writeDataToFile(header, out, Typ=Typ)
+    eChar.writeDataToFile(header, out)

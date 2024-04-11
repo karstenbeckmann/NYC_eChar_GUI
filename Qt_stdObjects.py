@@ -543,7 +543,6 @@ class stdFrameGrid(stdFrame):
 
     def __init__(self, parent, MainGI, columns, rows, width, height, cell=False, **kwargs):
         
-        
         if not cell:
             self.ColumnWidth=int(width/columns)
             self.RowHeight=int(height/rows)
@@ -665,9 +664,9 @@ class ComboBox(QtWidgets.QComboBox):
             parent: parent widget
             Configuration: private config class 
             valueName: Value name associated with configuration class 
+            items: can be list of string values or a dictionary where the keys are used as the displayed list and the corresponding values are returned
             *args: arguments from ttk.OptionMenu
             **kwargs: keyword arguments form ttk.OptionMenu
-
         '''
         
         super().__init__()
@@ -680,20 +679,39 @@ class ComboBox(QtWidgets.QComboBox):
         self.parent = parent
         self.width = width
         self.Type = Type
+        self.items = items
 
         self.AddCommand = None
         if 'command' in kwargs:
             self.AddCommand = kwargs['command']
-        kwargs['command'] = self.callFunc
+            kwargs['command'] = self.callFunc
         
         if "alignment" in kwargs:
             self.setAlignment(kwargs['alignment'])
-
         
-        self.update(items)
-        initValue = self.Configuration.getValue(valueName)
+        if "sizePolicy" in kwargs:
+            self.setSizePolicy(*kwargs['sizePolicy'])
 
-        self.setVariable(initValue)
+        self.initValue = None
+        if "initValue" in kwargs:
+            initValue = kwargs['initValue']
+        
+        if isinstance(self.items, dict):
+            self.update(list(self.items.keys()))
+            tempInitVal = self.Configuration.getValue(valueName)
+            if tempInitVal != None:
+                for key, value in self.items.items():
+                    if value == tempInitVal:
+                        self.initValue = key
+                        break
+        else:
+            self.update(self.items)
+            tempInitVal = self.Configuration.getValue(valueName)
+            if tempInitVal != None:
+                self.initValue = tempInitVal
+            
+
+        self.setVariable(self.initValue)
         self.MainGI.addWidgetVariables(self, self.valueName)
 
         if self.width != None:
@@ -702,14 +720,31 @@ class ComboBox(QtWidgets.QComboBox):
         self.currentIndexChanged.connect(self.callFunc)
 
     def getVariable(self):
-        return self.Type(self.currentText)
+        
+        if isinstance(self.items, dict):
+            return self.Type(self.items[self.currentText])
+        else:
+            return self.Type(self.currentText)
+
+    def getText(self):
+        return self.currentText
 
     def setVariable(self, value):
         index = self.findText(str(value))
-        self.setCurrentIndex(index)
+        if index != None:
+            self.setCurrentIndex(index)
+        else:
+            try:
+                index = self.findText(str(self.items[value]))
+                self.setCurrentIndex(index)
+            except IndexError:
+                pass
     
     def callFunc(self, index):
         value = self.itemText(index)
+        if isinstance(self.items, dict):
+            value = self.items[value]
+
         try:
             self.Configuration.setValue(self.valueName, self.Type(value))
         except ValueError:
@@ -721,11 +756,11 @@ class ComboBox(QtWidgets.QComboBox):
         return ret
     
     def update(self, newList=[]):
-        initValue = self.Configuration.getValue(self.valueName)
         if len(newList) == 0:
             newList.append("")
         self.addItems([str(l) for l in newList])
-        self.setVariable(initValue)
+        if self.initValue != None:
+            self.setVariable(self.initValue)
         if self.width != None:
             self.setFixedWidth(self.width)
 
@@ -847,7 +882,7 @@ class fileButton(QtWidgets.QPushButton):
         self.disFileName = True
 
         self.subFolder = None
-        if "subFolder" in kwargs.keys():
+        if "subFolder" in kwargs:
             self.subFolder = kwargs['subFolder']
         
         self.valueName = valueName
@@ -1099,9 +1134,13 @@ class Entry(QtWidgets.QLineEdit):
         if "type" in kwargs:
             self.Type = kwargs['type']
         else:
-            self.Type = type(initValue)
+            if initValue != None:
+                self.Type = type(initValue)
+            else:
+                self.Type = str
 
-            
+
+        self.default = ""
         if "default" in kwargs:
             self.default = kwargs['default']
             
@@ -1126,18 +1165,23 @@ class Entry(QtWidgets.QLineEdit):
         self.MainGI.addWidgetVariables(self, self.valueName)
         
     def getVariable(self):
-        return self.text()
+        return self.variable
+
+    def _setVariable(self, value):
+        try:
+            if self.Type == float:
+                self.variable = float(value)
+            elif self.Type == bool:
+                self.variable = bool(value)
+            elif self.Type == int:
+                self.variable = int(value)
+            else:
+                self.variable = str(value)
+        except ValueError:
+            self.variable = str(value)
 
     def setVariable(self, value):
-        
-        if self.Type == float:
-            self.variable = float(value)
-        elif self.Type == bool:
-            self.variable = bool(value)
-        elif self.Type == int:
-            self.variable = int(value)
-        else:
-            self.variable = str(value)
+        self._setVariable(value)
         self.setText(str(value))
 
     def writeError(self, error):
@@ -1152,6 +1196,7 @@ class Entry(QtWidgets.QLineEdit):
         try:
             SucChange = self.Configuration.setValue(self.valueName, self.Type(CurContent))
             if SucChange:
+                self._setVariable(CurContent)
                 if self.AddCommand != None:
                     self.AddCommand()
             else:
@@ -1159,7 +1204,6 @@ class Entry(QtWidgets.QLineEdit):
 
         except ValueError:
             self.setText(str(ConfigValue))
-
         super().focusOutEvent(event)
 
 class ErrorLog(QtWidgets.QListWidget):
@@ -1430,7 +1474,7 @@ class Table(QtWidgets.QTableWidget):
         #self.Table.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         
         self.font=None
-        if 'font' in kwargs.keys():
+        if 'font' in kwargs:
             self.font = kwargs['font']
 
         if self.content != None:
@@ -1481,3 +1525,85 @@ def ListToQstring(List):
         return l
     else:
         return QtCore.QString("")
+
+class QColorComboBox(QtWidgets.QComboBox):
+    ''' A drop down menu for selecting colors '''
+
+    # signal emitted if a color has been selected
+    selectedColor = QtCore.pyqtSignal(QtGui.QColor)
+
+    def __init__(self, parent = None, enableUserDefColors = True):
+        ''' if the user shall not be able to define colors on its own, then set enableUserDefColors=False '''
+        # init QComboBox
+        super(QColorComboBox, self).__init__(parent)
+
+        # enable the line edit to display the currently selected color
+        self.setEditable(True)
+        # read only so that there is no blinking cursor or sth editable
+        self.lineEdit().setReadOnly(True)
+
+        # text that shall be displayed for the option to pop up the QColorDialog for user defined colors
+        self._userDefEntryText = 'Custom'
+        # add the option for user defined colors
+        if (enableUserDefColors):
+            self.addItem(self._userDefEntryText)
+
+        self._currentColor = None
+
+        self.activated.connect(self._color_selected)
+        
+    # ------------------------------------------------------------------------
+    def addColors(self, colors):
+        ''' Adds colors to the QComboBox '''
+        for a_color in colors:
+            # if input is not a QColor, try to make it one
+            if (not (isinstance(a_color, QtGui.QColor))):
+                a_color = QtGui.QColor(a_color)
+            # avoid dublicates
+            if (self.findData(a_color) == -1):
+                # add the new color and set the background color of that item
+                self.addItem('', userData = a_color)
+                self.setItemData(self.count()-1, QtGui.QColor(a_color), Qt.BackgroundRole)
+            
+    # ------------------------------------------------------------------------
+    def addColor(self, color):
+        ''' Adds the color to the QComboBox '''
+        self.addColors([color])
+
+    # ------------------------------------------------------------------------
+    def setColor(self, color):
+        ''' Adds the color to the QComboBox and selects it'''
+        self.addColor(color)
+        self._color_selected(self.findData(color), False)
+
+    # ------------------------------------------------------------------------
+    def getCurrentColor(self):
+        ''' Returns the currently selected QColor
+            Returns None if non has been selected yet
+        '''
+        return self._currentColor
+
+    # ------------------------------------------------------------------------
+    def _color_selected(self, index, emitSignal = True):
+        ''' Processes the selection of the QComboBox '''
+        # if a color is selected, emit the selectedColor signal
+        if (self.itemText(index) == ''): 
+            self._currentColor = self.itemData(index)
+            if (emitSignal):
+                self.selectedColor.emit(self._currentColor)
+                
+        # if the user wants to define a custom color
+        elif(self.itemText(index) == self._userDefEntryText):
+            # get the user defined color
+            new_color = QtWidgets.QColorDialog.getColor(self._currentColor if self._currentColor else QtCore.Qt.white)
+            if (new_color.isValid()):
+                # add the color to the QComboBox and emit the signal
+                self.addColor(new_color)
+                self._currentColor = new_color
+                if (emitSignal):
+                    self.selectedColor.emit(self._currentColor)
+        
+        # make sure that current color is displayed
+        if (self._currentColor):
+            self.setCurrentIndex(self.findData(self._currentColor))
+            self.lineEdit().setStyleSheet("background-color: "+self._currentColor.name())

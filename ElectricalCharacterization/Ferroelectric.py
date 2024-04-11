@@ -40,10 +40,9 @@ def FEendurance(eChar, PulseChn, GroundChn, Vpulse, delay, tslope, twidth, tbase
     DoYield:    perform Yield 
     """
     
-    MeasType = "FEendurance"
     maxNumberOfMeasCycles = 100
     
-    eChar.localtime = tm.localtime()
+    eChar.updateTime()
 
     if cycles < 1: 
         cycles = 1
@@ -61,19 +60,16 @@ def FEendurance(eChar, PulseChn, GroundChn, Vpulse, delay, tslope, twidth, tbase
     if measCycles  > maxNumberOfMeasCycles:
         raise B1500A_InputError("Ferroelectric Measurement: # of measurement cycles cannot be larger than %d." %())
 
-    eChar.threads.append(th.Thread(target = saveEnduranceData, args=(eChar, DoYield, eChar.MaxRowsPerFile, eChar.MaxDataPerPlot)))
+    eChar.threads.append(th.Thread(target = saveEnduranceData, args=(eChar, DoYield, eChar.getMaxRowsPerFile(), eChar.getMaxDataPerPlot())))
     eChar.threads[-1].start()
 
     curCount = 0
     header = []
     stop = False
     while curCount < iterations:
-
-        while not eChar.Stop.empty():
-            stop = eChar.Stop.get()
-        if stop:
-            eChar.finished.put(True)
-            break
+        
+        if eChar.checkStop():    
+            return None
 
         ####################  with READ ##################
 
@@ -114,25 +110,14 @@ def FEendurance(eChar, PulseChn, GroundChn, Vpulse, delay, tslope, twidth, tbase
         ret = eChar.wgfmu.executeMeasurement()
 
         if curCount == 0:
-            header.insert(0,"TestParameter,Measurement.Type,%s" %(MeasType))
             header.append("Measurement,WGFMU,MeasCycles")
             header.append("Measurement,WGFMU,MeasuredCycles,%d" %(measCycles))
             header.append("Measurement,WGFMU,Iterations, %d" %(iterations))
             header = eChar.wgfmu.getHeader()
             header.append("Measurement,WGFMU,FinalMeasurement,%s" %(finalMeas))
-            header.append("Measurement,Device,%s" %(eChar.device))
-            header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
+            header.append("Measurement,Device,%s" %(eChar.getDevice()))
+            header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.getLocalTime())))
             
-            if not eChar.AdditionalHeader == []:
-                header.extend(eChar.AdditionalHeader)
-            else:
-                header.append("Measurement,Type.Primary,%s" %(MeasType))
-
-            if WriteHeader:
-                eChar.Combinedheader.extend(header)
-
-            if not eChar.ExternalHeader == []:
-                header.extend(eChar.ExternalHeader)
 
         elif curCount != 1:
             header = []
@@ -147,11 +132,8 @@ def FEendurance(eChar, PulseChn, GroundChn, Vpulse, delay, tslope, twidth, tbase
 
         if cycles > measCycles:
 
-            while not eChar.Stop.empty():
-                stop = eChar.Stop.get()
-            if stop:
-                eChar.finished.put(True)
-                break
+            if eChar.checkStop():    
+                return None
 
             eChar.wgfmu.clearLibrary()
             if twidth > 0:
@@ -193,11 +175,8 @@ def FEendurance(eChar, PulseChn, GroundChn, Vpulse, delay, tslope, twidth, tbase
 
     ####################  with READ ##################    
 
-    while not eChar.Stop.empty():
-        stop = eChar.Stop.get()
-        if stop:
-            eChar.finished.put(True)
-            break
+    if eChar.checkStop():    
+        return None
 
     if finalMeas:
         eChar.wgfmu.clearLibrary()
@@ -252,11 +231,8 @@ def FEendurance(eChar, PulseChn, GroundChn, Vpulse, delay, tslope, twidth, tbase
             except:
                 eChar.SubProcessThread.put(entry)
         
-        while not eChar.Stop.empty():
-            stop = eChar.Stop.get()
-
-        if stop:    
-            break
+        if eChar.checkStop():    
+            return None
 
     return True 
 
@@ -264,7 +240,6 @@ def saveEnduranceData(eChar, DoYield, MaxRowsPerFile, MaxDataPerPlot):
 
     #seperate data until Endurance measurement is finished
     first = True
-    Typ = "Endurance"
     
     if DoYield:
         DoYield = eChar.DoYield      
@@ -286,6 +261,9 @@ def saveEnduranceData(eChar, DoYield, MaxRowsPerFile, MaxDataPerPlot):
 
     while not finished or not eChar.rawData.empty():
         
+        if eChar.checkStop():    
+            return None
+
         while not eChar.finished.empty():
             finished = eChar.finished.get()
         eChar.finished.put(finished)
@@ -327,7 +305,7 @@ def saveEnduranceData(eChar, DoYield, MaxRowsPerFile, MaxDataPerPlot):
                 maxCurDenDown = eChar.dhValue([min(entry['dJdown'])], 'max. Jdown', Unit='A/m2')
                 valPup = eChar.dhValue([entry['Scalar']['Pup']], 'Pup', Unit='uC/cm2')
                 valPdown = eChar.dhValue([entry['Scalar']['Pdown']], 'Pdown', Unit='uC/cm2')
-                eChar.dhAddRow([maxVoltUp, maxVoltDown, maxCurUp, maxCurDown, maxCurDenUp, maxCurDenDown, valPup, valPdown],MeasType,cycleStart=cycStart+n,cycleStop=cycStart+n)
+                eChar.dhAddRow([maxVoltUp, maxVoltDown, maxCurUp, maxCurDown, maxCurDenUp, maxCurDenDown, valPup, valPdown],cycleStart=cycStart+n,cycleStop=cycStart+n)
 
 
                 PTemp.append([])
@@ -358,18 +336,18 @@ def saveEnduranceData(eChar, DoYield, MaxRowsPerFile, MaxDataPerPlot):
             Trac = []
             for n in range(len(VTemp)):
                 Trac.append([VTemp[n],ITemp[n]])
-            eChar.plotIVData({"Add": True, "lineStyle": '-', "lineWidth":1, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': True, 'Xlabel': "Voltage (V)", "Ylabel": 'Current (A)', 'Title': "I-V", "MeasurementType": MeasType, "ValueName": 'sI-V'})
+            eChar.plotIVData({"Add": True, 'Row': 0, "Column": 0, "Colspan":2, "lineStyle": '-', "lineWidth":1, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': True, 'Xunit': "V", 'Xlabel': "Voltage", 'Yunit': "A", "Ylabel": 'Current', 'Title': "I-V", "ValueName": 'sI-V'})
             
             Trac = []
             for n in range(len(VTemp)):
                 Trac.append([VTemp[n],PTemp[n]])
 
-            eChar.plotIVData({"Add": True, "lineStyle": '-', "lineWidth":1, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': True, 'Xlabel': "Voltage (V)", "Ylabel": 'Polarization (uC/cm2)', 'Title': "P-V", "MeasurementType": MeasType, "ValueName": 'P-V'})
+            eChar.plotIVData({"Add": True, 'Row': 1, "Column": 0,  "lineStyle": '-', "lineWidth":1, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': True, 'Xunit': "V", 'Xlabel': "Voltage", 'Yunit': "uC/cm2", "Ylabel": 'Polarization', 'Title': "P-V", "ValueName": 'P-V'})
             
             Trac = []
             for n in range(len(VTemp)):
                 Trac.append([VTemp[n],JTemp[n]])
-            eChar.plotIVData({"Add": True, "lineStyle": '-', "lineWidth":1, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': True, 'Xlabel': 'Voltage (V)', "Ylabel": 'Current Density (A/cm2)', 'Title': "J-V", "MeasurementType": MeasType, "ValueName": 'sJ-V'})
+            eChar.plotIVData({"Add": True, 'Row': 1, "Column": 1,  "lineStyle": '-', "lineWidth":1, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': True, 'Xunit': "V", 'Xlabel': 'Voltage', 'Yunit': "A/cm2", "Ylabel": 'Current Density', 'Title': "J-V", "ValueName": 'sJ-V'})
         
             if ret[0]["Name"][1].find("V") != -1:
                 n=1
@@ -377,7 +355,7 @@ def saveEnduranceData(eChar, DoYield, MaxRowsPerFile, MaxDataPerPlot):
                 n=3
 
             Trac = [ret[n-1]['Data'],np.array(ret[n]['Data'])*(-1)]
-            eChar.plotIVData({"Add": True, "lineStyle": 'o', "lineWidth":1, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': True, 'Xlabel': 'Time (s)', "Ylabel": 'Current (A)', 'Title': "t-I", "MeasurementType": MeasType, "ValueName": 't-I'})
+            eChar.plotIVData({"Add": True, 'Row': 0, "Column": 0, "lineStyle": 'o', "lineWidth":1, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': True, 'Xunit': "s", 'Xlabel': 'Time', 'Yunit': "A", "Ylabel": 'Current', 'Title': "t-I", "ValueName": 't-I'})
             
             if ret[0]["Name"][1].find("V") != -1:
                 n=3
@@ -385,7 +363,7 @@ def saveEnduranceData(eChar, DoYield, MaxRowsPerFile, MaxDataPerPlot):
                 n=1
                 
             Trac = [ret[n-1]['Data'],np.array(ret[n]['Data'])]
-            eChar.plotIVData({"Add": True, "lineStyle": 'o', "lineWidth":1, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': True, 'Xlabel': 'Time (s)', "Ylabel": 'Voltage (V)', 'Title': "t-V", "MeasurementType": MeasType, "ValueName": 't-V'})
+            eChar.plotIVData({"Add": True, 'Row': 1, "Column": 0,  "lineStyle": 'o', "lineWidth":1, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': True, 'Xunit': "s", 'Xlabel': 'Time', 'Yunit': "V", "Ylabel": 'Voltage', 'Title': "t-V", "ValueName": 't-V'})
             
 
             Trac = [[],[],[]]
@@ -394,7 +372,7 @@ def saveEnduranceData(eChar, DoYield, MaxRowsPerFile, MaxDataPerPlot):
                 Trac[1].append(PupTemp[n])
                 Trac[2].append(PdownTemp[n])
             legend = ["Pup", "Pdown"]
-            eChar.plotIVData({"Add": True, "lineStyle": 'o', "lineWidth":1, 'Yscale': 'lin',"Legend":legend, "Traces":Trac, 'Xaxis': True, 'Xlabel': '# of cycles', "Ylabel": 'Polarization (uC/cm2)', 'Title': "P", "MeasurementType": MeasType, "ValueName": 'P'})
+            eChar.plotIVData({"Add": True, 'Row': 0, "Column": 0,  "lineStyle": 'o', "lineWidth":1, 'Yscale': 'lin',"Legend":legend, "Traces":Trac, 'Xaxis': True, 'Xlabel': '# of cycles', 'Yunit': "uC/cm2", "Ylabel": 'Polarization', 'Title': "P", "ValueName": 'P'})
             
 
             newline = [None]*3
@@ -426,9 +404,7 @@ def saveEnduranceData(eChar, DoYield, MaxRowsPerFile, MaxDataPerPlot):
             headerTemp.append(newline[0])
             headerTemp.append(newline[1])
             headerTemp.append(newline[2])
-
-
-            eChar.threads.append(th.Thread(target = FEDataPrepAndExport, args=(eChar, cycStart, FEdata, headerTemp, MeasType)))
+            eChar.threads.append(th.Thread(target = FEDataPrepAndExport, args=(eChar, cycStart, FEdata, headerTemp)))
             eChar.threads[-1].start()
 
         except (TypeError, ValueError, IndexError, NameError, qu.Empty) as e:
@@ -437,10 +413,9 @@ def saveEnduranceData(eChar, DoYield, MaxRowsPerFile, MaxDataPerPlot):
     eChar.SubProcessThread.put({'Finished': True})
     eChar.LogData.put("FE Endurance: Finished Data Storage.")
 
-def FEDataPrepAndExport(eChar, curCycle, data, header, cat):
-    
+def FEDataPrepAndExport(eChar, curCycle, data, header):
+    print("here1")
     OutputData = []
-
     for n in range(len(data[0]["t"])):
         line = 'DataValue'
 
@@ -451,8 +426,8 @@ def FEDataPrepAndExport(eChar, curCycle, data, header, cat):
                     line = "%s, %s" %(line, value[n])
 
         OutputData.append(line)
-
-    eChar.writeDataToFile(header, OutputData, Typ=cat, startCyc=curCycle)
+    print("write")
+    eChar.writeDataToFile(header, OutputData, startCyc=curCycle)
 
 def calculateFEdata(eChar, ret, tslope, twidth, MeasPoints, initPulse, area):
     

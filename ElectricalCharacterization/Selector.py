@@ -36,10 +36,8 @@ def SelectorPulseTest(eChar, PulseChn, GroundChn, Vhigh, Vlow, delay, trise, tfa
     Repetition: Number of repetitions (IVcycle + ReadCycles)
     WriteHeader: Enable/Disable writing the header into overlaying summary output files
     """
-    
-    Typ = "SelectorEndurance"
-    
-    eChar.localtime = tm.localtime()
+        
+    eChar.updateTime()
     #count-=1
     tfallread = tread * 0.1
     triseread = tread * 0.1
@@ -85,7 +83,7 @@ def SelectorPulseTest(eChar, PulseChn, GroundChn, Vhigh, Vlow, delay, trise, tfa
         eChar.Selstop.put(eChar.curCycle-1)
         
         if n == 0: 
-            eChar.SelectorHeader = eChar.wgfmu.getHeader()
+            eChar.writeHeader("Selector", eChar.wgfmu.getHeader())
 
         eChar.SelectorEndurance.put({"Type": "IV", "Rlow": RetPulseIV["RlowPos"], "Rhigh": RetPulseIV["Rhigh"], "Ilow": RetPulseIV["IlowPos"], "Ihigh": RetPulseIV["Ihigh"], "VthPos": RetPulseIV["VthPos"], "VthNeg": RetPulseIV["VthNeg"]})
 
@@ -128,7 +126,7 @@ def SelectorPulseTest(eChar, PulseChn, GroundChn, Vhigh, Vlow, delay, trise, tfa
                     print("error occured during executeMeasurement - Lengths: %s" %(lengths))
 
             if n == 0: 
-                eChar.SelectorHeader = eChar.wgfmu.getHeader()
+                eChar.writeHeader("Selector", eChar.wgfmu.getHeader())
 
             if ExtractReads:
                 low = True
@@ -162,7 +160,7 @@ def SelectorPulseTest(eChar, PulseChn, GroundChn, Vhigh, Vlow, delay, trise, tfa
             thr.join()
 
     if WriteHeader:
-        eChar.Combinedheader.extend(eChar.EnduranceHeader)
+        eChar.extendHeader('Combined',eChar.getHeader("Endurance"))
 
     return True 
 
@@ -186,7 +184,7 @@ def SelectorPulseIV(eChar, PulseChn, GroundChn, Vhigh, VlowMeas, delay, trise, t
     WriteHeader: Enable/Disable writing the header into overlaying summary output files
     """
     
-    eChar.localtime = tm.localtime()
+    eChar.updateTime()
     #count-=1
     tfallread = tread * 0.1
     triseread = tread * 0.1
@@ -223,12 +221,9 @@ def SelectorPulseIV(eChar, PulseChn, GroundChn, Vhigh, VlowMeas, delay, trise, t
     SepData = getSelectorDataPulseIV(ret, MeasPoints, Cycles, VlowMeas, chns)
     header = eChar.wgfmu.getHeader()
     
-    header.insert(0,"TestParameter,Measurement.Type,SelectorPulseIV")
     if WriteHeader:
-        eChar.Combinedheader.extend(header)
-    header.append("Measurement,Device,%s" %(eChar.device))
-    header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
-    header.extend(eChar.DCHeader)
+        eChar.extendHeader("Combined", header)
+    header.extend(eChar.getHeader("DC"))
     header.append("Measurement,RealMeasRlowPositive,%s" %(SepData['VmeasLowReal1'][0]))
     header.append("Measurement,RealMeasRlowNegative,%s" %(SepData['VmeasLowReal2'][0]))
 
@@ -269,16 +264,15 @@ def SelectorPulseIV(eChar, PulseChn, GroundChn, Vhigh, VlowMeas, delay, trise, t
     header.append('Measurement.Result,Average.Negative.ThresholdVoltage,%f' %(AvgVth2))
     header.append('Measurement.Result,StandardDeviation.Negative.ThresholdVoltage,%f' %(StdVth2))
 
-
-    if not eChar.AdditionalHeader == []:
-        header.extend(eChar.AdditionalHeader)
+    addHeader = eChar.getHeader("Additional")
+    if not addHeader == []:
+        header.extend(addHeader)
     else:
         header.append('Measurement,Type.Primary,PulseIV')
         header.append('Measurement,Endurance.StartPoint,%d' %(eChar.curCycle))
         header.append('Measurement,Endurance.EndPoint,%d' %(eChar.curCycle+Cycles))
 
-    if not eChar.ExternalHeader == []:
-        header.extend(eChar.ExternalHeader)
+    header.extend(eChar.getHeader("External"))
 
     newline = [None]*3
     newline[0] = 'DataName'
@@ -305,10 +299,9 @@ def SelectorPulseIV(eChar, PulseChn, GroundChn, Vhigh, VlowMeas, delay, trise, t
         Data.append(line)
         
 
-    Typ = "SelectorPulseIV"
     header1 = cp.deepcopy(header)
     header1.extend(newline)
-    eChar.writeDataToFile(header1, Data, Typ=Typ, startCyc=eChar.curCycle, endCyc=eChar.curCycle+Cycles-1)
+    eChar.writeDataToFile(header1, Data, startCyc=eChar.curCycle, endCyc=eChar.curCycle+Cycles-1)
 
     Data = []
     newline = [None]*3
@@ -331,41 +324,39 @@ def SelectorPulseIV(eChar, PulseChn, GroundChn, Vhigh, VlowMeas, delay, trise, t
 
     Typ = "SelectorPulseIVParam"
     header.extend(newline)
-    eChar.writeDataToFile(header, Data, Typ=Typ, startCyc=eChar.curCycle, endCyc=eChar.curCycle+Cycles-1)
+    eChar.writeDataToFile(header, Data, startCyc=eChar.curCycle, endCyc=eChar.curCycle+Cycles-1, Type=Typ)
 
 
     Trac = [Vdata,Idata]
-    eChar.plotIVData({"Traces":Trac,  'Xaxis': True, 'Xlabel': 'Voltage (V)', "Yscale": "log", "Ylabel": 'Current (A)', 'Title': "Selector IV", "MeasurementType": Typ, "ValueName": 'IV'})
+    eChar.plotIVData({"Traces":Trac,  'Xaxis': True, 'Xlabel': 'Voltage (V)', "Yscale": "log", "Ylabel": 'Current (A)', 'Title': "Selector IV", "ValueName": 'IV'})
     
     res = None
 
     if Primary:
 
         Trac = [SepData['Rlow1'], SepData['Rlow2'],SepData['Rhigh']]
-        eChar.plotIVData({"Add": False, "lineStyle": 'o', "lineWidth":0.5, 'Yscale': 'log',  "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of cycles', "Ylabel": 'resistance (ohm)', 'Title': "Rlow/Rhigh", "MeasurementType": Typ, "ValueName": 'Rlow/Rhigh'})
+        eChar.plotIVData({"Add": False, "lineStyle": 'o', "lineWidth":0.5, 'Yscale': 'log',  "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of cycles', "Ylabel": 'resistance (ohm)', 'Title': "Rlow/Rhigh", "ValueName": 'Rlow/Rhigh'})
 
         Trac = [SepData['Vth1'],SepData['Vth2']]
-        eChar.plotIVData({"Add": False, "lineStyle": 'o', "legend": ["Vth Positive", "Vth Negative"], "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of cycles', "Ylabel": 'voltage (V)', 'Title': "VthPos/VthNeg", "MeasurementType": Typ, "ValueName": 'VthPos/VthNeg'})
+        eChar.plotIVData({"Add": False, "lineStyle": 'o', "legend": ["Vth Positive", "Vth Negative"], "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of cycles', "Ylabel": 'voltage (V)', 'Title': "VthPos/VthNeg", "ValueName": 'VthPos/VthNeg'})
 
-        VthNeg = dh.Value(eChar, SepData['Vth1'], 'VthPos', DoYield=eChar.DoYield, Unit='V')
-        VthPos = dh.Value(eChar, SepData['Vth2'], 'VthNeg', DoYield=eChar.DoYield, Unit='V')
-        Rlow1 = dh.Value(eChar, SepData['Rlow1'], 'RlowPos', DoYield=eChar.DoYield, Unit='ohm')
-        Rlow2 = dh.Value(eChar, SepData['Rlow2'], 'RlowNeg', DoYield=eChar.DoYield, Unit='ohm')
-        Rhigh = dh.Value(eChar, SepData['Rhigh'], 'Rhigh', DoYield=eChar.DoYield, Unit='ohm')
-        Ilow1 = dh.Value(eChar, SepData['Ilow1'], 'IlowPos', DoYield=eChar.DoYield, Unit='A')
-        Ilow2 = dh.Value(eChar, SepData['Ilow2'], 'IlowNeg', DoYield=eChar.DoYield, Unit='A')
-        Ihigh = dh.Value(eChar, SepData['Ihigh'], 'Ihigh', DoYield=eChar.DoYield, Unit='A')
+        VthNeg = eChar.dhValue(SepData['Vth1'], 'VthPos', Unit='V')
+        VthPos = eChar.dhValue(SepData['Vth2'], 'VthNeg', Unit='V')
+        Rlow1 = eChar.dhValue(SepData['Rlow1'], 'RlowPos', Unit='ohm')
+        Rlow2 = eChar.dhValue(SepData['Rlow2'], 'RlowNeg', Unit='ohm')
+        Rhigh = eChar.dhValue(SepData['Rhigh'], 'Rhigh', Unit='ohm')
+        Ilow1 = eChar.dhValue(SepData['Ilow1'], 'IlowPos', Unit='A')
+        Ilow2 = eChar.dhValue(SepData['Ilow2'], 'IlowNeg', Unit='A')
+        Ihigh = eChar.dhValue(SepData['Ihigh'], 'Ihigh', Unit='A')
 
         arr = [Rlow1, Rlow2, Rhigh, Ilow1, Ilow2, Ihigh, VthNeg, VthPos]
 
-        row = dh.Row(arr,eChar.DieX,eChar.DieY,eChar.DevX,eChar.DevY,Typ,eChar.curCycle,eChar.curCycle+Cycles-1)
+        eChar.dhAddRow(arr,eChar.getCurCycle(),eChar.getCurCycle()+Cycles-1)
 
-        eChar.StatOutValues.addRow(row)
 
     else:
         
-        res = {'Header':header, 'IVdata': [SepData['tv'],SepData['V'],SepData['ti'],SepData['I']], 'RlowPos':SepData['Rlow1'], 'RlowNeg':SepData['Rlow2'], 'Rhigh':SepData['Rhigh'], 'IlowPos':SepData['Ilow1'], 'IlowNeg':SepData['Ilow2'], 'Ihigh':SepData['Ihigh'], 'VthPos':SepData['Vth1'], 'VthNeg':SepData['Vth2'], 'Type': Typ}
-        eChar.Results.append(res)
+        res = {'Header':header, 'IVdata': [SepData['tv'],SepData['V'],SepData['ti'],SepData['I']], 'RlowPos':SepData['Rlow1'], 'RlowNeg':SepData['Rlow2'], 'Rhigh':SepData['Rhigh'], 'IlowPos':SepData['Ilow1'], 'IlowNeg':SepData['Ilow2'], 'Ihigh':SepData['Ihigh'], 'VthPos':SepData['Vth1'], 'VthNeg':SepData['Vth2']}
 
     eChar.curCycle = eChar.curCycle+Cycles
 
@@ -502,15 +493,14 @@ def selectorOutput(eChar, WriteHeader, DoYield, MaxRowsPerFile=1e6):
 
     finished = False
 
-    Rlow = dh.Value(eChar, [], 'RlowPos', DoYield=eChar.DoYield, Unit='ohm')
-    Rhigh = dh.Value(eChar, [], 'Rhigh', DoYield=eChar.DoYield, Unit='ohm')
-    Ilow = dh.Value(eChar, [], 'IlowPos', DoYield=eChar.DoYield, Unit='ohm')
-    Ihigh = dh.Value(eChar, [], 'Ihigh', DoYield=eChar.DoYield, Unit='ohm')
-    VthNeg = dh.Value(eChar, [], 'VthNeg', DoYield=eChar.DoYield, Unit='V')
-    VthPos = dh.Value(eChar, [], 'VthPos', DoYield=eChar.DoYield, Unit='V')
-    
+    Rlow = eChar.dhValue([], 'RlowPos', Unit='ohm')
+    Rhigh = eChar.dhValue([], 'Rhigh', Unit='ohm')
+    Ilow = eChar.dhValue([], 'IlowPos', Unit='ohm')
+    Ihigh = eChar.dhValue([], 'Ihigh', Unit='ohm')
+    VthNeg = eChar.dhValue([], 'VthNeg', Unit='V')
+    VthPos = eChar.dhValue([], 'VthPos', Unit='V')
     values = [Rlow, Rhigh, Ilow, Ihigh, VthNeg, VthPos]
-
+    
     while not finished or not eChar.SelectorEndurance.empty:
 
         while not eChar.finished.empty():
@@ -551,21 +541,20 @@ def selectorOutput(eChar, WriteHeader, DoYield, MaxRowsPerFile=1e6):
                     OutCompStr.append(string)
                 
                 Trac = [Data['VthPos'], Data['VthNeg']]
-                eChar.plotIVData({"Add": True, "lineStyle": 'o', "legend": ["Vth Positive", "Vth Negative"], "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of cycles', "Ylabel": 'voltage (V)', 'Title': "VthPos/VthNeg", "MeasurementType": Typ, "ValueName": 'VthPos/VthNeg'})
+                eChar.plotIVData({"Add": True, "lineStyle": 'o', "legend": ["Vth Positive", "Vth Negative"], "lineWidth":0.5, 'Yscale': 'lin',  "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of cycles', "Ylabel": 'voltage (V)', 'Title': "VthPos/VthNeg", "ValueName": 'VthPos/VthNeg'})
             
             Trac = [Data["Rlow"], Data["Rhigh"]]
-            eChar.plotIVData({"Add": True, "lineStyle": 'o', "lineWidth":0.5, 'Yscale': 'log',  "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of cycles', "Ylabel": 'resistance (ohm)', 'Title': "Rlow/Rhigh", "MeasurementType": Typ, "ValueName": 'Rlow/Rhigh'})
+            eChar.plotIVData({"Add": True, "lineStyle": 'o', "lineWidth":0.5, 'Yscale': 'log',  "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of cycles', "Ylabel": 'resistance (ohm)', 'Title': "Rlow/Rhigh",  "ValueName": 'Rlow/Rhigh'})
 
 
             if len(OutResOn) > MaxRowsPerFile or (finished and eChar.SelectorEndurance.empty()): 
                 
-                header = eChar.SelectorHeader[:]
-                header.extend(eChar.DCHeader)
+                header = eChar.getHeader("Selector")
+                header.extend(eChar.getHeader("DC"))
                 header.append('Measurement,Endurance.StartPoint,%d' %(StartCycResOn))
                 header.append('Measurement,Endurance.EndPoint,%d' %(EndCyc))
 
-                if not eChar.ExternalHeader == []:
-                    header.extend(eChar.ExternalHeader)
+                header.extend(eChar.getHeader("External"))
                 header.append('DataName, Cycle, Rhigh, Rlow, Ilow, Ihigh')
                 header.append('Unit, #, ohm, ohm, A, A')
                 header.append('Dimension, %d,%d,%d,%d' %(len(OutResOn[0]), len(OutResOn[1]), len(OutResOn[2]), len(OutResOn[3])))
@@ -579,13 +568,12 @@ def selectorOutput(eChar, WriteHeader, DoYield, MaxRowsPerFile=1e6):
 
             if len(OutComp) > MaxRowsPerFile or (finished and eChar.SelectorEndurance.empty()): 
                 
-                header = eChar.SelectorHeader[:]
-                header.extend(eChar.DCHeader)
+                header = eChar.getHeader("Selector")
+                header.extend(eChar.getHeader("DC"))
                 header.append('Measurement,Endurance.StartPoint,%d' %(StartCycComp))
                 header.append('Measurement,Endurance.EndPoint,%d' %(EndCyc))
 
-                if not eChar.ExternalHeader == []:
-                    header.extend(eChar.ExternalHeader)
+                header.extend(eChar.getHeader("External"))
                 header.append('DataName, Cycle, Rhigh, Rlow, Ilow, Ihigh, VthPos, VthNeg')
                 header.append('Unit, #, ohm, ohm, A, A, V, V')
                 header.append('Dimension, %d,%d,%d,%d,%d,%d,%d' %(len(OutComp[0]), len(OutComp[1]), len(OutComp[2]), len(OutComp[3]), len(OutComp[4]), len(OutComp[5]), len(OutComp[6])))
@@ -601,12 +589,10 @@ def selectorOutput(eChar, WriteHeader, DoYield, MaxRowsPerFile=1e6):
         tm.sleep(1)
 
 
-    eChar.dhAddRow(values, Typ, 1, EndCyc)
+    eChar.dhAddRow(values, 1, EndCyc)
     eChar.LogData.put("Selector Endurance: Finished Data Storage.")
 
 def SelectorIV(eChar, SweepSMU, Vstop, steps, VlowMeas, Compl, DCSMU, DCCompl, Rep, hold, delay):
-
-    Typ = 'Selector-IV-sweep'
     
     Chns = [SweepSMU, DCSMU]
     VorI = [True, True]
@@ -674,7 +660,7 @@ def SelectorIV(eChar, SweepSMU, Vstop, steps, VlowMeas, Compl, DCSMU, DCCompl, R
         except IndexError:
             return None
 
-        eChar.plotIVData({"Add": True, 'Xaxis': True, 'Yscale': 'log',  "Traces": Plot, 'Xlabel': Xlab, "Ylabel": Ylab, 'Title': "Selector IV", "MeasurementType": Typ, "ValueName": 'Selector IV'})
+        eChar.plotIVData({"Add": True, 'Xaxis': True, 'Yscale': 'log',  "Traces": Plot, 'Xlabel': Xlab, "Ylabel": Ylab, 'Title': "Selector IV", "ValueName": 'Selector IV'})
         
         rl1 = False
         rl2 = False
@@ -734,10 +720,6 @@ def SelectorIV(eChar, SweepSMU, Vstop, steps, VlowMeas, Compl, DCSMU, DCCompl, R
 
             header = out['Header']
             
-            header.insert(0,"TestParameter,Measurement.Type,%s" %(Typ))
-            header.append("Measurement,Device,%s" %(eChar.device))
-            header.append("Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",eChar.localtime)))
-            
             header.append("Measurement, VlowMeas, %s" %(VlowMeas))
             header.append("Measurement, VlowMeasReal, %s" %(VlowMeasReal))
             header.append("Measurement, Repetition, %d" %(r+1))
@@ -773,7 +755,7 @@ def SelectorIV(eChar, SweepSMU, Vstop, steps, VlowMeas, Compl, DCSMU, DCCompl, R
             
             data.append(line)
 
-        eChar.writeDataToFile(header, data, Typ=Typ, startCyc=r+1)
+        eChar.writeDataToFile(header, data, startCyc=r+1)
                 
         values = []
         values.append(eChar.dhValue(Rlow1, "Rlow1", Unit='ohm'))
@@ -787,7 +769,7 @@ def SelectorIV(eChar, SweepSMU, Vstop, steps, VlowMeas, Compl, DCSMU, DCCompl, R
         values.append(eChar.dhValue(Ihigh, "Vth1", Unit='V'))
         values.append(eChar.dhValue(Ihigh, "Vth2", Unit='V'))
 
-        eChar.dhAddRow(values, Typ)
+        eChar.dhAddRow(values)
 
 def LengthOfReturn(ret):
 

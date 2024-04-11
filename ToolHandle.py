@@ -593,7 +593,7 @@ class ToolHandle:
     def getProberChuckStatus(self):
 
         pStat = self.proberChuckStatus
-        if self.proberChuckStatus == None:
+        if self.proberChuckStatus == None or len(self.proberChuckStatus) < 10:
             pStat = [0,0,0,0,0,0,0,0,0,0]
 
         ret = {}

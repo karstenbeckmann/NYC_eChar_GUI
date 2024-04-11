@@ -27,7 +27,7 @@ import sys
 from matplotlib.collections import PatchCollection
 import os
 import StdDefinitions as std
-
+import darkdetect
 
 class plottingRoutine:
     
@@ -172,7 +172,7 @@ class WaferMap(plottingRoutine):
 
     ticks = 15
 
-    def __init__(self, Folder=None, DieSizeX=25, DieSizeY=32, WaferSize=300, CenterLocaiton=[0,0], NumOfDies=1, NumOfDev=1, width=300, height=200, ValueName="", dpi=600, title=None, initValue=None):
+    def __init__(self, Folder=None, DieSizeX=25, DieSizeY=32, WaferSize=300, CenterLocaiton=[0,0], NumOfDies=1, NumOfDev=1, width=300, height=200, ValueName="", dpi=600, title=None, initValue=None, backgroundColor=None):
            
         
         super().__init__(Folder, width, height, ValueName, dpi)
@@ -191,15 +191,26 @@ class WaferMap(plottingRoutine):
         else:
             self.WindowTitle = self.title
 
-        xInch = 5
+        self.xInch = 5
         ratio = height/width
-        yInch = xInch*ratio*.9
-        dpi = width/xInch
+        self.yInch = self.xInch*ratio*.9
+        self.dpi = width/self.xInch
 
-        self.__Figure = plt.figure(figsize=(xInch, yInch), dpi=dpi)
+        if darkdetect.isDark():
+            plt.style.use('dark_background')
+        else:
+            plt.style.use('ggplot')
+
+        self.__Figure = plt.figure(figsize=(self.xInch, self.yInch), dpi=self.dpi)
         #self.__Figure.suptitle(self.WindowTitle)
         #self.__Figure.style.use('ggplot')
         
+        if backgroundColor != None:
+            if darkdetect.isDark():
+                self.__Figure.patch.set_facecolor(backgroundColor)
+            else:
+                self.__Figure.patch.set_facecolor(backgroundColor)
+
 
         self.start()
         self.__Figure.tight_layout()
@@ -220,8 +231,8 @@ class WaferMap(plottingRoutine):
             self.yhigh = int(ma.floor((radius-self.DieSizeY/2-self.CenterLocationY)/self.DieSizeY))
             self.ylow = -int(ma.floor((radius-self.DieSizeY/2+self.CenterLocationY)/self.DieSizeY))
             Rng = list(range(self.ylow,self.yhigh+1,1))
-
         return Rng
+    
     def calcProp(self):
         self.vmin=0
         self.vmax=self.NumOfDevices
@@ -337,14 +348,36 @@ class WaferMap(plottingRoutine):
             if key == "NumOfDevices":
                 self.NumOfDevices = item
                 calcUpdate = True
+            if key == "BackgroundColor":
+                calcUpdate = True
 
         if calcUpdate:
             self.calcProp()
             
             self.data = np.empty((len(self.yticks), len(self.xticks)), np.longdouble)
             self.data[:] = np.nan
-            self.__Figure.clf()
+                
+            
+            print("update", darkdetect.isDark())
+
+            if darkdetect.isDark():
+                plt.style.use('dark_background')
+            else:
+                plt.style.use('ggplot')
+            
+            self.__Figure = plt.figure(figsize=(self.xInch, self.yInch), dpi=self.dpi)
             self.__Graph = self.__Figure.add_subplot(111)
+            
+            if darkdetect.isDark():
+                plt.style.use('dark_background')
+            else:
+                plt.style.use('ggplot')
+
+            if "BackgroundColor" in kwargs:
+                if darkdetect.isDark():
+                    self.__Figure.patch.set_facecolor(kwargs["BackgroundColor"])
+                else:
+                    self.__Figure.patch.set_facecolor(kwargs["BackgroundColor"])
 
         if "locations" in kwargs:
             
@@ -467,14 +500,19 @@ class WaferMapValues(plottingRoutine):
         X = np.linspace(0, 2 * np.pi, 50)
         Y = np.sin(X)
         
-        xInch = 5
+        self.xInch = 5
         self.ratio = self.height/self.width
-        yInch = xInch*self.ratio
-        dpi = self.width/xInch
+        self.yInch = self.xInch*self.ratio
+        self.dpi = self.width/self.xInch
 
         self.patches = []
 
-        self.__Figure = plt.figure(figsize=(xInch,yInch), dpi=dpi)
+        if darkdetect.isDark():
+            plt.style.use('dark_background')
+        else:
+            plt.style.use('ggplot')
+            
+        self.__Figure = plt.figure(figsize=(self.xInch,self.yInch), dpi=self.dpi)
         self.__Figure.tight_layout()
         self.__Figure.suptitle(WindowTitle)
         self.__Graph = self.__Figure.add_subplot(111)
@@ -566,7 +604,7 @@ class WaferMapValues(plottingRoutine):
 
 class XY(plottingRoutine):
 
-    def __init__(self, Folder, data, GraphProperties, width=5, height=4, dpi=600):
+    def __init__(self, Folder, data, GraphProperties, width=5, height=4, dpi=600, backgroundColor=None):
 
         super().__init__(Folder, width, height, GraphProperties['valueName'], dpi)
 
@@ -602,6 +640,12 @@ class XY(plottingRoutine):
         self.__Figure = plt.figure(figsize=(xInch,yInch), dpi=dpi)
         self.__Figure.tight_layout()
         self.__Graph = self.__Figure.add_subplot(111)
+        
+        if backgroundColor != None:
+            if darkdetect.isDark():
+                self.__Figure.patch.set_facecolor(backgroundColor)
+            else:
+                self.__Figure.patch.set_facecolor(backgroundColor)
         
         self.updateWithResult(self.data, GraphProperties)
 
@@ -706,7 +750,9 @@ class XY(plottingRoutine):
                     pass            
             self.cbar.ax.set_ylabel(ylabel=self.cbarlabel, rotation=-90, va='bottom')
             self.cbar.formatter.set_powerlimits((0, 0))
+
             self.cbar.update_ticks()
+            
             #self.cbar.update_normal(self.lines[-1])
             #self.cbar.draw_all() 
         

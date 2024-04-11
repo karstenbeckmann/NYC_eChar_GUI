@@ -161,7 +161,6 @@ class Value:
 
         self.NumOfDevices = 1
         if Unit != None:
-            print(Unit)
             self.Unit = Unit
 
     def addValues(self, values):
@@ -902,7 +901,6 @@ class batch:
     def getNameString(self,avg=True,StdDev=True,Med=True,perc95=True,perc5=True,perc99=False,perc1=False,Max=False,Min=False):
         
         (names, units) = self.getNameLine().values()
-        print(names, units)
         yi = self.getDidYield()
         stringName = "NameValue"
         stringUnit = "UnitValue"
@@ -1023,7 +1021,7 @@ class batch:
 
     def WriteBatch(self, eChar, avg=True,StdDev=True,Med=True,perc95=True,perc5=True,perc99=False,perc1=False,Max=False,Min=False):
         
-        header = eChar.Combinedheader
+        header = eChar.getHeader("Combined")
 
         if self.DieX == None or self.DieY == None:
             withDie = False
@@ -1031,8 +1029,7 @@ class batch:
             withDie = True
 
         data = self.getStringOutput(avg,StdDev,Med,perc95,perc5,perc99,perc1,Max,Min)
-
-        thread = eChar.writeDataToFile(header,data,Typ=self.Name,withDie=withDie)
+        thread = eChar.writeDataToFile(header,data,withDie=withDie,Typ=self.Name)
 
         return thread
 

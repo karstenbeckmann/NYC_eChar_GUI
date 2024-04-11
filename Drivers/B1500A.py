@@ -1291,8 +1291,6 @@ class Agilent_B1500A():
         else:
             TestPara[13] = '%s,delay,%f' %(TestPara[13],0)
 
-
-
         return TestPara
 
     def CheckPulsePVPIParam(self, Chns, VPbase, VPpulse, IPbase, IPpulse, VComp, IComp, VorI, PChn):
@@ -1961,8 +1959,6 @@ class Agilent_B1500A():
                 Compl.append(IComp[n])
             else:
                 Compl.append(VComp[n])
-
-        print(VComp, IComp, Compl)
 
         SweepMode = self.getSweepMode(Mmode)
         Header.append('TestParameter,Measurement.Primary.Locus,%s' %(SweepMode[0]))
