@@ -5,7 +5,7 @@ kbeckmann@sunypoly.edu
 
 import time as tm
 import StdDefinitions as std
-import DataHandling as dh
+import StatisticalAnalysis as dh
 import threading as th
 import math as ma
 import numpy as np
@@ -1519,8 +1519,8 @@ def performEndurance(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tf
     if IVIteration ==0: 
         IVcount =0
 
-    eChar.threads.append(th.Thread(target = saveDataEndurance, args=(eChar, WriteHeader,DoYield, eChar.getMaxRowsPerFile(), eChar.getMaxDataPerPlot())))
-    eChar.threads[-1].start()
+    eChar.startThread(target = saveDataEndurance, args=(eChar, WriteHeader,DoYield, eChar.getMaxRowsPerFile(), eChar.getMaxDataPerPlot()))
+    
 
     stop =  False
     #Run repetitions until number of ran cycles reaches programmed count
@@ -4532,8 +4532,8 @@ def EndurancePartialRead(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS
     if IVIteration ==0: 
         IVcount =0
 
-    eChar.threads.append(th.Thread(target = saveDataEndurance, args=(eChar, WriteHeader,DoYield, eChar.getMaxRowsPerFile(), eChar.getMaxDataPerPlot())))
-    eChar.threads[-1].start()
+    eChar.startThread(target = saveDataEndurance, args=(eChar, WriteHeader,DoYield, eChar.getMaxRowsPerFile(), eChar.getMaxDataPerPlot()))
+    
 
     stop =  False
     #Run repetitions until number of ran cycles reaches programmed count
@@ -4878,8 +4878,8 @@ def AnalogEndurance(eChar, PulseChn, GroundChn, SMUs, Vg, NumLevels, Vgstep, Vse
         VgLevels.append(j)
     print("Vg all: ", VgLevels)
 
-    eChar.threads.append(th.Thread(target = saveDataEndurance, args=(eChar, WriteHeader,DoYield, eChar.getMaxRowsPerFile(), eChar.getMaxDataPerPlot())))
-    eChar.threads[-1].start()
+    eChar.startThread(target = saveDataEndurance, args=(eChar, WriteHeader,DoYield, eChar.getMaxRowsPerFile(), eChar.getMaxDataPerPlot()))
+    
 
     stop =  False
     #Run repetitions until number of ran cycles reaches programmed count
@@ -5063,8 +5063,8 @@ def AnalogEnduranceVreset(eChar, PulseChn, GroundChn, Vreset, NumLevels, Vresets
         VresetLevels.append(j)
     print("Vreset all: ", VresetLevels)
 
-    eChar.threads.append(th.Thread(target = saveDataEndurance, args=(eChar, WriteHeader,DoYield, eChar.getMaxRowsPerFile(), eChar.getMaxDataPerPlot())))
-    eChar.threads[-1].start()
+    eChar.startThread(target = saveDataEndurance, args=(eChar, WriteHeader,DoYield, eChar.getMaxRowsPerFile(), eChar.getMaxDataPerPlot()))
+    
 
     stop =  False
     #Run repetitions until number of ran cycles reaches programmed count
@@ -5293,8 +5293,8 @@ def AnalogEnduranceVset(eChar, PulseChn, GroundChn, Vset, NumLevels, Vsetstep, V
         VsetLevels.append(j)
     print("Vset all: ", VsetLevels)
 
-    eChar.threads.append(th.Thread(target = saveDataEndurance, args=(eChar, WriteHeader,DoYield, eChar.getMaxRowsPerFile(), eChar.getMaxDataPerPlot())))
-    eChar.threads[-1].start()
+    eChar.startThread(target = saveDataEndurance, args=(eChar, WriteHeader,DoYield, eChar.getMaxRowsPerFile(), eChar.getMaxDataPerPlot()))
+    
 
     stop =  False
     #Run repetitions until number of ran cycles reaches programmed count
@@ -5534,8 +5534,8 @@ def AnalogStepEnduranceIV(eChar, PulseChn, GroundChn, Cycles, Vset, Vsetstep, Vr
         VresetLevels.append(j)
     print("Vreset all: ", VresetLevels)
 
-    eChar.threads.append(th.Thread(target = saveDataEndurance, args=(eChar, WriteHeader,DoYield, eChar.getMaxRowsPerFile(), eChar.getMaxDataPerPlot())))
-    eChar.threads[-1].start()
+    eChar.startThread(target = saveDataEndurance, args=(eChar, WriteHeader,DoYield, eChar.getMaxRowsPerFile(), eChar.getMaxDataPerPlot()))
+    
 
     stop =  False
     #Run repetitions until number of ran cycles reaches programmed count
@@ -5763,8 +5763,8 @@ def ShortIntermittentReadEndurance(eChar, PulseChn, GroundChn, SMUs, Vg, NumRead
             CountIter.append(j)
     print("CountIter: ", CountIter)
 
-    eChar.threads.append(th.Thread(target = saveDataEndurance, args=(eChar, WriteHeader,DoYield, eChar.getMaxRowsPerFile(), eChar.getMaxDataPerPlot())))
-    eChar.threads[-1].start()
+    eChar.startThread(target = saveDataEndurance, args=(eChar, WriteHeader,DoYield, eChar.getMaxRowsPerFile(), eChar.getMaxDataPerPlot()))
+    
 
     stop =  False
     #Run repetitions until number of ran cycles reaches programmed count
@@ -5991,8 +5991,8 @@ def LongIntermittentReadEndurance(eChar, PulseChn, GroundChn, SMUs, Vg, NumReads
 
 
 
-    eChar.threads.append(th.Thread(target = saveDataEndurance, args=(eChar, WriteHeader,DoYield, eChar.getMaxRowsPerFile(), eChar.getMaxDataPerPlot())))
-    eChar.threads[-1].start()
+    eChar.startThread(target = saveDataEndurance, args=(eChar, WriteHeader,DoYield, eChar.getMaxRowsPerFile(), eChar.getMaxDataPerPlot()))
+    
 
     stop =  False
     #Run repetitions until number of ran cycles reaches programmed count

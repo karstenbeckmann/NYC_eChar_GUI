@@ -12,9 +12,6 @@ import copy as cp
 import os as os
 import functools
 import queue as qu
-from matplotlib.figure import Figure
-import matplotlib.backends as qtagg
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib import lines
 from matplotlib import markers
 from matplotlib import colors

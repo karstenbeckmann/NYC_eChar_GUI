@@ -3,7 +3,7 @@ Written by: Karsten Beckmann and Maximillian Liehr
 Institution: SUNY Polytechnic Institute
 Date: 6/12/2018
 
-DataHandling provides classes that deal with the statistical evaluation of the retrieved data.  
+StatisticalAnalysis provides classes that deal with the statistical evaluation of the retrieved data.  
 """
 
 import os as os

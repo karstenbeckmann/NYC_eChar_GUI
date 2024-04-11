@@ -5,7 +5,7 @@ kbeckmann@sunypoly.edu
 
 import time as tm
 import StdDefinitions as std
-import DataHandling as dh
+import StatisticalAnalysis as dh
 import threading as th
 import math as ma
 import queue as qu
@@ -52,8 +52,7 @@ def SelectorPulseTest(eChar, PulseChn, GroundChn, Vhigh, Vlow, delay, trise, tfa
     eChar.Selstop = qu.Queue()
 
     eChar.finished.put(False)
-    eChar.threads.append(th.Thread(target = selectorOutput, args=(eChar, WriteHeader,DoYield,MaxRowsPerFile)))
-    eChar.threads[-1].start()
+    eChar.startThread(target = selectorOutput, args=(eChar, WriteHeader,DoYield,MaxRowsPerFile))
 
     if PulseChn < GroundChn:
         chns = {'tv': 0, 'v': 1, 'ti': 2, 'i': 3}

@@ -4,7 +4,7 @@ This file contains definitons from Maximilian Liehr
 
 import time as tm
 import StdDefinitions as std
-import DataHandling as dh
+import StatisticalAnalysis as dh
 import threading as th
 import math as ma
 import numpy as np

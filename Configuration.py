@@ -19,7 +19,7 @@ from matplotlib import lines
 from matplotlib import markers
 from matplotlib import colors
 import threading as th
-import DataHandling as dh
+import StatisticalAnalysis as dh
 import queue as qu
 import StdDefinitions as std
 from win32com.shell import shellcon, shell

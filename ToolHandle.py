@@ -20,7 +20,7 @@ import math as ma
 import sys
 import statistics as stat
 import threading as th
-import DataHandling as dh
+import StatisticalAnalysis as dh
 import queue as qu
 import StdDefinitions as std
 import Drivers.Instruments as Inst

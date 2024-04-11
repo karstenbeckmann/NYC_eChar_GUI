@@ -5,7 +5,7 @@ kbeckmann@sunypoly.edu
 
 import time as tm
 import StdDefinitions as std
-import DataHandling as dh
+import StatisticalAnalysis as dh
 from Exceptions import *
 import threading as th
 import math as ma
@@ -60,8 +60,7 @@ def FEendurance(eChar, PulseChn, GroundChn, Vpulse, delay, tslope, twidth, tbase
     if measCycles  > maxNumberOfMeasCycles:
         raise B1500A_InputError("Ferroelectric Measurement: # of measurement cycles cannot be larger than %d." %())
 
-    eChar.threads.append(th.Thread(target = saveEnduranceData, args=(eChar, DoYield, eChar.getMaxRowsPerFile(), eChar.getMaxDataPerPlot())))
-    eChar.threads[-1].start()
+    eChar.startThread(target = saveEnduranceData, args=(eChar, DoYield, eChar.getMaxRowsPerFile(), eChar.getMaxDataPerPlot()))
 
     curCount = 0
     header = []
@@ -404,8 +403,8 @@ def saveEnduranceData(eChar, DoYield, MaxRowsPerFile, MaxDataPerPlot):
             headerTemp.append(newline[0])
             headerTemp.append(newline[1])
             headerTemp.append(newline[2])
-            eChar.threads.append(th.Thread(target = FEDataPrepAndExport, args=(eChar, cycStart, FEdata, headerTemp)))
-            eChar.threads[-1].start()
+            eChar.startThread(target = FEDataPrepAndExport, args=(eChar, cycStart, FEdata, headerTemp))
+            
 
         except (TypeError, ValueError, IndexError, NameError, qu.Empty) as e:
             eChar.ErrorQueue.put("E-Char FE Endurance Data Analysis, Queue Empty: %s, Finished %s, Error %s" %(eChar.rawData.empty(), finished, e))
@@ -414,7 +413,7 @@ def saveEnduranceData(eChar, DoYield, MaxRowsPerFile, MaxDataPerPlot):
     eChar.LogData.put("FE Endurance: Finished Data Storage.")
 
 def FEDataPrepAndExport(eChar, curCycle, data, header):
-    print("here1")
+    
     OutputData = []
     for n in range(len(data[0]["t"])):
         line = 'DataValue'
@@ -426,7 +425,6 @@ def FEDataPrepAndExport(eChar, curCycle, data, header):
                     line = "%s, %s" %(line, value[n])
 
         OutputData.append(line)
-    print("write")
     eChar.writeDataToFile(header, OutputData, startCyc=curCycle)
 
 def calculateFEdata(eChar, ret, tslope, twidth, MeasPoints, initPulse, area):

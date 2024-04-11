@@ -19,7 +19,7 @@ import copy as cp
 import sys
 import statistics as stat
 import threading as th
-import DataHandling as dh
+import StatisticalAnalysis as dh
 import datetime as dt
 import queue as qu
 import pickle as pk
@@ -29,6 +29,8 @@ import matplotlib.image as mpimg
 from PIL import Image
 import imghdr
 import traceback
+import StatisticalAnalysis as dh
+
 
 
 def WGFMUSetChannelParameters(eChar, Configuration, Instruments):

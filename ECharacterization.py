@@ -6,7 +6,7 @@ Date: 6/12/2018
 For more information please use the provided SUNY POLY python e-characterization manual.
 """
 
-import matplotlib.pyplot as plt
+
 import numpy as np
 import csv as csv
 import os
@@ -17,13 +17,14 @@ import queue as qu
 import math as ma
 from decimal import Context as dc
 import decimal as de
-import DataHandling as dh
+import StatisticalAnalysis as dh
 import numpy as np
 import copy as cp
 import engineering_notation as eng
 import LetToArray as LtA
 from datetime import datetime as dt
 import inspect
+import StatisticalAnalysis as dh
 
 from Exceptions import *
 
@@ -212,6 +213,7 @@ class ECharacterization:
         self.dataAnalysisLock = th.Lock()
         self.cycleLock = th.Lock()
         self.parameterLock = th.Lock()
+        self.threadsLock = th.Lock()
 
         for path in glob.glob('ElectricalCharacterization/[!_]*.py'):
             name, ext = os.path.splitext(os.path.basename(path))
@@ -373,7 +375,8 @@ class ECharacterization:
         header2.extend(cp.deepcopy(header))
         thread =th.Thread(target = std.writeDataToFile , args=(header2, data2, folder, filename, self.MeasQu, subFolder))
         thread.start()
-        self.threads.append(thread)
+        with self.threadsLock:
+            self.threads.append(thread)
 
     def getPrimaryPulseGenerator(self):
         PG = self.Instruments.getPrimaryTool("PG")["Instrument"]
@@ -486,6 +489,12 @@ class ECharacterization:
     def setChannelParameter(self, chn, operationMode, forceVoltageRange=None, measureMode=None, measureCurrentRange=None, MeasureVoltageRange=None, ForceDelay=None, MeasureDelay=None):
         self.wgfmu.setChannelParameter(chn, operationMode, forceVoltageRange, measureMode, measureCurrentRange, MeasureVoltageRange, ForceDelay, MeasureDelay)
     
+    def startThread(self, target, args, **kwargs):
+        with self.threadsLock:
+            self.threads.append(th.Thread(target=target, args=args, **kwargs))
+            self.threads[-1].start()
+
+
     def plotIVData(self, data):
         with self.waferInfoLock:
             data['DieX'] = self.DieX

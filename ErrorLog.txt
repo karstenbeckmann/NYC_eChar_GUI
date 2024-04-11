@@ -1,27 +1,27 @@
-2024-04-11_14-32-58 - Echar - getTools - WGFMU - list index out of range
-2024-04-11_14-32-58 - Echar - getTools - Oscilloscope - 'NoneType' object is not subscriptable
-2024-04-11_14-32-58 - Echar - getTools - PG 81110A - list index out of range
-2024-04-11_14-32-58 - Echar - getTools - PulseGenerator - 'NoneType' object is not subscriptable
-2024-04-11_14-32-58 - ConfigurationFile: Die File does not exist.
-2024-04-11_14-32-58 - ConfigurationFile: Die File does not exist.
-2024-04-11_14-32-58 - ConfigurationFile: Die File does not exist.
-2024-04-11_14-32-58 - WGFMU WGFMUUseGUI state could not be loaded
-2024-04-11_14-32-58 - Spec File: -- does not exist.
-2024-04-11_14-32-58 - Config Get: Variable '$ADC$_None_$HS$_$Mode$' does not exist in Configuration.
-2024-04-11_14-32-58 - Config Get: Variable '$ADC$_$HS$_$N$' does not exist in Configuration.
-2024-04-11_14-32-58 - Config Get: Variable '$ADC$_None_$HR$_$Mode$' does not exist in Configuration.
-2024-04-11_14-32-58 - Config Get: Variable '$ADC$_$HR$_$N$' does not exist in Configuration.
-2024-04-11_14-32-58 - Config Get: Variable '$ADC$_None_$HS$_$Mode$' does not exist in Configuration.
-2024-04-11_14-32-58 - Config Get: Variable '$ADC$_$HS$_$N$' does not exist in Configuration.
-2024-04-11_14-32-58 - Config Get: Variable '$ADC$_None_$HR$_$Mode$' does not exist in Configuration.
-2024-04-11_14-32-58 - Config Get: Variable '$ADC$_$HR$_$N$' does not exist in Configuration.
-2024-04-11_14-32-58 - Config Get: Variable 'ResultRow' does not exist in Configuration.
-2024-04-11_14-32-58 - Config Get: Variable 'ResultColumn' does not exist in Configuration.
-2024-04-11_14-32-58 - Config Get: Variable '$$ProberWindow$$_ChuckScope' does not exist in Configuration.
-2024-04-11_14-32-58 - Config Get: Variable '$$ProberWindow$$_Chuck_MoveX' does not exist in Configuration.
-2024-04-11_14-32-58 - Config Get: Variable '$$ProberWindow$$_Chuck_MoveY' does not exist in Configuration.
-2024-04-11_14-32-58 - Config Get: Variable '$$ProberWindow$$_Chuck_MoveXIndex' does not exist in Configuration.
-2024-04-11_14-32-58 - Config Get: Variable '$$ProberWindow$$_Chuck_MoveYIndex' does not exist in Configuration.
-2024-04-11_14-32-58 - Config Get: Variable '$$ProberWindow$$_Chuck_Velocity' does not exist in Configuration.
-2024-04-11_14-32-58 - None is not a Keysight Mainframe (i.e. B1500A)
-2024-04-11_14-32-58 - None is not a Keysight Mainframe (i.e. B1500A)
+2024-04-11_17-13-53 - Echar - getTools - WGFMU - list index out of range
+2024-04-11_17-13-53 - Echar - getTools - Oscilloscope - 'NoneType' object is not subscriptable
+2024-04-11_17-13-53 - Echar - getTools - PG 81110A - list index out of range
+2024-04-11_17-13-53 - Echar - getTools - PulseGenerator - 'NoneType' object is not subscriptable
+2024-04-11_17-13-53 - ConfigurationFile: Die File does not exist.
+2024-04-11_17-13-53 - ConfigurationFile: Die File does not exist.
+2024-04-11_17-13-53 - ConfigurationFile: Die File does not exist.
+2024-04-11_17-13-53 - WGFMU WGFMUUseGUI state could not be loaded
+2024-04-11_17-13-53 - Spec File: -- does not exist.
+2024-04-11_17-13-53 - Config Get: Variable '$ADC$_None_$HS$_$Mode$' does not exist in Configuration.
+2024-04-11_17-13-53 - Config Get: Variable '$ADC$_$HS$_$N$' does not exist in Configuration.
+2024-04-11_17-13-53 - Config Get: Variable '$ADC$_None_$HR$_$Mode$' does not exist in Configuration.
+2024-04-11_17-13-53 - Config Get: Variable '$ADC$_$HR$_$N$' does not exist in Configuration.
+2024-04-11_17-13-53 - Config Get: Variable '$ADC$_None_$HS$_$Mode$' does not exist in Configuration.
+2024-04-11_17-13-53 - Config Get: Variable '$ADC$_$HS$_$N$' does not exist in Configuration.
+2024-04-11_17-13-53 - Config Get: Variable '$ADC$_None_$HR$_$Mode$' does not exist in Configuration.
+2024-04-11_17-13-53 - Config Get: Variable '$ADC$_$HR$_$N$' does not exist in Configuration.
+2024-04-11_17-13-53 - Config Get: Variable 'ResultRow' does not exist in Configuration.
+2024-04-11_17-13-53 - Config Get: Variable 'ResultColumn' does not exist in Configuration.
+2024-04-11_17-13-53 - Config Get: Variable '$$ProberWindow$$_ChuckScope' does not exist in Configuration.
+2024-04-11_17-13-53 - Config Get: Variable '$$ProberWindow$$_Chuck_MoveX' does not exist in Configuration.
+2024-04-11_17-13-53 - Config Get: Variable '$$ProberWindow$$_Chuck_MoveY' does not exist in Configuration.
+2024-04-11_17-13-53 - Config Get: Variable '$$ProberWindow$$_Chuck_MoveXIndex' does not exist in Configuration.
+2024-04-11_17-13-53 - Config Get: Variable '$$ProberWindow$$_Chuck_MoveYIndex' does not exist in Configuration.
+2024-04-11_17-13-53 - Config Get: Variable '$$ProberWindow$$_Chuck_Velocity' does not exist in Configuration.
+2024-04-11_17-13-53 - None is not a Keysight Mainframe (i.e. B1500A)
+2024-04-11_17-13-53 - None is not a Keysight Mainframe (i.e. B1500A)

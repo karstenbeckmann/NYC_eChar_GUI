@@ -4,7 +4,7 @@ This file contains definitons from Maximilian Liehr
 
 import time as tm
 import StdDefinitions as std
-import DataHandling as dh
+import StatisticalAnalysis as dh
 import threading as th
 import math as ma
 import numpy as np
@@ -87,8 +87,7 @@ def Meas_8x81T1RForm_UTK(eChar, test1):
         out.append(add)
         
     #pass the data in RAM to a process which will write it out
-    eChar.threads.append(th.Thread(target = std.writeDataToFile , args=(cp.deepcopy(header), out, eChar.getFolder(), eChar.getFilename())))
-    eChar.threads[len(eChar.threads)-1].start()
+    eChar.startThread(target = std.writeDataToFile , args=(cp.deepcopy(header), out, eChar.getFolder(), eChar.getFilename()))
 
 def Meas_8x81T1RNeuron_Test1a(eChar, test1):
 
@@ -166,8 +165,8 @@ def Meas_8x81T1RNeuron_Test1a(eChar, test1):
         out.append(add)
         
     #pass the data in RAM to a process which will write it out
-    eChar.threads.append(th.Thread(target = std.writeDataToFile , args=(cp.deepcopy(header), out, eChar.getFolder(), eChar.getFilename())))
-    eChar.threads[len(eChar.threads)-1].start()
+    eChar.startThread(target = std.writeDataToFile , args=(cp.deepcopy(header), out, eChar.getFolder(), eChar.getFilename()))
+    
 
 
 def Meas_UTKDCNeuron_Test_Sagar(eChar, test1):
@@ -245,8 +244,8 @@ def Meas_UTKDCNeuron_Test_Sagar(eChar, test1):
         out.append(add)
         
     #pass the data in RAM to a process which will write it out
-    eChar.threads.append(th.Thread(target = std.writeDataToFile , args=(cp.deepcopy(header), out, eChar.getFolder(), eChar.getFilename())))
-    eChar.threads[len(eChar.threads)-1].start()
+    eChar.startThread(target = std.writeDataToFile , args=(cp.deepcopy(header), out, eChar.getFolder(), eChar.getFilename()))
+    
 
 def Meas_UTKDCNeuron_Test_Sagar_3Voltages(eChar, test1):
 
@@ -324,8 +323,8 @@ def Meas_UTKDCNeuron_Test_Sagar_3Voltages(eChar, test1):
         out.append(add)
         
     #pass the data in RAM to a process which will write it out
-    eChar.threads.append(th.Thread(target = std.writeDataToFile , args=(cp.deepcopy(header), out, eChar.getFolder(), eChar.getFilename())))
-    eChar.threads[len(eChar.threads)-1].start()
+    eChar.startThread(target = std.writeDataToFile , args=(cp.deepcopy(header), out, eChar.getFolder(), eChar.getFilename()))
+    
 
 def Meas_UTKDCNeuron_Test_Sam(eChar, test1):
 
@@ -401,8 +400,8 @@ def Meas_UTKDCNeuron_Test_Sam(eChar, test1):
         out.append(add)
         
     #pass the data in RAM to a process which will write it out
-    eChar.threads.append(th.Thread(target = std.writeDataToFile , args=(cp.deepcopy(header), out, eChar.getFolder(), eChar.getFilename())))
-    eChar.threads[len(eChar.threads)-1].start()
+    eChar.startThread(target = std.writeDataToFile , args=(cp.deepcopy(header), out, eChar.getFolder(), eChar.getFilename())))
+    
 
 
 def Meas_UTK_Adnan(eChar, test1):
@@ -481,8 +480,8 @@ def Meas_UTK_Adnan(eChar, test1):
         out.append(add)
         
     #pass the data in RAM to a process which will write it out
-    eChar.threads.append(th.Thread(target = std.writeDataToFile , args=(cp.deepcopy(header), out, eChar.getFolder(), eChar.getFilename())))
-    eChar.threads[len(eChar.threads)-1].start()
+    eChar.startThread(target = std.writeDataToFile , args=(cp.deepcopy(header), out, eChar.getFolder(), eChar.getFilename()))
+    
 
 def Meas_SPERO_VMM_Test(eChar, Vgate):
 
@@ -560,8 +559,8 @@ def Meas_SPERO_VMM_Test(eChar, Vgate):
         out.append(add)
         
     #pass the data in RAM to a process which will write it out
-    eChar.threads.append(th.Thread(target = std.writeDataToFile , args=(cp.deepcopy(header), out, eChar.getFolder(), eChar.getFilename())))
-    eChar.threads[len(eChar.threads)-1].start()
+    eChar.startThread(target = std.writeDataToFile , args=(cp.deepcopy(header), out, eChar.getFolder(), eChar.getFilename()))
+    
 
 def Meas_8x81T1R_SPERO(eChar, Vgate1, Vgate2, Vset, Vreset):
 
@@ -636,8 +635,8 @@ def Meas_8x81T1R_SPERO(eChar, Vgate1, Vgate2, Vset, Vreset):
         out.append(add)
         
     #pass the data in RAM to a process which will write it out
-    eChar.threads.append(th.Thread(target = std.writeDataToFile , args=(cp.deepcopy(header), out, eChar.getFolder(), eChar.getFilename())))
-    eChar.threads[len(eChar.threads)-1].start()
+    eChar.startThread(target = std.writeDataToFile , args=(cp.deepcopy(header), out, eChar.getFolder(), eChar.getFilename()))
+    
 
 ##########################################################################################################################
 
@@ -770,8 +769,8 @@ def ImageWrite8x8_SPERO(eChar, MatrixFile, SetChn, GNDChn, GateChn, Vset, Vread,
         data.append(line)
 
 
-    eChar.threads.append(th.Thread(target = std.writeDataToFile , args=(cp.deepcopy(header), data, eChar.getFolder(), eChar.getFilename(0, 1))))
-    eChar.threads[len(eChar.threads)-1].start()
+    eChar.startThread(target = std.writeDataToFile , args=(cp.deepcopy(header), data, eChar.getFolder(), eChar.getFilename(0, 1)))
+    
     
     R = eChar.dhValue(eChar, statVal, 'Rset', DoYield=eChar.DoYield, Unit='ohm')
     row = eChar.dhAddRow([R], StCycle=eChar.curCycle+1)
@@ -927,8 +926,8 @@ def ImageWrite8x8_SPERO_Single_Row(eChar, MatrixFile, SetChn, GNDChn, GateChn, V
         data.append(line)
 
 
-    eChar.threads.append(th.Thread(target = std.writeDataToFile , args=(cp.deepcopy(header), data, eChar.getFolder(), eChar.getFilename(0, 1))))
-    eChar.threads[len(eChar.threads)-1].start()
+    eChar.startThread(target = std.writeDataToFile , args=(cp.deepcopy(header), data, eChar.getFolder(), eChar.getFilename(0, 1)))
+    
     
     R = eChar.dhValue(eChar, statVal, 'Rset', DoYield=eChar.DoYield, Unit='ohm')
     row = eChar.dhAddRow([R],eChar.curCycle+1)
@@ -1059,8 +1058,8 @@ def Meas_SPERO_VMM_Test1111111111(eChar, test1):
         out.append(add)
         
     #pass the data in RAM to a process which will write it out
-    eChar.threads.append(th.Thread(target = std.writeDataToFile , args=(cp.deepcopy(header), out, eChar.getFolder(), eChar.getFilename())))
-    eChar.threads[len(eChar.threads)-1].start()
+    eChar.startThread(target = std.writeDataToFile , args=(cp.deepcopy(header), out, eChar.getFolder(), eChar.getFilename()))
+    
 
 
 ##########################################################################################################################
@@ -1137,8 +1136,8 @@ def Meas_OnChipPulse(eChar, Vinput, Iinput, RRAMinput):
         out.append(add)
         
     #pass the data in RAM to a process which will write it out
-    eChar.threads.append(th.Thread(target = std.writeDataToFile , args=(cp.deepcopy(header), out, eChar.getFolder(), eChar.getFilename())))
-    eChar.threads[len(eChar.threads)-1].start()
+    eChar.startThread(target = std.writeDataToFile , args=(cp.deepcopy(header), out, eChar.getFolder(), eChar.getFilename()))
+    
 
 ##########################################################################################################################
 
@@ -2007,8 +2006,8 @@ def ImageSimilaritySearchSPERO_1(eChar, MatrixFile, VMMFile, Numberofpics, LRSCo
                 line = "%s, %s" %(line, ent)
         data.append(line)
 
-    eChar.threads.append(th.Thread(target = std.writeDataToFile , args=(cp.deepcopy(header), data, eChar.getFolder(), eChar.getFilename(eChar.curCycle, eChar.curCycle+1))))
-    eChar.threads[len(eChar.threads)-1].start()
+    eChar.startThread(target = std.writeDataToFile , args=(cp.deepcopy(header), data, eChar.getFolder(), eChar.getFilename(eChar.curCycle, eChar.curCycle+1)))
+    
     
 
     row = eChar.dhAddRow([Rs,Cycamnt], eChar.curCycle,eChar.curCycle+NumofCycles)
@@ -2231,8 +2230,8 @@ def ImageSimilaritySearchSPERO_1(eChar, MatrixFile, VMMFile, Numberofpics, LRSCo
 
         
 
-        eChar.threads.append(th.Thread(target = std.writeDataToFile , args=(cp.deepcopy(header), data, eChar.getFolder(), eChar.getFilename(eChar.curCycle, eChar.curCycle+1))))
-        eChar.threads[len(eChar.threads)-1].start()
+        eChar.startThread(target = std.writeDataToFile , args=(cp.deepcopy(header), data, eChar.getFolder(), eChar.getFilename(eChar.curCycle, eChar.curCycle+1)))
+        
         
         #row = eChar.dhAddRow([CurrPlotVal1,CurrPlotVal2,CurrPlotVal3,CurrPlotVal4])
         row = eChar.dhAddRow([VMM1], eChar.curCycle,eChar.curCycle+NumofCycles)
@@ -2293,8 +2292,8 @@ def ImageSimilaritySearchSPERO_1(eChar, MatrixFile, VMMFile, Numberofpics, LRSCo
 
         
 
-        eChar.threads.append(th.Thread(target = std.writeDataToFile , args=(cp.deepcopy(header), data, eChar.getFolder(), eChar.getFilename(eChar.curCycle, eChar.curCycle+1))))
-        eChar.threads[len(eChar.threads)-1].start()
+        eChar.startThread(target = std.writeDataToFile , args=(cp.deepcopy(header), data, eChar.getFolder(), eChar.getFilename(eChar.curCycle, eChar.curCycle+1)))
+        
         
         #row = eChar.dhAddRow([CurrPlotVal1,CurrPlotVal2,CurrPlotVal3,CurrPlotVal4])
         row = eChar.dhAddRow([VMM1,VMM2,VMM3,VMM4],eChar.curCycle,eChar.curCycle+NumofCycles)
@@ -2347,8 +2346,8 @@ def ImageSimilaritySearchSPERO_1(eChar, MatrixFile, VMMFile, Numberofpics, LRSCo
 
         
 
-        eChar.threads.append(th.Thread(target = std.writeDataToFile , args=(cp.deepcopy(header), data, eChar.getFolder(), eChar.getFilename(eChar.curCycle, eChar.curCycle+1))))
-        eChar.threads[len(eChar.threads)-1].start()
+        eChar.startThread(target = std.writeDataToFile , args=(cp.deepcopy(header), data, eChar.getFolder(), eChar.getFilename(eChar.curCycle, eChar.curCycle+1)))
+        
         
         #row = eChar.dhAddRow([CurrPlotVal1,CurrPlotVal2,CurrPlotVal3,CurrPlotVal4])
         row = eChar.dhAddRow([VMM1,VMM2,VMM3,VMM4,VMM5], eChar.curCycle,eChar.curCycle+NumofCycles)
@@ -2415,8 +2414,8 @@ def ImageSimilaritySearchSPERO_1(eChar, MatrixFile, VMMFile, Numberofpics, LRSCo
 
         
 
-        eChar.threads.append(th.Thread(target = std.writeDataToFile , args=(cp.deepcopy(header), data, eChar.getFolder(), eChar.getFilename(eChar.curCycle, eChar.curCycle+1))))
-        eChar.threads[len(eChar.threads)-1].start()
+        eChar.startThread(target = std.writeDataToFile , args=(cp.deepcopy(header), data, eChar.getFolder(), eChar.getFilename(eChar.curCycle, eChar.curCycle+1)))
+        
         
         #row = eChar.dhAddRow([CurrPlotVal1,CurrPlotVal2,CurrPlotVal3,CurrPlotVal4])
         row = eChar.dhAddRow([VMM1,VMM2,VMM3,VMM4,VMM5,VMM6,VMM7,VMM8],eChar.curCycle,eChar.curCycle+NumofCycles)
@@ -2626,5 +2625,5 @@ def UTK_Forming_Circuit_2(eChar, VDD, Vreset, Vread, Cycle):
         out.append(add)
         
     #pass the data in RAM to a process which will write it out
-    eChar.threads.append(th.Thread(target = std.writeDataToFile , args=(cp.deepcopy(header), out, eChar.getFolder(), eChar.getFilename())))
-    eChar.threads[len(eChar.threads)-1].start()
+    eChar.startThread(target = std.writeDataToFile , args=(cp.deepcopy(header), out, eChar.getFolder(), eChar.getFilename()))
+    

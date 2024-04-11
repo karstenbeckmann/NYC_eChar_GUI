@@ -11,7 +11,7 @@ import ECharacterization as EC
 import datetime as dt
 import Configuration as cf
 import pyvisa as vs
-import DataHandling as dh
+import StatisticalAnalysis as dh
 import time as tm
 import copy as cp
 import numpy as np
