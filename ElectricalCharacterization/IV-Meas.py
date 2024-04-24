@@ -47,6 +47,7 @@ def SpotMeas(eChar, SMUs, VorI, Val, Compl, hold, delay):
     
     out = eChar.B1500A.SpotMeasurement(SMUs, VorI, Val, RI=IRange, VComp=VComp, IComp=IComp, hold=hold, delay=delay)
     data = out['Data']
+    print(out)
     lat = data[0][-1]
 
     eChar.plotIVData({"Add": True, 'Yscale': 'log',  "Traces": lat, 'Xlabel': Xlab, "Ylabel": Ylab, 'Title': title, "ValueName": title})

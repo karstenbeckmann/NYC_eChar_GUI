@@ -47,8 +47,8 @@ class ConfigurationFrame(stdObj.stdFrameGrid):
         self.caliThread = None
         self.resetThread = None
         
-        self.row = 1
-        self.col = 1
+        self.row = 0
+        self.col = 0
         
         self.FolderTit = Label(self, layout=self.layout, text="Folders and Files", row=self.row, column=self.col, columnspan=4)
         self.FolderTit.setFont(self.titleFont)
@@ -68,18 +68,21 @@ class ConfigurationFrame(stdObj.stdFrameGrid):
         self.layout.addWidget(self.__MatrixFileButton, self.row, self.col+2, 1, 2)
         self.TxMatrixFile=Label(self, layout=self.layout, text="Matrix File:", row=self.row, column=self.col, columnspan = 2)
         
-        self.row = 1
-        self.col = 5
+        self.row = 0
+        self.col = 4
         self.FolderTit = Label(self, layout=self.layout, text="Configuration File:", row=self.row, column=self.col, columnspan=4)
         self.FolderTit.setFont(self.titleFont)
 
         self.row = self.row + 1
         self.InitButton = PushButton(self, layout=self.layout, text="Initialize Values", command=self.InitValues, row=self.row, column=self.col, columnspan=3)
         self.row = self.row + 1
-        self.InitButton = PushButton(self, layout=self.layout, text="Save Init. Values", command=self.SaveInitValues, row=self.row, column=self.col, columnspan=3)
+        self.SaveInitButton = PushButton(self, layout=self.layout, text="Save Init. Values", command=self.SaveInitValues, row=self.row, column=self.col, columnspan=3)
 
-        self.col = 8
-        self.row = 1
+        self.row = self.row + 1
+        self.AutoSaveConfigCheckbox = CheckBox(self, self.MainGI, text="Auto. Save of Config.", valueName="AutoSaveConfig", layout=self.layout, row=self.row, column=self.col, columnspan=3, alignment=QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter)
+        
+        self.col = 7
+        self.row = 0
         self.ProberFrame = QtWidgets.QWidget(self)
         self.layout.addWidget(self.ProberFrame, self.row, self.col, 4, 3)
         self.ProberSettings()
@@ -89,21 +92,21 @@ class ConfigurationFrame(stdObj.stdFrameGrid):
         self.ReloadModTx.setFont(self.titleFont)
 
         self.TxWarErr=stdObj.Label("Warnings and Errors:", self)
-        self.addWidget(self.TxWarErr, row=self.row, column=1, columnspan=3, alignment=QtCore.Qt.AlignLeft)
+        self.addWidget(self.TxWarErr, row=self.row, column=0, columnspan=3, alignment=QtCore.Qt.AlignLeft)
         self.__ErrorClearButton = stdObj.PushButton("Clear", self, sizePolicy=[QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding], command=self.clearErrorFrame)
-        self.addWidget(self.__ErrorClearButton, row=self.row, column=4, columnspan=1, alignment=QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
-        self.__InstUpdButton = PushButton(self, layout=self.layout, row=self.row, column=6, columnspan=2, text="Update Instruments", command=self.UpdateInstruments)
+        self.addWidget(self.__ErrorClearButton, row=self.row, column=3, columnspan=1, alignment=QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+        self.__InstUpdButton = PushButton(self, layout=self.layout, row=self.row, column=5, columnspan=2, text="Update Instruments", command=self.UpdateInstruments)
 
         self.row = self.row + 1
         self.RelEChar = PushButton(self, layout=self.layout, text="E-characterization", command=self.ReloadEchar, row=self.row, column=self.col, columnspan=3)
         self.ErrorFrame = stdObj.ErrorLog(self, "ErrorLog", MainGI=MainGI, sizePolicy=[QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding])
-        self.addWidget(self.ErrorFrame, row=self.row, column=1, columnspan=7, rowspan=5)
+        self.addWidget(self.ErrorFrame, row=self.row, column=0, columnspan=7, rowspan=5)
 
         self.row = self.row + 1
         self.RelStdDef = PushButton(self, layout=self.layout, text="Standard Definitions", command=self.ReloadStdDef, row=self.row, column=self.col, columnspan=3)
 
         self.row = self.row + 1
-        self.RelPlotRout = PushButton(self, layout=self.layout, text="Plotting Routines", command=self.ReloadPlotRout, row=self.row, column=self.col, columnspan=3)
+        self.RestartGUI = PushButton(self, layout=self.layout, text="Restart GUI", command=self.restartGUI, row=self.row, column=self.col, columnspan=3)
         
         self.row = self.row + 1
         self.TxReset=stdObj.Label("Resets", self)
@@ -118,10 +121,13 @@ class ConfigurationFrame(stdObj.stdFrameGrid):
         self.CreateInstFrame()
         self.updateMatrix()
         self.updateSpecs()
-
+    
     def SaveInitValues(self):
         self.MainGI.savePosition()
         self.Configuration.saveConfigToFile()
+    
+    def restartGUI(self):
+        self.MainGI.on_closing(restart=True)
     
     def ReloadEchar(self):
         il.reload(eChar)
@@ -204,7 +210,7 @@ class ConfigurationFrame(stdObj.stdFrameGrid):
         self.ScrollFrame = QtWidgets.QScrollArea(self)
         #self.InstrFrame.setVerticalScrollBar()
         self.ScrollFrame.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-        self.layout.addWidget(self.ScrollFrame, 5, 1, 6, cspan)
+        self.layout.addWidget(self.ScrollFrame, 4, 0, 6, cspan)
         self.ScrollLayout = QtWidgets.QVBoxLayout(self.ScrollFrame)
         self.ScrollFrame.setContentsMargins(0,0,0,0)
         self.ScrollLayout.setContentsMargins(0,0,0,0)
@@ -216,8 +222,8 @@ class ConfigurationFrame(stdObj.stdFrameGrid):
         self.InstLayout = QtWidgets.QGridLayout(self.InstrFrame)
         #self.InstLayout.setColumnMinimumWidth()
         #FrWidth = self.layout.columnMinimumWidth(1)*cspan
-        row = 1
-        col = 1
+        row = 0
+        col = 0
         self.TypeTx=Label(self.InstrFrame, layout=self.InstLayout, text="Type", row=row, column=col)
         self.TypeTx.setFont(self.titleFont)
         
@@ -450,6 +456,7 @@ class ConfigurationFrame(stdObj.stdFrameGrid):
             self.__InstUpdButton.setAutoFillBackground(True)
             self.__InstUpdButton.setPalette(pal)
             self.__InstUpdButton.update()
+            self.__InstUpdButton.setDisabled(True)
 
             self.UpdInstThread = th.Thread(target=self.UpdateInstThread)
             self.UpdInstThread.start()
@@ -477,6 +484,7 @@ class ConfigurationFrame(stdObj.stdFrameGrid):
         while not self.InstUpdateQu.empty():
             
             chnRun = self.InstUpdateQu.get()
+            self.__InstUpdButton.setDisabled(False)
             update = True
             
         
@@ -513,7 +521,6 @@ class ConfigurationFrame(stdObj.stdFrameGrid):
             self.__InstUpdButton.setDisabled(True)
             self.RelStdDef.setDisabled(True)
             self.RelEChar.setDisabled(True)
-            self.RelPlotRout.setDisabled(True)
             try:
                 self.ProberDropDown.setDisabled(True)
                 self.MatrixDropDown.setDisabled(True)
@@ -536,7 +543,7 @@ class ConfigurationFrame(stdObj.stdFrameGrid):
             self.__InstUpdButton.setDisabled(False)
             self.RelStdDef.setDisabled(False)
             self.RelEChar.setDisabled(False)
-            self.RelPlotRout.setDisabled(False)
+            self.RelStdDef.setDisabled(False)
             try:
                 self.ProberDropDown.setDisabled(False)
                 self.MatrixDropDown.setDisabled(False)
@@ -579,7 +586,7 @@ class PushButton(QtWidgets.QPushButton):
 
     def __init__(self, parent, text, layout, row, column, command=None, commandArgs=None, columnspan=1, rowspan=1, **kwargs):
 
-        super().__init__(text, parent)
+        super().__init__(text, parent, **kwargs)
 
         self.command = command
         self.commandArgs = commandArgs
@@ -590,7 +597,6 @@ class PushButton(QtWidgets.QPushButton):
         self.columnspan= columnspan
         self.rowspan = rowspan
 
-
         self.layout.addWidget(self, self.row, self.column, self.rowspan, self.columnspan)
 
     def callFunc(self):
@@ -598,6 +604,39 @@ class PushButton(QtWidgets.QPushButton):
             self.command()
         else:
             self.command(*self.commandArgs)
+            
+class CheckBox(stdObj.CheckBox):
+
+    def __init__(self, parent, MainGI, text, valueName, layout, row, column, columnspan=1, rowspan=1, **kwargs):
+
+
+        self.row = row
+        self.column = column
+        self.columnspan= columnspan
+        self.rowspan = rowspan
+
+        self.layout = layout
+        self.widget = QtWidgets.QWidget(parent)
+        self.layout.addWidget(self.widget, self.row, self.column, self.rowspan, self.columnspan)
+        self.layout1 =  QtWidgets.QHBoxLayout(self.widget)
+        spacerLeft = QtWidgets.QSpacerItem(0, 0, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        spacerRight = QtWidgets.QSpacerItem(0, 0, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        self.layout1.addItem(spacerLeft)
+
+        if text == None:
+            super().__init__(parent, MainGI, valueName, **kwargs)
+        else:
+            super().__init__(parent, MainGI, valueName, text, **kwargs)
+            
+        self.stateChanged.connect(self.callFunc)
+        self.layout1.addWidget(self)
+
+        if "sizePolicy" in kwargs:
+            self.setSizePolicy(kwargs['sizePolicy'])
+        
+
+        self.layout1.addItem(spacerRight)
+
 
 class Label(QtWidgets.QLabel):
 

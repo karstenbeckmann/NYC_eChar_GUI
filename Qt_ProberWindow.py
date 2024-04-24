@@ -93,92 +93,92 @@ class ProberWindow(QtWidgets.QMainWindow):
         self.defColor = [defColor.red(), defColor.green(), defColor.blue()]
 
         iconPath = os.path.join(self.iconPath,'Stop.png')
-        wid = IconPushButton(self._main, iconPath, "Stop", self.layout, 6, 3, command=self.stop)
+        wid = IconPushButton(self._main, iconPath, "Stop", self.layout, 5, 2, command=self.stop)
         self.proWid.append(wid)
 
         iconPath = os.path.join(self.iconPath,'DoubleArrow_Right.png')
-        wid = IconPushButton(self._main, iconPath, "Right_Double", self.layout, 6, 5, command=self.moveRightIndex)
+        wid = IconPushButton(self._main, iconPath, "Right_Double", self.layout, 5, 4, command=self.moveRightIndex)
         self.proWid.append(wid)
 
         iconPath = os.path.join(self.iconPath,'DoubleArrow_Left.png')
-        wid = IconPushButton(self._main, iconPath, "Left_Double", self.layout, 6, 1, command=self.moveLeftIndex)
+        wid = IconPushButton(self._main, iconPath, "Left_Double", self.layout, 3, 2, command=self.moveLeftIndex)
         self.proWid.append(wid)
 
         iconPath = os.path.join(self.iconPath,'SingleArrow_Right.png')
-        wid = IconPushButton(self._main, iconPath, "Right_Single", self.layout, 6, 4, command=self.moveRight)
+        wid = IconPushButton(self._main, iconPath, "Right_Single", self.layout, 5, 3, command=self.moveRight)
         self.proWid.append(wid)
 
         iconPath = os.path.join(self.iconPath,'SingleArrow_Left.png')
-        wid = IconPushButton(self._main, iconPath, "Left_Single", self.layout, 6, 2, command=self.moveLeft)
+        wid = IconPushButton(self._main, iconPath, "Left_Single", self.layout, 5, 1, command=self.moveLeft)
         self.proWid.append(wid)
         
         
         iconPath = os.path.join(self.iconPath,'DoubleArrow_Up.png')
-        wid = IconPushButton(self._main, iconPath, "Up_Double", self.layout, 4, 3, command=self.moveUpIndex)
+        wid = IconPushButton(self._main, iconPath, "Up_Double", self.layout, 3, 2, command=self.moveUpIndex)
         self.proWid.append(wid)
 
         iconPath = os.path.join(self.iconPath,'DoubleArrow_Down.png')
-        wid = IconPushButton(self._main, iconPath, "Down_Double", self.layout, 8, 3, command=self.moveDownIndex)
+        wid = IconPushButton(self._main, iconPath, "Down_Double", self.layout, 7, 2, command=self.moveDownIndex)
         self.proWid.append(wid)
 
         iconPath = os.path.join(self.iconPath,'SingleArrow_Up.png')
-        wid = IconPushButton(self._main, iconPath, "Up_Single", self.layout, 5, 3, command=self.moveUp)
+        wid = IconPushButton(self._main, iconPath, "Up_Single", self.layout, 4, 2, command=self.moveUp)
         self.proWid.append(wid)
 
         iconPath = os.path.join(self.iconPath,'SingleArrow_Down.png')
-        wid = IconPushButton(self._main, iconPath, "Down_Single", self.layout, 7, 3, command=self.moveDown)
+        wid = IconPushButton(self._main, iconPath, "Down_Single", self.layout, 6, 2, command=self.moveDown)
         self.proWid.append(wid)
 
         height = rowHeight
         width = rowHeight * 5
         self.chuckScopeFrame = ChuckScope(self._main, self.MainGI, width, height)
-        self.layout.addWidget(self.chuckScopeFrame, 1, 1, 1, 5)
+        self.layout.addWidget(self.chuckScopeFrame, 0, 0, 1, 5)
 
         self.contactModesFrame = Contact(self._main, self.MainGI, self.iconPath, self.Prober, width, height)
-        self.layout.addWidget(self.contactModesFrame, 2, 1, 1, 5)
+        self.layout.addWidget(self.contactModesFrame, 1, 0, 1, 5)
 
         height = rowHeight*6
         width = colWidth*2
         align = QtCore.Qt.AlignRight
         self.statusFrame = StatusWidgets(self._main, self.MainGI, self.iconPath, self.Prober, width, height)
-        self.layout.addWidget(self.statusFrame, 4, 8, 6, 2, align)
+        self.layout.addWidget(self.statusFrame, 3, 7, 6, 2, align)
 
         alignRight = QtCore.Qt.AlignRight
         alignLeft = QtCore.Qt.AlignLeft
 
         chuckTemp = self.Instruments.getChuckTemperature()
 
-        self.TempTxt = Label(self._main, "Chuck Temperature: ", self.layout, 1, 6, rowspan=1, columnspan=4, alignment=alignRight)
-        self.CurChuckTempTx = Label(self._main, "Current (℃): ", self.layout, 2, 6, rowspan=1, columnspan=3, alignment=alignRight)
-        self.ProberCurTemp = Label(self._main, " %s" %(chuckTemp), self.layout, 2, 9, rowspan=1, columnspan=1, alignment=alignLeft)
+        self.TempTxt = Label(self._main, "Chuck Temperature: ", self.layout, 0, 5, rowspan=1, columnspan=4, alignment=alignRight)
+        self.CurChuckTempTx = Label(self._main, "Current (℃): ", self.layout, 1, 5, rowspan=1, columnspan=3, alignment=alignRight)
+        self.ProberCurTemp = Label(self._main, " %s" %(chuckTemp), self.layout, 1, 8, rowspan=1, columnspan=1, alignment=alignLeft)
 
-        self.SetChuckTempTx = Label(self._main, "Set (℃): ", self.layout, 3, 6, rowspan=1, columnspan=3, alignment=alignRight)
-        self.TempEnt = LineEdit(self._main, str(chuckTemp), self.layout, 3, 9, 1, 1, validateNumbers="^[1-9]$|^[1-9][0-9]$|^[1-2][0-9][0-9]$|^(300)$", command=self.ChangeTempReturn)
+        self.SetChuckTempTx = Label(self._main, "Set (℃): ", self.layout, 2, 5, rowspan=1, columnspan=3, alignment=alignRight)
+        self.TempEnt = LineEdit(self._main, str(chuckTemp), self.layout, 2, 8, 1, 1, validateNumbers="^[1-9]$|^[1-9][0-9]$|^[1-2][0-9][0-9]$|^(300)$", command=self.ChangeTempReturn)
         
-        label = Label(self._main, "Move (\u03BCm)", self.layout, 4, 6, rowspan=1, columnspan=2, alignment=alignRight)
-        label = Label(self._main, "X:", self.layout, 5, 6, rowspan=1, columnspan=1, alignment=alignRight)
+        label = Label(self._main, "Move (\u03BCm)", self.layout, 3, 5, rowspan=1, columnspan=2, alignment=alignRight)
+        label = Label(self._main, "X:", self.layout, 4, 5, rowspan=1, columnspan=1, alignment=alignRight)
         self.MoveXWid = ChuckScopeEntry(self._main, self.MainGI, "MoveX", maxLength=self.maxMoveLength,  default=100, command=self.writeMoveX)
         self.MoveEntryWid.append(self.MoveXWid)
-        self.layout.addWidget(self.MoveXWid, 5, 7, 1, 1)
-        label = Label(self._main, "Y:", self.layout, 6, 6, rowspan=1, columnspan=1, alignment=alignRight)
+        self.layout.addWidget(self.MoveXWid, 4, 6, 1, 1)
+        label = Label(self._main, "Y:", self.layout, 5, 5, rowspan=1, columnspan=1, alignment=alignRight)
         self.MoveYWid = ChuckScopeEntry(self._main, self.MainGI, "MoveY", maxLength=self.maxMoveLength,  default=100, command=self.writeMoveY)
         self.MoveEntryWid.append(self.MoveYWid)
-        self.layout.addWidget(self.MoveYWid, 6, 7, 1, 1)
+        self.layout.addWidget(self.MoveYWid, 5, 6, 1, 1)
         
-        label = Label(self._main, "Move (die)", self.layout, 7, 6, rowspan=1, columnspan=2, alignment=alignRight)
-        label = Label(self._main, "X:", self.layout, 8, 6, rowspan=1, columnspan=1, alignment=alignRight)
+        label = Label(self._main, "Move (die)", self.layout, 6, 5, rowspan=1, columnspan=2, alignment=alignRight)
+        label = Label(self._main, "X:", self.layout, 7, 5, rowspan=1, columnspan=1, alignment=alignRight)
         self.MoveXIndexWid = ChuckScopeEntry(self._main, self.MainGI, "MoveXIndex", maxLength=self.maxMoveIndexLength, default=1, command=self.writeMoveIndexX)
         self.MoveEntryWid.append(self.MoveXIndexWid)
-        self.layout.addWidget(self.MoveXIndexWid, 8, 7, 1, 1)
-        label = Label(self._main, "Y:", self.layout, 9, 6, rowspan=1, columnspan=1, alignment=alignRight)
+        self.layout.addWidget(self.MoveXIndexWid, 7, 6, 1, 1)
+        label = Label(self._main, "Y:", self.layout, 8, 5, rowspan=1, columnspan=1, alignment=alignRight)
         self.MoveYIndexWid = ChuckScopeEntry(self._main, self.MainGI, "MoveYIndex", maxLength=self.maxMoveIndexLength, default=1, command=self.writeMoveIndexY)
         self.MoveEntryWid.append(self.MoveYIndexWid)
-        self.layout.addWidget(self.MoveYIndexWid, 9, 7, 1, 1)
+        self.layout.addWidget(self.MoveYIndexWid, 8, 6, 1, 1)
         
-        label = Label(self._main, "Velocity:", self.layout, 9, 1, rowspan=1, columnspan=2, alignment=alignRight)
+        label = Label(self._main, "Velocity:", self.layout, 8, 0, rowspan=1, columnspan=2, alignment=alignRight)
         self.VelocityEntryWid = ChuckScopeEntry(self._main, self.MainGI, "Velocity", "^[1-9]$|^[1-9][0-9]$|^(100)$", 3, default=100, command=self.writeVelocity)
         self.MoveEntryWid.append(self.VelocityEntryWid)
-        self.layout.addWidget(self.VelocityEntryWid, 9, 3, 1, 1)
+        self.layout.addWidget(self.VelocityEntryWid, 8, 2, 1, 1)
         
 
         self.setFixedSize(self.size())

@@ -12,10 +12,9 @@ import pyqtgraph as pg
 
 import inspect
 
-def f():
-    print(inspect.stack()[1][3])
 
-def g():
-    f()
- 
-g()
+arr = np.array(1)
+arr = np.append(arr, 0)
+
+print(arr)
+print(type(arr))

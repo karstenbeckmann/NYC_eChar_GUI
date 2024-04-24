@@ -265,7 +265,8 @@ class ECharacterization:
         self.Vset = []
         self.Vreset = []
         self.IVcyc = []
-        
+        self.curCycle = 1
+
     def checkInstrumentation(self):
         try:
             self.Instruments.checkInstrumentation()
@@ -285,12 +286,12 @@ class ECharacterization:
         
     def setCurCycle(self,cycle):
         with self.cycleLock:
-            self.CurCycle = cycle
+            self.curCycle = cycle
             
     def addCurCycle(self,cycle):
         with self.cycleLock:
-            self.CurCycle = self.CurCycle + cycle
-            return self.CurCycle
+            self.curCycle = self.curCycle + cycle
+            return self.curCycle
 
     def getMaxNumSingleEnduranceRun(self):
         with self.parameterLock:
@@ -364,7 +365,6 @@ class ECharacterization:
             self.MeasurementType = measType
 
     def writeDataToFile(self, header, data, startCyc=None, endCyc=None, withDie=True, subFolder=None, Typ=None):
-        print("here")
         filename= self.getFilename(Typ,startCyc, endCyc)
         folder = self.getFolder(withDie)
         data2 = cp.deepcopy(data)
@@ -414,6 +414,10 @@ class ECharacterization:
             else:
                 self.Header[name] = data
             
+    def insertHeader(self, name, n, data):
+        with self.headerInfoLock:
+            self.Header[name].insert(n, data)
+
     def appendHeader(self, name, data):
         with self.headerInfoLock:
             self.Header[name].append(data)
@@ -571,50 +575,60 @@ class ECharacterization:
         with self.waferInfoLock:
             self.WaferChar = False
 
-    def reset(self, full=True):
-        with self.cycleLock:
-            self.curCycle = 1.
-            self.cyc = []
-        with self.dataAnalysisLock:
-            self.HRS = []
-            self.LRS = []
-            self.IVHRS = []
-            self.IVLRS = []
-            self.ImaxSet = []
-            self.ImaxReset = []
-            self.Vset = []
-            self.Vreset = []
-            self.IVcyc = []
+    def reset(self, full=True, deviceLevel=True):
+        if full:
+            devLevel = True
+            for h in self.Header.keys():
+                self.Header[h] = []
+
+        if deviceLevel:
+            with self.cycleLock:
+                self.curCycle = 1
+                self.cyc = []
+            with self.dataAnalysisLock:
+                self.HRS = []
+                self.LRS = []
+                self.IVHRS = []
+                self.IVLRS = []
+                self.ImaxSet = []
+                self.ImaxReset = []
+                self.Vset = []
+                self.Vreset = []
+                self.IVcyc = []
+            with self.waferInfoLock:
+                self.MeasurementType = None
+                for key, value in self.Header.items():
+                    value = []
+                self.EnduranceData = []
+                del self.StatOutValues
+                self.StatOutValues = dh.batch('DeviceSummary')
+            with self.headerInfoLock:
+                newHeader = {}
+                for h in self.Header.keys():
+                    if not h in ["Combined", "Additional", "DC", "External"]:
+                        self.Header[h] = []
+
+            self.emptyQueue(self.SubProcessThread)
+            self.emptyQueue(self.rawData)
+            self.emptyQueue(self.RDstart)
+            self.emptyQueue(self.RDstop)
+            self.emptyQueue(self.Stop)
+        
         with self.waferInfoLock:
-            self.MeasurementType = None
             self.localtime = tm.localtime()
             self.starttime = tm.localtime()
-            for key, value in self.Header.items():
-                value = []
-            self.EnduranceData = []
-            del self.StatOutValues
-            self.StatOutValues = dh.batch('DeviceSummary')
-        with self.headerInfoLock:
-            newHeader = {}
-            for h in self.Header.keys():
-                if not h in ["Combined", "Additional"]:
-                    self.Header[h] = []
-    
-        del self.SubProcessThread
-        self.SubProcessThread = qu.Queue()
-        del self.rawData
-        self.rawData = qu.Queue()
-        del self.RDstart
-        self.RDstart = qu.Queue()
-        del self.RDstop
-        self.RDstop = qu.Queue()
-        del self.Stop
-        self.Stop = qu.Queue()
+            
         self.emptyFinish()
+            
 
     def getWaferCharacterization(self):
         with self.waferInfoLock:
             return self.WaferChar
+
+    def emptyQueue(self, queue):
+        while not queue.empty():
+            queue.get()
+
 
     def emptyFinish(self):
         while not self.finished.empty():
@@ -629,8 +643,20 @@ class ECharacterization:
         self.appendHeader("Internal", "Measurement,Device,%s" %(self.getDevice()))
         self.appendHeader("Internal", "Measurement,Time,%s" %(tm.strftime("%Y-%m-%d_%H-%M-%S",self.getLocalTime())))
 
+    def executeSubMeasurement(self, folder, name, *args, **kwargs):
+        try:
+            func = getattr(self.Modules[folder],name)
+            oldMeasureType = self.getMeasurementType()
+            self.setMeasurementType(str(func.__name__))
+            ret = func(*args, **kwargs)
+            self.setMeasurementType(oldMeasureType)
+            return ret
+        except ToolInputError as e:
+            self.ErrorQueue.put(e)
+            return "stop"
+
     def executeMeasurement(self, folder, name, parameters):
-        self.reset(full=False)
+        self.reset(full=False, deviceLevel=False)
         self.updateTime()
         try:
             func = getattr(self.Modules[folder],name)
@@ -765,10 +791,13 @@ class ECharacterization:
         
 
     def checkStop(self):
-        stop = False
+        stop = None
         while not self.Stop.empty():
             stop = self.Stop.get()
-        return stop
+        if stop != None:
+            self.Stop.put(stop)
+            return stop
+        return False
 
     def clearStop(self):
         self.clearQu(self.Stop)

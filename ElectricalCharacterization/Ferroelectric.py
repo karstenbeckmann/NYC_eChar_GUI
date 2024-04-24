@@ -47,8 +47,7 @@ def FEendurance(eChar, PulseChn, GroundChn, Vpulse, delay, tslope, twidth, tbase
     if cycles < 1: 
         cycles = 1
 
-    CycStart = eChar.curCycle
-
+    CycStart = eChar.getCurCycle()
     tmstart = 0
     #tmend = tbase/2 + tslope*2 + twidth
     duration = sum([tbase,tslope,tslope,twidth])
@@ -123,12 +122,12 @@ def FEendurance(eChar, PulseChn, GroundChn, Vpulse, delay, tslope, twidth, tbase
 
         pulsePar = (tslope, twidth, MeasPoints, initPulse, area, measCycles)
         eChar.rawData.put({'Name': "FEendurance", 'PulseParameter': pulsePar, 'Data': ret, 'Header': header, "CurCount": curCount, 'Type':'Endurance'})
-        eChar.RDstart.put(eChar.curCycle)
-        eChar.curCycle = eChar.curCycle + measCycles
-        eChar.RDstop.put(eChar.curCycle)
+        eChar.RDstart.put(eChar.getCurCycle())
+        eChar.curCycle = eChar.getCurCycle() + measCycles
+        eChar.RDstop.put(eChar.getCurCycle())
 
         ####################  without READ ##################
-
+        
         if cycles > measCycles:
 
             if eChar.checkStop():    
@@ -147,18 +146,17 @@ def FEendurance(eChar, PulseChn, GroundChn, Vpulse, delay, tslope, twidth, tbase
                 
             eChar.wgfmu.programGroundChn(GroundChn, duration, Vg=0, measure=False, mPoints=MeasPoints, mStartTime=tmstart, mEndTime=tmend, AddSequence=False, Name="Ground")
 
-            if cycles > 0:
-                #Pulse Channel
-                eChar.wgfmu.createMergedPattern("Pulse_%d" %(PulseChn), "posInit_1_%d" %(PulseChn), "posInit_1_%d" %(PulseChn), eChar.wgfmu.WGFMU_AXIS_TIME)
-                eChar.wgfmu.createMergedPattern("Pulse_%d" %(PulseChn),"Pulse_%d" %(PulseChn),"negInit_2_%d" %(PulseChn), eChar.wgfmu.WGFMU_AXIS_TIME)
-                eChar.wgfmu.createMergedPattern("Pulse_%d" %(PulseChn),"Pulse_%d" %(PulseChn),"negInit_2_%d" %(PulseChn), eChar.wgfmu.WGFMU_AXIS_TIME)
-                eChar.wgfmu.addSequence(PulseChn, "Pulse_%d" %(PulseChn), cycles - measCycles)
+            #Pulse Channel
+            eChar.wgfmu.createMergedPattern("Pulse_%d" %(PulseChn), "posInit_1_%d" %(PulseChn), "posInit_1_%d" %(PulseChn), eChar.wgfmu.WGFMU_AXIS_TIME)
+            eChar.wgfmu.createMergedPattern("Pulse_%d" %(PulseChn),"Pulse_%d" %(PulseChn),"negInit_2_%d" %(PulseChn), eChar.wgfmu.WGFMU_AXIS_TIME)
+            eChar.wgfmu.createMergedPattern("Pulse_%d" %(PulseChn),"Pulse_%d" %(PulseChn),"negInit_2_%d" %(PulseChn), eChar.wgfmu.WGFMU_AXIS_TIME)
+            eChar.wgfmu.addSequence(PulseChn, "Pulse_%d" %(PulseChn), cycles - measCycles)
 
-                #Ground Channel
-                eChar.wgfmu.createMergedPattern("Ground_%d" %(GroundChn),"Ground_3_%d" %(GroundChn),"Ground_3_%d" %(GroundChn), eChar.wgfmu.WGFMU_AXIS_TIME)
-                eChar.wgfmu.createMergedPattern("Ground_%d" %(GroundChn),"Ground_%d" %(GroundChn),"Ground_3_%d" %(GroundChn), eChar.wgfmu.WGFMU_AXIS_TIME)
-                eChar.wgfmu.createMergedPattern("Ground_%d" %(GroundChn),"Ground_%d" %(GroundChn),"Ground_3_%d" %(GroundChn), eChar.wgfmu.WGFMU_AXIS_TIME)
-                eChar.wgfmu.addSequence(GroundChn, "Ground_%d" %(GroundChn), cycles - measCycles)
+            #Ground Channel
+            eChar.wgfmu.createMergedPattern("Ground_%d" %(GroundChn),"Ground_3_%d" %(GroundChn),"Ground_3_%d" %(GroundChn), eChar.wgfmu.WGFMU_AXIS_TIME)
+            eChar.wgfmu.createMergedPattern("Ground_%d" %(GroundChn),"Ground_%d" %(GroundChn),"Ground_3_%d" %(GroundChn), eChar.wgfmu.WGFMU_AXIS_TIME)
+            eChar.wgfmu.createMergedPattern("Ground_%d" %(GroundChn),"Ground_%d" %(GroundChn),"Ground_3_%d" %(GroundChn), eChar.wgfmu.WGFMU_AXIS_TIME)
+            eChar.wgfmu.addSequence(GroundChn, "Ground_%d" %(GroundChn), cycles - measCycles)
 
             eChar.wgfmu.synchronize()
             eChar.wgfmu.executeMeasurement()
@@ -167,8 +165,7 @@ def FEendurance(eChar, PulseChn, GroundChn, Vpulse, delay, tslope, twidth, tbase
                 header.append("Measurement,WGFMU,PulseCycles")
                 header.append("Measurement,WGFMU,PulseCycles,%d" %(cycles - measCycles))
                 header = eChar.wgfmu.getHeader()
-
-            eChar.curCycle = eChar.curCycle + cycles - measCycles
+            eChar.addCurCycle(cycles - measCycles)
 
         curCount+=1
 
@@ -209,9 +206,9 @@ def FEendurance(eChar, PulseChn, GroundChn, Vpulse, delay, tslope, twidth, tbase
         
         pulsePar = (tslope, twidth, MeasPoints, False, area, measCycles)
         eChar.rawData.put({'Name': "FEendurance", 'PulseParameter': pulsePar, 'Data': ret, 'Header': [], "CurCount": curCount, 'Type':'Endurance'})
-        eChar.RDstart.put(eChar.curCycle)
-        eChar.curCycle = eChar.curCycle + measCycles
-        eChar.RDstop.put(eChar.curCycle)
+        eChar.RDstart.put(eChar.getCurCycle())
+        eChar.addCurCycle(measCycles)
+        eChar.RDstop.put(eChar.getCurCycle())
 
     eChar.finished.put(True)
 
@@ -371,7 +368,7 @@ def saveEnduranceData(eChar, DoYield, MaxRowsPerFile, MaxDataPerPlot):
                 Trac[1].append(PupTemp[n])
                 Trac[2].append(PdownTemp[n])
             legend = ["Pup", "Pdown"]
-            eChar.plotIVData({"Add": True, 'Row': 0, "Column": 0,  "lineStyle": 'o', "lineWidth":1, 'Yscale': 'lin',"Legend":legend, "Traces":Trac, 'Xaxis': True, 'Xlabel': '# of cycles', 'Yunit': "uC/cm2", "Ylabel": 'Polarization', 'Title': "P", "ValueName": 'P'})
+            eChar.plotIVData({"Add": True, 'Row': 0, "Column": 0,  "ScatterStyle": 'o', "ScatterSize": 5, 'Yscale': 'lin',"Legend":legend, "Traces":Trac, 'Xaxis': True, 'Xlabel': '# of cycles', 'Yunit': "uC/cm2", "Ylabel": 'Polarization', 'Title': "P", "ValueName": 'P'})
             
 
             newline = [None]*3

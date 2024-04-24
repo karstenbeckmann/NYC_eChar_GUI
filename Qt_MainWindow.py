@@ -7,6 +7,7 @@ email: kbeckmann@sunypoly.edu
 
 
 import sys
+import Main
 from PyQt5 import QtWidgets, QtCore, QtGui
 from ctypes import *
 import win32api
@@ -23,7 +24,7 @@ import copy as cp
 import numpy as np
 import StdDefinitions as std
 import queue as qu
-import ToolHandle as tool
+import Instruments as tool
 import Qt_MainButtons as Qt_MB
 import screeninfo as scrInfo
 import glob, imp
@@ -46,66 +47,66 @@ import Qt_E5274A as Qt_E5274A
 
 class MainUI(QtWidgets.QMainWindow):
 
-    Close = qu.Queue()
-    Pause = qu.Queue()
-    __ErrorQu = qu.Queue()
-    __logQu = qu.Queue()
-    __Finished = qu.Queue()
-    __MeasLogQu = qu.Queue()
-    __Canvas_1 = None
-    __Canvas_1_data = qu.Queue()
-    __CanvasPhoto = None
-    __window = None
-    __TKthread = None
-    __InterfaceThread = None
-    __close = False
-    __NumOfDevices = 0
-    eChar = None
-    __updateTime = 0.5
-    __width = 0
-    __height = 0
-    __fig_x, __fig_y = 0, 0
-    __initialized = False
-    __start = False
-    __window = False
-    running = False
-    __StartButton = None
-    __StopButton = None
-    __PauseButton = None
-    __ErrorClearButton = None
-    __ContinueButton = None
-    __ExecThread = None
-    __deviceCharacterization = None
-    __threads = None
-    __tab1 = None
-    __tab2 = None
-    __tab3 = None
-    __note = None
-    instClose = None
-    font_row = 16
-    font_column = 16
-    AvailableInstruments = dict()
-    __PercComp = None
-    __Complete = 0
-    Configuration = None
-    __rm = None
-    __instruments = ()
-    DieMaps = [0,1,2,3,4]
-    __MatrixTable = None
-    ResultHandling=None
-    __PlotDPI = 600
-    MouseObserver = None
-    __Tab7Fig = None
-    updateTimeLong = 0.5
-    LongCounter = 0
-    updateTime = 0.5
-    ErrorFrames = []
-    LogFrames = []
-    MeasLogThread = None
-    dieFolder = "DieFiles"
-
-
     def __init__(self, app, size=None, title="Figure 1", Configuration=None, ElectricalCharacterization=None, Instruments=None ,threads=None, updateTime=0.5, icon="etc/windowIcon_SUNYPoly.gif"):
+        
+        self.__firstUpate = True
+        self.Close = qu.Queue()
+        self.Pause = qu.Queue()
+        self.__ErrorQu = qu.Queue()
+        self.__logQu = qu.Queue()
+        self.__Finished = qu.Queue()
+        self.__MeasLogQu = qu.Queue()
+        self.__Canvas_1 = None
+        self.__Canvas_1_data = qu.Queue()
+        self.__CanvasPhoto = None
+        self.__window = None
+        self.__TKthread = None
+        self.__InterfaceThread = None
+        self.__close = False
+        self.__NumOfDevices = 0
+        self.eChar = None
+        self.__updateTime = 0.5
+        self.__width = 0
+        self.__height = 0
+        self.__fig_x, __fig_y = 0, 0
+        self.__initialized = False
+        self.__start = False
+        self.__window = False
+        self.running = False
+        self.__StartButton = None
+        self.__StopButton = None
+        self.__PauseButton = None
+        self.__ErrorClearButton = None
+        self.__ContinueButton = None
+        self.__ExecThread = None
+        self.__deviceCharacterization = None
+        self.__threads = None
+        self.__tab1 = None
+        self.__tab2 = None
+        self.__tab3 = None
+        self.__note = None
+        self.instClose = None
+        self.font_row = 16
+        self.font_column = 16
+        self.AvailableInstruments = dict()
+        self.__PercComp = None
+        self.__Complete = 0
+        self.Configuration = None
+        self.__rm = None
+        self.__instruments = ()
+        self.DieMaps = [0,1,2,3,4]
+        self.__MatrixTable = None
+        self.ResultHandling=None
+        self.__PlotDPI = 600
+        self.MouseObserver = None
+        self.__Tab7Fig = None
+        self.updateTimeLong = 0.5
+        self.LongCounter = 0
+        self.updateTime = 0.5
+        self.ErrorFrames = []
+        self.LogFrames = []
+        self.MeasLogThread = None
+        self.dieFolder = "DieFiles"
 
         super().__init__()
         self.app = app
@@ -115,11 +116,8 @@ class MainUI(QtWidgets.QMainWindow):
         self.DateFolder = ""
         self.iconPath = os.path.join(os.getcwd(), 'etc')
         self.loader = "etc/Pacman-1s-200px.gif"
-
-        #self.eChar = ElectricalCharacterization
-        #self.Configuration = Configuration
-
-        #print(self.app.styleSheet())
+        self.restart = False
+        self.closingTimeout = 30
 
         self._main = QtWidgets.QWidget(self)
         self.QFont = QtGui.QFont()
@@ -286,12 +284,12 @@ class MainUI(QtWidgets.QMainWindow):
 
         self.ResultWindow = Qt_RW.ResultWindow(self, self.QFont, self.QMargin, self.QSpacing, self.__widthTab, self.__height, self.icon)
         self.ResultWindow.show()
-        self.setResultWindowPosition()
         self.ResultWindow.hide()
 
         self.ProberWindowWidth = self.__widthTab/2
         self.ProberWindowHeight = self.__height/2
         self.ProberWindow = Qt_PW.ProberWindow(self, self.QFont, self.QMargin, self.QSpacing, self.ProberWindowWidth, self.ProberWindowHeight, self.icon)
+        self.ProberWindow.show()
         self.ProberWindow.hide()
 
         self.tabs.addTab(self.MatrixTable, "Matrix")
@@ -301,49 +299,40 @@ class MainUI(QtWidgets.QMainWindow):
         self.ResultHandling = RH.ResultHandling(self, self.ResultWindow)
         self.ResultHandling.start()
 
+
         self.timer = QtCore.QTimer(self)
         self.timer.timeout.connect(self.update)
         self.timer.setInterval(self.interval)
         self.timer.start()
 
     def savePosition(self):
-        self.Configuration.setValue("MainWindowX", self.pos().x())
-        self.Configuration.setValue("MainWindowY", self.pos().y())
+        self.Configuration.setValue("MainWindowX", self.x())
+        self.Configuration.setValue("MainWindowY", self.y())
         self.Configuration.setValue("MainWindowMon", QtWidgets.QDesktopWidget().screenNumber(self))
-
         self.ResultWindow.savePosition()
+        self.ProberWindow.savePosition()
 
-    def setProberWindowPosition(self):
-
-        configName = "ProberWindow"
-        window = self.ProberWindow
+    def setWindowPosition(self, window, configName):
         posX = self.Configuration.getValue("%sX" %(configName))
         posY = self.Configuration.getValue("%sY" %(configName))
         screen = self.Configuration.getValue("%sMon" %(configName))
-        
-        sc = QtWidgets.QDesktopWidget().screenCount()
-        if screen == None or screen >= sc:
-            if sc > 1: 
-                screen = 1
-            else: 
-                screen = 0
-        monSize = QtWidgets.QDesktopWidget().availableGeometry(screen).size()
-        if posX == None:
-            if sc > 1:
-                posX = 0
-            else:
-                posX =  self.windowHandle().width()
-            if posX+self.__width > monSize.width():
-                posX = monSize.width()-self.__width
-        if posY == None:
-            if sc > 1:
-                posY = 0
-            else:
-                posY = 0
-        
+
+        width = self.frameGeometry().width()
+        height = self.frameGeometry().height()
+
+        inScreen = False
+        for n in range(QtWidgets.QDesktopWidget().screenCount()):
+            screen = QtWidgets.QDesktopWidget().screenGeometry(n)
+
+            if posX+width < screen.right() and posX > screen.left():
+                if posY+height < screen.bottom() and posY > screen.top():
+                    inScreen = True
+
+        if not inScreen:
+            posX = 0
+            posY = 0
+            
         window.move(posX, posY)
-        scList = QtGui.QGuiApplication.screens()
-        window.windowHandle().setScreen(scList[screen])
 
     def getBackgroundColor(self, HEX=False):
 
@@ -353,7 +342,6 @@ class MainUI(QtWidgets.QMainWindow):
         loc2 = css.find(");", loc1+len(search))
         bcRGBA = css[loc1+len(search):loc2]
         
-        print(bcRGBA)
         if HEX:
             rgbaSp = bcRGBA.split(",")
             if len(rgbaSp) == 3:
@@ -403,37 +391,6 @@ class MainUI(QtWidgets.QMainWindow):
         if len(rgbaSp) == 4:
             return "rgba(%s)" %(bcRGBA)
 
-    def setResultWindowPosition(self):
-
-        configName = "ResultWindow"
-        window = self.ResultWindow
-        posX = self.Configuration.getValue("%sX" %(configName))
-        posY = self.Configuration.getValue("%sY" %(configName))
-        screen = self.Configuration.getValue("%sMon" %(configName))
-        
-        sc = QtWidgets.QDesktopWidget().screenCount()
-        if screen == None or screen >= sc:
-            if sc > 1: 
-                screen = 1
-            else: 
-                screen = 0
-        monSize = QtWidgets.QDesktopWidget().availableGeometry(screen).size()
-        if posX == None:
-            if sc > 1:
-                posX = 0
-            else:
-                posX =  self.windowHandle().width()
-            if posX+self.__width > monSize.width():
-                posX = monSize.width()-self.__width
-        if posY == None:
-            if sc > 1:
-                posY = 0
-            else:
-                posY = 0
-        
-        window.move(posX, posY)
-        scList = QtGui.QGuiApplication.screens()
-        window.windowHandle().setScreen(scList[screen])
         
     def show(self, *args, **kwargs):
         super().show(*args, **kwargs)
@@ -449,6 +406,8 @@ class MainUI(QtWidgets.QMainWindow):
     
         self.move(0, 0)
         scList = QtGui.QGuiApplication.screens()
+        if screen >= len(scList):
+            screen = 0
         self.windowHandle().setScreen(scList[screen])
 
     def WriteError(self, value):
@@ -550,7 +509,7 @@ class MainUI(QtWidgets.QMainWindow):
         event.ignore()
         self.on_closing()
 
-    def MsgButtonClicked(self, i):
+    def CloseMsgButtonClicked(self, i):
         if "&Yes" == i.text():
             self._main.setDisabled(True)
             self.CloseLabel = QtWidgets.QLabel(self._main)
@@ -563,29 +522,61 @@ class MainUI(QtWidgets.QMainWindow):
             self.instClose = th.Thread(target=self.Instruments.close)
             self.instClose.start()
             self.__close = True
-            #self.ResultWindow.close()
+            self.ResultWindow.close()
+            self.ProberWindow.close()
             self.ResultHandling.close()
+            self.savePosition()
+            if self.Configuration.getAutoSaveConfig():
+                self.Configuration.saveConfigToFile()
+            self.closeStart=tm.time()
+            
+    def RestartMsgButtonClicked(self, i):
+        if "&Yes" == i.text():
+            self._main.setDisabled(True)
+            self.CloseLabel = QtWidgets.QLabel(self._main)
+            self.CloseLabel.setAlignment(QtCore.Qt.AlignCenter)
+            self.CloseMovie = QtGui.QMovie(self.loader)
+            self.CloseLabel.setMovie(self.CloseMovie)
+            self.CloseLabel.setMinimumSize(self.sizeHint())
+            self.CloseLabel.show()
+            self.CloseMovie.start()
+            self.__close = True
+            self.restart = True
+            self.ResultWindow.close()
+            self.ResultWindow.destroy()
+            self.ProberWindow.close()
+            self.ProberWindow.destroy()
+            self.ResultHandling.close()
+            self.savePosition()
+            print("self.Configuration.getAutoSaveConfig()", self.Configuration.getAutoSaveConfig())
+            if self.Configuration.getAutoSaveConfig():
+                self.Configuration.saveConfigToFile()
             self.closeStart=tm.time()
 
-    def on_closing(self):
+    def on_closing(self, restart=False):
 
         if self.instClose != None:
             return None
-
         msgBox = QtWidgets.QMessageBox()
         msgBox.setWindowIcon(self.icon)
         if self.running:
             msgBox.setWindowTitle("Status")
             msgBox.setText("A measurement is currently running!")
             msgBox.setStandardButtons(QtWidgets.QMessageBox.Ok)
+        elif restart:
+            msgBox.setText("The GUI is about to close.")
+            msgBox.setInformativeText("Do you want to restart?")
+            msgBox.setWindowTitle("Restart GUI")
+            msgBox.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+            msgBox.setDefaultButton(QtWidgets.QMessageBox.No)
+            msgBox.buttonClicked.connect(self.RestartMsgButtonClicked)        
         else:
             msgBox.setText("The program is about to close.")
             msgBox.setInformativeText("Do you want to quit?")
             msgBox.setWindowTitle("Quit")
             msgBox.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
             msgBox.setDefaultButton(QtWidgets.QMessageBox.No)
-            msgBox.buttonClicked.connect(self.MsgButtonClicked)
-
+            msgBox.buttonClicked.connect(self.CloseMsgButtonClicked)
         msgBox.exec_()
     
     def getWindowWidth(self):
@@ -684,6 +675,7 @@ class MainUI(QtWidgets.QMainWindow):
             frame.clear()
 
     def startExecution(self):
+        self.emptyPause()
         self.DateFolder = self.getEChar().updateDateFolder()
         self.MainButtons.reset()
         MeasTypeClass = self.WaferMapTab
@@ -717,6 +709,16 @@ class MainUI(QtWidgets.QMainWindow):
         else:
             self.__ErrorQu.put("Instrument Update not allowed during Measurement.")
 
+    def destroy(self):
+        self.ResultWindow.destroy()
+        self.ProberWindow.destroy()
+        super().destroy()
+
+
+    def emptyPause(self):
+        if not self.Pause.empty():
+            self.Pause.get()
+
     def continueExecution(self):
         if self.Pause.empty():
             if not self.Close.empty():
@@ -739,24 +741,32 @@ class MainUI(QtWidgets.QMainWindow):
 
     def update(self):
         
+        if self.__firstUpate:
+            self.setWindowPosition(self, "MainWindow")
+            self.setWindowPosition(self.ResultWindow, "ResultWindow")
+            self.setWindowPosition(self.ProberWindow, "ProberWindow")
+            self.__firstUpate = False
+        
+
+        if self.instClose != None or self.restart:
+            if (((self.restart or not self.instClose.is_alive()) and self.ResultHandling.isFinished()) or self.closeStart+self.closingTimeout < tm.time()):
+                self.CloseMovie.stop()
+                self.timer.stop()
+                self.app.quit()
+                if self.restart:
+                    self.restart = False
+                    self.app.exit(-999)
+                else:
+                    self.app.exit()
+                super().closeEvent(QtGui.QCloseEvent())
+    
+            self.timer.start()
+            return None
+
         if self.darkMode != darkdetect.isDark():
             self.darkMode = darkdetect.isDark()
             self.WaferMapTab.update(BackgroundColor=self.getBackgroundColor(True), LabelColor=self.getLabelColor(True))
             self.ResultWindow.update(BackgroundColor=self.getBackgroundColor(True), LabelColor=self.getLabelColor(True))
-
-        if self.instClose != None:
-
-            timeout = 30
-
-            if (not self.instClose.is_alive() and self.ResultHandling.isFinished()) or self.closeStart+timeout < tm.time():
-                
-                self.CloseMovie.stop()
-                self.app.quit()
-                self.app.exit()
-                super().closeEvent(QtGui.QCloseEvent())
-            
-            self.timer.start()
-            return None
 
         write = False
         while not self.__Canvas_1_data.empty():
@@ -899,15 +909,17 @@ class MainUI(QtWidgets.QMainWindow):
                 self.SpecTabID = self.tabs.insertTab(ID+1, self.SpecTable, "Specs")
 
         try:
-            if not self.ResultHandling.is_alive():
+            if self.ResultHandling == None:
                 self.ResultHandling = RH.ResultHandling(self, self.ResultWindow)
-                self.ResultHandling.start()
-                
+                if not self.ResultHandling.thread.is_alive():
+                    print("start")
+                    self.ResultHandling.start()
         except AttributeError as e:
             self.__ErrorQu.put("Not able to restart Result Handling. %s" %(e))
 
         if self.Instruments.getProberInstrument() == None:
-            self.ProberWindow.hide()
+            if self.ProberWindow.isVisible():
+                self.ProberWindow.hide()
             self.SideButtons.HideProbeButton()
         else:
             self.SideButtons.ShowProbeButton()
@@ -919,7 +931,7 @@ class MainUI(QtWidgets.QMainWindow):
         self.E5274ATab.update()
         self.ResultWindow.update()
         self.ProberWindow.update()
-        
+
         self.timer.start()
 
     def getQColor(self, color):

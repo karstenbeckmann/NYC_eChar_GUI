@@ -54,7 +54,11 @@ class Value:
 
         self.NumOfDevices = 0
         if isinstance(InputValue, type(None)):
-            InputValue = []
+            InputValue = np.array([])
+        elif isinstance(InputValue, list):
+            InputValue = np.array(InputValue)
+        else:
+            InputValue = np.array([InputValue])
 
         Specs = eChar.getConfiguration().getSpecs()
         self.SpecCode = eChar.getConfiguration().getSpecCode()
@@ -77,7 +81,7 @@ class Value:
             if self.Spec == None:
                 self.DoYield = False
         
-        if isinstance(InputValue, list) or isinstance(InputValue, np.ndarray):
+        if isinstance(InputValue, (list, np.ndarray)):
             if isinstance(InputValue, np.ndarray):
                 length = np.size(InputValue)
             else:
@@ -108,11 +112,11 @@ class Value:
                             self.average = np.average(InValNP)
                             self.averageSq = np.average(np.square(InValNP))
                             self.averageN = 1
-                            self.stdDeviation = np.std(InValNP)
+                            self.stdDeviation = np.std(InValNP, dtype=np.float64)
                             self.minimum = np.min(InValNP)
                             self.maximum = np.max(InValNP)
                             self.ContainValues = True
-                            self.addValues(InputValue)
+                            self.Values = InValNP
 
 
                 else:
@@ -121,11 +125,11 @@ class Value:
                     self.average = np.average(InValNP)
                     self.averageSq = np.average(np.square(InValNP))
                     self.averageN = 1
-                    self.stdDeviation = np.std(InValNP)
+                    self.stdDeviation = np.std(InValNP, dtype=np.float64)
                     self.minimum = np.min(InValNP)
                     self.maximum = np.max(InValNP)
                     self.ContainValues = True
-                    self.addValues(InputValue)
+                    self.Values = InValNP
 
         else:
             if self.DoYield:
@@ -144,7 +148,7 @@ class Value:
                     self.maximum = InputValue
                     self.minimum = InputValue
                     self.ContainValues = True
-                    self.addValues(InputValue)
+                    self.Values = np.array(InputValue)
                 else:
                     self.FailSpec = True
 
@@ -157,7 +161,7 @@ class Value:
                 self.maximum = InputValue
                 self.minimum = InputValue
                 self.ContainValues = True
-                self.addValues(InputValue)
+                self.Values = np.array(InputValue)
 
         self.NumOfDevices = 1
         if Unit != None:
@@ -171,17 +175,18 @@ class Value:
         if not isinstance(values, list):
             values = [values]
         
-        InpValLen = len(values)
-        ValLen = len(self.Values)
+        values = np.array(values)
+        
+        InpValLen = np.size(values)
+        ValLen = np.size(self.Values)
 
         if (InpValLen + ValLen) > self.MaxValuesLength:
             self.Values = None
             self.ValOverFlow = True
+            return False
         else:
-            if isinstance(values, list):
-                self.Values.extend(values)
-            else:
-                self.Values.append(values)
+            self.Values = np.append(self.Values, values)
+
         return True
 
     def getName(self):
@@ -199,7 +204,6 @@ class Value:
             except IndexError:
                 ret = None
             return ret
-
 
     def getMedian(self):
         if self.ValOverFlow:
@@ -317,10 +321,10 @@ class Value:
         
         if self.DoYield:
             InValNP = np.empty(0)
-            if isinstance(InputValue, list) or isinstance(InputValue, np.ndarray):
-                if isinstance(InputValue, np.ndarray):
-                    if len(np.shape(InputValue)) > 1:
-                        return False
+            if isinstance(InputValue, (list, np.ndarray)):
+                InputValue = np.array(InputValue)
+                if len(np.shape(InputValue)) > 1:
+                    return False
 
                 n= 0
                 for val in InputValue:
@@ -350,33 +354,35 @@ class Value:
                 
 
         else: 
-            if isinstance(InputValue, list) or isinstance(InputValue, np.ndarray):
+            if isinstance(InputValue, (list, np.ndarray)):
+                InValNP = np.array(InputValue)
+                if len(np.shape(InValNP)) > 1:
+                    return False
+
+            else:
+                InValNP = np.array(InputValue)
+
+        l = np.size(InValNP)
+        if self.ContainValues:
+            if isinstance(InputValue, (list, np.ndarray)):
                 if isinstance(InputValue, np.ndarray):
                     if len(np.shape(InputValue)) > 1:
                         return False
-                    InValNP = InputValue
+                    InValNP = np.array(InputValue)
                 else:    
                     InValNP = np.array(InputValue)
             else:
                 InValNP = np.array([InputValue])
 
-        l = np.size(InValNP)
-        if self.ContainValues:
-            InputAvg = np.average(InValNP)
-            x = np.multiply(InputAvg, l)
-            y = np.multiply(self.average,self.size)
-            z = np.add(self.size, l)
-            self.average = np.divide(np.sum([x,y]),z)
-
-            InputAvgSq = np.average(np.square(InValNP))
-            self.averageSq  = np.add(InputAvgSq, self.averageSq)
-            self.averageN = self.averageN + 1
-
-            self.stdDeviation = np.sqrt(np.absolute(np.subtract(np.divide(self.averageSq,self.averageN), np.square(self.average))))
-
+            self.addValues(InValNP)
             self.size = self.size + l
-            self.addValues(InputValue)
-
+            self.average = np.average(self.Values)
+            self.averageSq = np.average(np.square(self.Values))
+            self.averageN = 1
+            self.stdDeviation = np.std(self.Values, dtype=np.float64)
+            newMin = np.min(self.Values)
+            newMax = np.max(self.Values)
+            
             try:
                 newMin = np.min(InValNP)
                 if self.minimum > newMin:
@@ -403,7 +409,7 @@ class Value:
                 self.average = np.average(InValNP)
                 self.averageSq = np.average(np.square(InValNP))
                 self.averageN = 1
-                self.stdDeviation = np.std(InValNP)
+                self.stdDeviation = np.std(InValNP, dtype=np.float64)
                 self.minimum = np.min(InValNP)
                 self.maximum = np.max(InValNP)
                 self.ContainValues = True
@@ -420,28 +426,16 @@ class Value:
     def combine(self, newVal):
         
         if newVal.getContainValues() and self.getContainValues():
-            x = np.multiply(newVal.average,newVal.size)
-            y = np.multiply(self.average, self.size)
-            z = np.add(self.size, newVal.size)
-            self.average = np.divide(np.sum([x,y]),z)
-            x = np.add(newVal.averageSq, self.averageSq)
-            y = np.multiply(self.averageSq,self.size)
-            self.averageSq = np.divide(np.sum([x,y]),z)
-            
-            self.stdDeviation = np.sqrt(np.absolute(np.subtract(np.divide(self.averageSq,self.averageN), np.square(self.average))))
-            #print("after: ",self.stdDeviation)
             self.size = self.size + newVal.size
-
-            if self.minimum > newVal.minimum:
-                self.minimum = newVal.minimum
-
-            if self.maximum < newVal.maximum:
-                self.maximum = newVal.maximum
-            
+            self.minimum = min(self.minimum, newVal.minimum)
+            self.maximum = max(self.maximum, newVal.maximum)
+            self.addValues(newVal.Values)
+            self.average = np.average(self.Values)
+            self.averageSq = np.average(np.square(self.Values))
+            self.stdDeviation = np.std(self.Values, dtype=np.float64)
             self.NumOfDevices += newVal.NumOfDevices
             
-            self.addValues(newVal.Values)
-            
+
         elif newVal.getContainValues():
             self.size = newVal.getSize()
             self.average = newVal.getAverage()
@@ -702,7 +696,7 @@ class Row:
         return string
     '''
 
-    def getListValString(self,avg=True,StdDev=True,Med=True,perc95=True,perc5=True,perc99=False,perc1=False,Max=False,Min=False,Yield=False,):
+    def getListValString(self,avg=True,StdDev=True,Med=True,perc95=True,perc5=True,perc99=False,perc1=False,Max=False,Min=False,Yield=False):
     
         stringList = []
         NameList = []

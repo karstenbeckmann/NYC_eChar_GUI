@@ -19,7 +19,10 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 import Qt_stdObjects as stdObj
 import pickle as pk
 import traceback
-import numpy as np
+import numpy as np  
+from matplotlib import cm
+import matplotlib as mpl
+
 
 
 class ResultHandling():
@@ -27,6 +30,7 @@ class ResultHandling():
     def __init__(self, MainGI, ResultWindow):
         
         self.ResultWindow = ResultWindow
+
     
         self.Results = []
         self.CurDieX = ''
@@ -36,14 +40,17 @@ class ResultHandling():
         self.CurMeas = ''
         self.CurVal = ''
         self.CurNum = 'Live'
-
+        self.defaultValues = {}
+        
         self.dieXValues = ['']
         self.dieYValues = ['']
         self.devXValues = ['']
         self.devYValues = ['']
         self.MeasValues = ['']
         self.VarValues = ['']
-        self.NumValues = ['Live']
+        self.NumValues = ['', 'Live']
+        self.appendGraph = False
+
 
         self.dpi=600
         self.ErrorQu = qu.Queue()
@@ -67,8 +74,11 @@ class ResultHandling():
         self.CurMeasDevX = None
         self.CurMeasDevY = None
         
+        self.maxAppendPlots = 25
+
         self.__close = qu.Queue()
         self.thread = None
+        self.setLive()
 
     def isFinished(self):
         if self.thread == None:
@@ -103,7 +113,7 @@ class ResultHandling():
         if str(val).strip().lower() == 'live':
             if len(list(self.subResultsID.keys())) > 0:
                 self.CurResult = self.subResultsID['Live']
-        else:
+        elif val != "":
             disCont = False
             if not disCont and len(list(self.subResultsID.keys())) > 0:
                 self.CurResult = self.subResultsID[val]
@@ -132,7 +142,31 @@ class ResultHandling():
     def getCurVal(self):
          return self.CurVal
 
+    def findPlots(self, **kwargs):
+
+        for inputKey, inputValue in kwargs.items():
+            if inputValue == "":
+                return []
+
+        foundPlots = []
+        for res in self.Results:
+            for data, graphProp in zip(res['Result'].getData() , res['Result'].getGraphProp()):
+                found = True
+                for inputKey, inputValue in kwargs.items():
+                    if graphProp[inputKey] != inputValue:
+                        found = False
+                        break
+                    
+                if found:
+                    if len(foundPlots) >= self.maxAppendPlots:
+                        return None
+                    foundPlots.append({"Data": cp.deepcopy(data), "GraphProp": cp.deepcopy(graphProp)})
+                    
+        return foundPlots
+
     def getResult(self):
+        if len(self.Results) == 0:
+            return None
         if self.CurResult == None:
             return None
         else:
@@ -238,7 +272,7 @@ class ResultHandling():
         
         Meas = []
         for res in self.Results:
-            M = res['Result'].getMeasurements()
+            M = res['Result'].getMeasurement()
 
             Xdie = res['DieX']
             Ydie = res['DieY']
@@ -275,7 +309,7 @@ class ResultHandling():
                     addDevY = True
 
             if not M in Meas and addDieX and addDieY and addDevX and addDevY:
-                Meas.extend(M)
+                Meas.append(M)
 
         Meas.sort()
         Meas.insert(0,'')
@@ -284,12 +318,10 @@ class ResultHandling():
     
     def updateValue(self):
         Val = []
-        #del self.subResultsID
-        #self.subResultsID = {}
         n = 1
         for res in self.Results:
             V = res['Result'].getValueNames()
-            M = res['Result'].getMeasurements()
+            M = res['Result'].getMeasurement()
 
             Xdie = res['DieX']
             Ydie = res['DieY']
@@ -329,14 +361,13 @@ class ResultHandling():
             if self.CurMeas == '': 
                 addMeas = True
             else:
-                if self.CurMeas.strip() in [m.strip() for m in M]:
+                if self.CurMeas.strip() == M.strip():
                     addMeas = True
 
-            if addDieX and addDieY and addDevX and addDevY and addMeas:
-                Val.extend(V)
+            for v in V:
+                if not v in Val and addDieX and addDieY and addDevX and addDevY and addMeas:
+                    Val.append(v)
                     
-                #self.subResultsID.append(n)
-                
             n = n+1
 
         Val.insert(0,'')
@@ -352,7 +383,7 @@ class ResultHandling():
         for res in self.Results:
 
             V = res['Result'].getValueNames()
-            M = res['Result'].getMeasurements()
+            M = res['Result'].getMeasurement()
 
             Xdie = res['DieX']
             Ydie = res['DieY']
@@ -393,7 +424,7 @@ class ResultHandling():
             if self.CurMeas == '': 
                 addMeas = True
             else:
-                if self.CurMeas.strip().lower() in [m.strip().lower() for m in M]:
+                if self.CurMeas.strip() == M.strip():
                     addMeas = True
 
             if self.CurVal == '': 
@@ -403,15 +434,18 @@ class ResultHandling():
                     addVal = True
 
             if addDieX and addDieY and addDevX and addDevY and addMeas and addVal:
-                txt = "Die X%d-Y%d, Dev X%d-Y%d, %d" %(Xdie, Ydie, Xdev, Ydev, n)
-                #txt = n
+                Mtext = M
+                if len(M) > 10:
+                    Mtext = "%s.." %(M[:9])
+                txt = "Die X%d-Y%d, Dev X%d-Y%d, Meas.: %s, %d" %(Xdie, Ydie, Xdev, Ydev, Mtext, n)
                 Num.append(txt)
                 self.subResultsID[txt] = n
-
             n = n+1
+
         self.subResultsID['Live'] = 0
 
         Num.insert(0,'Live')
+        Num.insert(0,'')
         self.NumValues = Num
         return self.NumValues
 
@@ -426,7 +460,7 @@ class ResultHandling():
         self.devYValues = ['']
         self.MeasValues = ['']
         self.VarValues = ['']
-        self.NumValues = ['Live']
+        self.NumValues = ['', 'Live']
         
         self.CurDieX = ''
         self.CurDieY = ''
@@ -435,6 +469,7 @@ class ResultHandling():
         self.CurMeas = ''
         self.CurVal = ''
         self.CurNum = 'Live'
+        defaultValues = {"Num":"Live"}
 
         upd = {'DieX': self.dieXValues}
         upd['DieY'] = self.dieYValues
@@ -443,6 +478,7 @@ class ResultHandling():
         upd['Meas'] = self.MeasValues
         upd['Var'] = self.VarValues
         upd['Num'] = self.NumValues
+        upd['Default'] = defaultValues
 
         self.ResultWindow.updates.put(upd)
         
@@ -496,7 +532,7 @@ class ResultHandling():
         return newData
 
     def retrieveData(self):
-        ret = False
+        defaultValues = None
         res = None
         Result = None
         eChar = self.MainGI.geteChar()
@@ -510,10 +546,14 @@ class ResultHandling():
             
             kwargs = {}
             necKeys = ['DieX', 'DieY', "DevX", 'DevY', 'Folder', 'Measurement', 'ValueName']
+            widKeys = ['DieX', 'DieY', "DevX", 'DevY', 'Folder', 'Meas', 'Val']
+            defaultValues = {}
 
-            for key in necKeys:
+            for key, widKey in zip(necKeys, widKeys):
                 if key in data.keys():
                     kwargs[key] = data[key]
+                    defaultValues[widKey] = data[key]
+
             
             addedKeys = ['Row', 'Column', 'Rowspan', 'Colspan']
             stdValues = [-2,-2,1,1]
@@ -621,55 +661,91 @@ class ResultHandling():
                 
                 self.updateCurFile(res)
 
-                updKwargs = {}
-                necKeys = ['DieX', 'DieY', "DevX", 'DevY']
-                upds = [self.updateDieX, self.updateDieY, self.updateDevX, self.updateDevY]
-                for key, upd in zip(necKeys, upds):
-                    updKwargs[key] = upd()
-                updKwargs['Meas'] = self.updateMeasurements()
-                updKwargs['Num'] = self.updateNum()
-                updKwargs['Val'] = self.updateValue()
-                self.ResultWindow.updates.put(updKwargs)
+            updKwargs = {}
+            necKeys = ['DieX', 'DieY', "DevX", 'DevY']
+            upds = [self.updateDieX, self.updateDieY, self.updateDevX, self.updateDevY]
+            for key, upd in zip(necKeys, upds):
+                updKwargs[key] = upd()
+            updKwargs['Meas'] = self.updateMeasurements()
+            updKwargs['Num'] = self.updateNum()
+            updKwargs['Val'] = self.updateValue()
+            self.ResultWindow.updates.put(updKwargs)
 
             self.ResultWindow.updates.put({"Show": True})
 
             if self.Live and res != None:
                 self.updateResultWindowGraph(res['Result'])
-               
-        return ret
+                self.updateCurFile(self.getResult())
+
+            else: 
+                defaultValues = {}
+
+        return defaultValues
+
 
     def close(self):
         self.__close.put(True)
 
     def start(self):
+        if self.thread == None:
+            self.thread = th.Thread(target=self.update)
+            self.thread.start()
+        else:
+            if not self.thread.is_alive():
+                self.thread = th.Thread(target=self.update)
+                self.thread.start()
+    def setDefaultValues(self, defaultValues):
         
-        self.thread = th.Thread(target=self.update)
-        self.thread.start()
+        if defaultValues == None:
+            return None
+
+        for key, value in defaultValues.items():
+            if key == "DieX":
+                self.setCurDieX(value)
+            if key == "DieY":
+                self.setCurDieY(value)
+            if key == "DevX":
+                self.setCurDevX(value)
+            if key == "DevY":
+                self.setCurDevY(value)
+            if key == "Meas":
+                self.setCurMeas(value)
+            if key == "Val":
+                self.setCurVal(value)
+            if key == "Num":
+                self.setCurNum(value)
 
     def update(self):
+
         while True:
             if not self.__close.empty():
                 break
-
-            self.retrieveData()   
-        
+            
+            defaultValues = self.retrieveData()
+            self.setDefaultValues(defaultValues)
             while not self.ResultWindow.UpdateRequestsQu.empty():
                 element = self.ResultWindow.UpdateRequestsQu.get()
-                updData = False
                 
-                for key, item in element.items():
+                updData = False
+                for key, value in element.items():
                     upd = None
+                    append = None
+                    if key =="appendGraph":
+                        if value == 0:
+                            self.appendGraph = False
+                        else:
+                            self.appendGraph = True
                     if key == "DieX":
-                        self.setCurDieX(item)
+                        self.setCurDieX(value)
                         dieY = self.updateDieY()
                         devX = self.updateDevX()
                         devY = self.updateDevY()
                         meas = self.updateMeasurements()
                         num = self.updateNum()
                         val = self.updateValue()
-                        upd = {"DieY": dieY,"DevX": devX,"DevY": devY,"Meas": meas, "Num": num, "Val": val}
+                        upd = {"DieY": dieY, "DevX": devX,"DevY": devY,"Meas": meas, "Num": num, "Val": val}
                     elif key == "DieY":
-                        self.setCurDieY(item)
+                        self.setCurDieY(value)
                         devX = self.updateDevX()
                         devY = self.updateDevY()
                         meas = self.updateMeasurements()
@@ -677,59 +753,88 @@ class ResultHandling():
                         val = self.updateValue()
                         upd = {"DevX": devX,"DevY": devY,"Meas": meas, "Num": num, "Val": val}
                     elif key == "DevX":
-                        self.setCurDevX(item)
+                        self.setCurDevX(value)
                         devY = self.updateDevY()
                         meas = self.updateMeasurements()
                         num = self.updateNum()
                         val = self.updateValue()
                         upd = {"DevY": devY,"Meas": meas, "Num": num, "Val": val}
                     elif key == "DevY":
-                        self.setCurDevY(item)
+                        self.setCurDevY(value)
                         meas = self.updateMeasurements()
                         num = self.updateNum()
                         val = self.updateValue()
                         upd = {"Meas": meas, "Num": num, "Val": val}
                     elif key == "Meas":
-                        self.setCurMeas(item)
+                        self.setCurMeas(value)
                         num = self.updateNum()
                         val = self.updateValue()
                         upd = {"Num": num, "Val": val}
                     elif key == "Val":
-                        self.setCurVal(item)
+                        self.setCurVal(value)
                         num = self.updateNum()
                         upd = {"Num": num}
                     elif key == "Num":
-                        if item == "":
-                            item = "Live"
-                        self.setCurNum(item)
-                        updData = True
-                    elif key =="Clear":
-                        if item:
-                            self.clear()
-                    if key == "Num":
-                        if item == "Live":
+                        if value.lower().strip() == "live":
+                            value = "Live"
                             self.setLive()
+                        elif value != "":
+                            updData = True
+                            self.unsetLive()
                         else:
                             self.unsetLive()
+                        self.setCurNum(value)
+                    elif key =="Clear":
+                        if value:
+                            self.clear()
 
                     if self.getResult() != None:
                         if key == "LineColor":
-                            self.getResult().setLineColor(item)
+                            self.getResult().setLineColor(value)
                         elif key == 'LineStyle':
-                            self.getResult().setLineStyle(item)
+                            self.getResult().setLineStyle(value)
                         elif key == 'LineWidth':
-                            self.getResult().setLineWidth(item)
+                            self.getResult().setLineWidth(value)
                         elif key == 'LineSize':
-                            self.getResult().setLineWidth(item)
+                            self.getResult().setLineWidth(value)
+
+                    if key == "addGraph" and value == True:
+                        if self.getCurDieX() != "" and self.getCurDieY() != "" and self.getCurDevX() != "" and self.getCurDevY() != "" and self.getCurMeas() != "":
+                            plots = []
+                            if self.getCurVal() == "":
+                                plots = self.findPlots(DieX=self.getCurDieX(), DieY=self.getCurDieY(), DevX=self.getCurDevX(), DevY=self.getCurDevY(), Measurement=self.getCurMeas())
+                            if self.getCurVal() != "":
+                                plots = self.findPlots(DieX=self.getCurDieX(), DieY=self.getCurDieY(), DevX=self.getCurDevX(), DevY=self.getCurDevY(), Measurement=self.getCurMeas(), ValueName=self.getCurVal())
+                            
+                            self.ResultWindow.updates.put({"AddGraph":plots})
+
+                '''
+                if self.appendGraph:
+                    if self.getCurDieX() != "" and self.getCurDieY() != "" and self.getCurDevX() != "" and self.getCurDevY() != "":
+                        if append == "Meas":
+                            plots = self.findPlots({"DieX": self.getCurDieX(), "DieY": self.getCurDieX(), "DevX": self.getCurDieX(), "DevY": self.getCurDieX(), 'Measurement': self.getCurMeas()})
+                            if plots == type(list):
+                                self.ResultWindow.updates.put({"Default": defaultValues})
+                                self.ResultWindow.updates.put({"AppendPlots": plots})
+                        if append == "Val":
+                            plots = self.findPlots({"DieX": self.getCurDieX(), "DieY": self.getCurDieX(), "DevX": self.getCurDieX(), "DevY": self.getCurDieX(), 'Measurement': self.getCurMeas(), 'ValueName': self.getCurVal()})
+                            if plots == type(list):
+                                self.ResultWindow.updates.put({"Default": defaultValues})
+                                self.ResultWindow.updates.put({"AppendPlots": plots})
+                '''
 
                 if upd != None:
                     self.ResultWindow.updates.put(upd)
                     self.updateCurFile(self.getResult())
-                
+
                 if updData:
                     res = self.getResult()
                     if res != None:
                         self.updateResultWindowGraph(res['Result'])
+                        
+            if self.Live:
+                if defaultValues != None and defaultValues != {}:
+                    self.ResultWindow.updates.put({"Default": defaultValues})
 
             tm.sleep(0.2)
 
@@ -754,6 +859,7 @@ class MeasurementResult():
         self.maxLength = int(MaxLength)
         self.dumpFile = ""
         self.dumped = False
+        self.graphDefinitions()
 
         self.errorQueue = errorQueue
 
@@ -761,12 +867,12 @@ class MeasurementResult():
         rowspan = 1
 
         self.data = []
-        self.dataInfo = []
-        dataInfo = {}
-        dataInfo["Row"] = row
-        dataInfo["Column"] = column
-        dataInfo["Rowspan"] = rowspan
-        dataInfo["Colspan"] = colspan
+        self.graphProp = []
+        graphProp = {}
+        graphProp["Row"] = row
+        graphProp["Column"] = column
+        graphProp["Rowspan"] = rowspan
+        graphProp["Colspan"] = colspan
 
         self.commonKeys = ['DieX', 'DieY', 'DevX', 'DevY', "Measurement"]
         self.commonInfo = {}
@@ -776,19 +882,23 @@ class MeasurementResult():
         for key, value in kwargs.items():
             if key in self.commonKeys:
                 self.commonInfo[key] = value
-            dataInfo[key] = value
-        
-        if dataInfo['MapCoordinates'][0] == None or dataInfo['MapCoordinates'][1] == None:
-            dataInfo["Map"] = False
-            self.data.append(np.array(data, dtype=float))
-        else:
-            dataInfo["Map"] = True
-            dataShape = (dataInfo['MapCoordinates'][0],dataInfo['MapCoordinates'][1])
-            self.data.append(np.zeros(dataShape, dtype=float))
-            self.data[-1][dataInfo['MapCoordinates'][0]][dataInfo['MapCoordinates'][1]] = data[0]
+            graphProp[key] = value
+        graphProp = self.initializeGraphData(data, graphProp)
 
-        self.dataInfo.append(dataInfo)
+        self.graphProp.append(graphProp)
     
+
+    def getTitle(self, graphProp):
+        gtitle = ""
+        gtitle = "Die X%dY%d, Dev. X%dY%d, Meas. %s" %(graphProp['DieX'], graphProp['DieY'], graphProp['DevX'], graphProp['DevY'], graphProp['Measurement'])
+        ptitle = ""
+        ptitle = "%s" %(graphProp['ValueName'])
+        
+        return {"GraphTitle": gtitle, "PlotTitle": ptitle} 
+
+    def getGraphProp(self):
+        return self.graphProp
+
     def isDataDumped(self):
         return self.dumped
 
@@ -796,8 +906,8 @@ class MeasurementResult():
         msg = "MeasurementResult: %s" %(msg)
         self.errorQueue.put(msg)
     
-    def getDataInfoByCell(self, row=-1, column=-1):
-        for n, d in enumerate(self.dataInfo):
+    def getgraphPropByCell(self, row=-1, column=-1):
+        for n, d in enumerate(self.graphProp):
             rowOcc = d['Row']
             colOcc = d['Column']
             if row == rowOcc and colOcc == column:
@@ -805,11 +915,51 @@ class MeasurementResult():
         return (None, None)
 
     def getDataByCell(self, row=-1, column=-1):
-        n, d = self.getDataInfoByCell(row, column)
+        n, d = self.getgraphPropByCell(row, column)
         if n != None:
             return cp.deepcopy(self.getData()[n])
         return None
+    
+    def initializeGraphData(self, data, graphProp):
+        
+        if graphProp['MapCoordinates'][0] == None or graphProp['MapCoordinates'][1] == None:
+            graphProp["Map"] = False
+            self.data.append(np.array(data, dtype=float))
+        else:
+            graphProp["Map"] = True
+            dataShape = (graphProp['MapCoordinates'][0],graphProp['MapCoordinates'][1])
+            self.data.append(np.zeros(dataShape, dtype=float))
+            self.data[-1][graphProp['MapCoordinates'][0]][graphProp['MapCoordinates'][1]] = data[0]
 
+
+        for key, value in self.getStdGraphProperties().items():
+            if not key in list(graphProp.keys()):
+                graphProp[key] = value
+
+        if not 'X' in graphProp.keys():
+            graphProp['X'] = False
+        if not 'Map' in graphProp.keys():
+            graphProp['Map'] = False
+
+        graphProp['PlotType'] = self.checkData(data, graphProp)
+        if 'LineStyle' in graphProp.keys():
+            graphProp['LineStyle'] = self.adjustInput(graphProp['LineStyle'], data, graphProp['PlotType'])
+        if 'LineWidth' in graphProp.keys():
+            graphProp['LineWidth'] = self.adjustInput(graphProp['LineWidth'], data, graphProp['PlotType'])
+        if 'ScatterStyle' in graphProp.keys():
+            graphProp['ScatterStyle'] = self.adjustInput(graphProp['ScatterStyle'], data, graphProp['PlotType'])
+        if 'ScatterSize' in graphProp.keys():
+            graphProp['ScatterSize'] = self.adjustInput(graphProp['ScatterSize'], data, graphProp['PlotType'])
+              
+        listLength = self.getRequiredLength(data, graphProp['PlotType'])
+        org = cp.deepcopy(graphProp['ColorTable'])
+        graphProp['ColorTable'] = []
+        while len(graphProp['ColorTable']) < listLength:
+            graphProp['ColorTable'].extend(org)
+        title = self.getTitle(graphProp)
+        graphProp['Title'] = title
+
+        return graphProp
 
     def getFolder(self):
         return ""
@@ -817,7 +967,7 @@ class MeasurementResult():
     def getMeasurementAndValueName(self):
         valNames = []
         measNames = []
-        for d in self.dataInfo:
+        for d in self.graphProp:
             if not d['ValueName'] in valNames:
                 valNames.append(d['ValueName'])
                 
@@ -834,15 +984,15 @@ class MeasurementResult():
         return ret
 
     def getFilename(self, row=-1, column=-1):
-        n, dataInfo = self.getDataInfoByCell(row, column)
-        if dataInfo == None:
+        n, graphProp = self.getgraphPropByCell(row, column)
+        if graphProp == None:
             return ""
         ret = "%sDieX%dY%d_DevX%dY%d_%s" %(self.getMeasurementAndValueName(),  self.commonInfo['DieX'], self.commonInfo['DieY'], self.commonInfo['DevX'], self.commonInfo['DevY'], self.commonInfo['Measurement'])
         return ret
     
     def cellAvailable(self, row, column, rowspan, colspan):
         avail = True
-        for d in self.dataInfo:
+        for d in self.graphProp:
             avail = False
             rowOcc = d['Row']
             colOcc = d['Column']
@@ -871,38 +1021,29 @@ class MeasurementResult():
             return False
         
         try:
-            dataInfo = {}
-            dataInfo["Row"] = row
-            dataInfo["Column"] = column
-            dataInfo["Rowspan"] = rowspan
-            dataInfo["Colspan"] = colspan
+            graphProp = {}
+            graphProp["Row"] = row
+            graphProp["Column"] = column
+            graphProp["Rowspan"] = rowspan
+            graphProp["Colspan"] = colspan
 
             self.graphPropKeys = list(kwargs.keys())
             self.graphPropKeys.extend(['Row', 'Column', 'Rowspan', 'Colspan', "Map"])
             for key, value in kwargs.items():
                 setattr(self, key, value)
-                dataInfo[key] = value
+                graphProp[key] = value
             
-            if dataInfo['MapCoordinates'][0] == None or dataInfo['MapCoordinates'][1] == None:
-                dataInfo["Map"] = False
-                self.data.append(np.array(data, dtype=float))
-            else:
-                dataInfo["Map"] = True
-                dataShape = (dataInfo['MapCoordinates'][0],dataInfo['MapCoordinates'][1])
-                self.data.append(np.zeros(dataShape, dtype=float))
-                self.data[-1][dataInfo['MapCoordinates'][0]][dataInfo['MapCoordinates'][1]] = data[0]
-
-            self.dataInfo.append(dataInfo)
+            graphProp = self.initializeGraphData(data, graphProp)  
+            self.graphProp.append(graphProp)
 
         except Exception as e:
             print(traceback.format_exc())
             self.putErrorQueue("Extend Data: Error: %s" %(e))
-            return False               
-        
+            return False
         return True
             
     def isDataInCell(self, row, column, valueName):
-        for d in self.dataInfo:
+        for d in self.graphProp:
             rowOcc = d['Row']
             colOcc = d['Column']
             valueNameOcc = d['ValueName']
@@ -913,7 +1054,7 @@ class MeasurementResult():
 
     def getOccupiedCells(self):
         cells = []
-        for d in self.dataInfo:
+        for d in self.graphProp:
             rowOcc = d['Row']
             colOcc = d['Column']
             rowSpanOcc = d['Rowspan']
@@ -938,10 +1079,10 @@ class MeasurementResult():
         if not isinstance(data, np.ndarray):
             data = np.array(data, dtype=float)
 
-        n, dataInfo = self.getDataInfoByCell(row, column)
+        n, graphProp = self.getgraphPropByCell(row, column)
         
-        MapCoordinates = dataInfo['MapCoordinates']
-        Map = dataInfo['Map']
+        MapCoordinates = graphProp['MapCoordinates']
+        Map = graphProp['Map']
         
         try:
             if not Map:
@@ -1006,11 +1147,11 @@ class MeasurementResult():
 
     def createGraphProp(self):
         ret = dict()
-        dataInfo= cp.deepcopy(self.dataInfo)
-        ret['GraphInfo'] = dataInfo
+        ret['GraphProp'] = self.graphProp
         ret['Data'] = self.getData()
         ret['Filename'] = self.getFilename()
         ret['Folder'] = self.getFolder()
+        ret = cp.deepcopy(ret)
         return ret
 
     def restoreData(self):
@@ -1019,8 +1160,8 @@ class MeasurementResult():
             self.data = pk.load(ResultFileObj)
             self.dumped = False
 
-    def getDataInfo(self, row=-1, column=-1):
-        return self.dataInfo
+    def getgraphProp(self, row=-1, column=-1):
+        return self.graphProp
 
     def getData(self, row=-1, column=-1):
         if self.isDataDumped():
@@ -1043,7 +1184,7 @@ class MeasurementResult():
             return True
 
         found = False
-        for d in self.dataInfo:
+        for d in self.graphProp:
             if d['Row'] == row and d['Column'] == column:       
                 if "ValueName" in kwargs.keys():
                     if kwargs['ValueName'] != d['ValueName']:
@@ -1061,14 +1202,144 @@ class MeasurementResult():
     
     def getValueNames(self):
         valName = []
-        for dataInfo in self.dataInfo:
-            if not dataInfo['ValueName'] in valName:
-                valName.append(dataInfo['ValueName'])
+        for graphProp in self.graphProp:
+            if not graphProp['ValueName'] in valName:
+                valName.append(graphProp['ValueName'])
         return valName
 
     def getMeasurements(self):
         meas = []
-        for dataInfo in self.dataInfo:
-            if not dataInfo['Measurement'] in meas:
-                meas.append(dataInfo['Measurement'])
+        for graphProp in self.graphProp:
+            if not graphProp['Measurement'] in meas:
+                meas.append(graphProp['Measurement'])
         return meas
+        
+    def getMeasurement(self):
+        meas = self.commonInfo['Measurement']
+        return meas
+    
+    def getStdGraphProperties(self):
+        return cp.deepcopy(self.standardGraphProp)
+    
+    
+    def graphDefinitions(self):
+        self.lineLookup = {}
+        self.lineLookup["-"] = QtCore.Qt.SolidLine
+        self.lineLookup["--"] = QtCore.Qt.DashLine
+        self.lineLookup["."] = QtCore.Qt.DotLine
+        self.lineLookup["-."] = QtCore.Qt.DashDotLine
+        self.lineLookup["-.."] = QtCore.Qt.DashDotDotLine
+
+        self.scatterLookup = ["o", "s", "t", "d", "+", "t1", "t2", "t3", "p", "h", "star", "x", "arrow_up", "arrow_right", "arrow_down", "arrow_left", "crosshair"]
+        
+        self.styleLookup = ['Line', "Scatter"]
+
+        self.labelSizeMin = 5
+        self.labelSizeStep = 1
+        self.labelSizeMax = 25
+
+        self.labelSizeLookup = list(np.arange(self.labelSizeMin,self.labelSizeMax+self.labelSizeMin, self.labelSizeStep))
+        self.labelSizeLookup = [x for x in self.labelSizeLookup]
+
+        self.lineWidthMin = 0.5
+        self.lineWidthStep = 0.5
+        self.lineWidthMax = 5
+        self.lineWidthLookup = list(np.arange(self.lineWidthMin,self.lineWidthMax+self.lineWidthMin, self.lineWidthStep))
+        self.lineWidthLookup = [x for x in self.lineWidthLookup]
+        
+        self.scatterSizeMin = 1
+        self.scatterSizeStep = 1
+        self.scatterSizeMax = 12
+        self.scatterSizeLookup = list(np.arange(self.scatterSizeMin,self.scatterSizeMax+self.scatterSizeMin, self.scatterSizeStep))
+        self.scatterSizeLookup = [x for x in self.scatterSizeLookup]
+
+        colorMapName = "tab10"
+        
+        self.standardGraphProp = {}
+        self.standardGraphProp['ColorTable'] = self._updateColorTable(colorMapName)
+        self.standardGraphProp['Xlabel'] = "A.U."
+        self.standardGraphProp['Ylabel'] = "A.U."
+        #self.standardGraphProp['Clabel'] = "Resistance ($\Omega$)"
+        self.standardGraphProp['Legend'] = None
+        self.standardGraphProp['Title'] = ""
+        self.standardGraphProp['X'] = True
+        self.standardGraphProp['Map'] = False
+        self.standardGraphProp['Xscale'] = 'lin'
+        self.standardGraphProp['Yscale'] = 'lin'
+        self.standardGraphProp['ValueName'] = ''
+        self.standardGraphProp['Filename'] = 'test'
+        self.standardGraphProp['Row'] = None
+        self.standardGraphProp['Column'] = None
+        self.standardGraphProp['Rowspan'] = 1
+        self.standardGraphProp['Colspan'] = 1
+        self.standardGraphProp['Append'] = False
+
+        self.standardGraphProp['Style'] = "Scatter"
+        self.standardGraphProp['LineStyle'] = list(self.lineLookup.keys())[0]
+        self.standardGraphProp['ScatterStyle'] = self.scatterLookup[0]
+        self.standardGraphProp['LineWidth'] = 5
+        self.standardGraphProp['ScatterSize'] = 8
+
+        
+    def checkData(self, data, GraphProp):
+        GraphProp['PlotType']='Y'
+        if not isinstance(data, (list, np.ndarray)):
+            raise ValueError("Data must be a one or more dimensional list of int/float.")
+        if not isinstance(data[0], (list, np.ndarray)):
+            GraphProp['PlotType']='Y'
+        else:
+            if GraphProp["Map"]:
+                GraphProp['PlotType'] = 'Map'
+            else:
+                if GraphProp['X']:
+                    GraphProp['PlotType'] ='XY'
+                else:
+                    GraphProp['PlotType'] ='YY'
+        return GraphProp['PlotType']
+
+        
+    def _updateColorTable(self, name):
+        cmapTemp = mpl.colormaps[name]
+        cmap = []
+        mult=255
+        for c in cmapTemp.colors:
+            cmap.append((int(mult*c[0]),int(mult*c[1]),int(mult*c[2])))
+        return cmap
+        
+    def adjustInput(self, input, data, plotType):
+        if not isinstance(input, list):
+            if isinstance(data, (list, np.ndarray)):
+                if plotType == "Y":
+                    return [input]
+                elif plotType == "XY":
+                    if len(np.shape(data)) == 3:
+                        return [input]*(len(data))
+                    elif len(np.shape(data)) == 2:
+                        return [input]*(len(data)-1)
+                    else:
+                        return [input]
+                elif plotType == "YY":
+                    return [input]*(len(data))
+            else:
+                return [input]
+        else:
+            return input
+        
+    def getRequiredLength(self, data, plotType):
+        if not isinstance(input, list):
+            if isinstance(data, (list, np.ndarray)):
+                if plotType == "Y":
+                    return 1
+                elif plotType == "XY":
+                    if len(np.shape(data)) == 3:
+                        return len(data)
+                    elif len(np.shape(data)) == 2:
+                        return len(data)-1
+                    else:
+                        return 1
+                elif plotType == "YY":
+                    return len(data)
+            else:
+                return 1
+        else:
+            return 0

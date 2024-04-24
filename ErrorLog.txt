@@ -1,27 +1,37 @@
-2024-04-11_17-13-53 - Echar - getTools - WGFMU - list index out of range
-2024-04-11_17-13-53 - Echar - getTools - Oscilloscope - 'NoneType' object is not subscriptable
-2024-04-11_17-13-53 - Echar - getTools - PG 81110A - list index out of range
-2024-04-11_17-13-53 - Echar - getTools - PulseGenerator - 'NoneType' object is not subscriptable
-2024-04-11_17-13-53 - ConfigurationFile: Die File does not exist.
-2024-04-11_17-13-53 - ConfigurationFile: Die File does not exist.
-2024-04-11_17-13-53 - ConfigurationFile: Die File does not exist.
-2024-04-11_17-13-53 - WGFMU WGFMUUseGUI state could not be loaded
-2024-04-11_17-13-53 - Spec File: -- does not exist.
-2024-04-11_17-13-53 - Config Get: Variable '$ADC$_None_$HS$_$Mode$' does not exist in Configuration.
-2024-04-11_17-13-53 - Config Get: Variable '$ADC$_$HS$_$N$' does not exist in Configuration.
-2024-04-11_17-13-53 - Config Get: Variable '$ADC$_None_$HR$_$Mode$' does not exist in Configuration.
-2024-04-11_17-13-53 - Config Get: Variable '$ADC$_$HR$_$N$' does not exist in Configuration.
-2024-04-11_17-13-53 - Config Get: Variable '$ADC$_None_$HS$_$Mode$' does not exist in Configuration.
-2024-04-11_17-13-53 - Config Get: Variable '$ADC$_$HS$_$N$' does not exist in Configuration.
-2024-04-11_17-13-53 - Config Get: Variable '$ADC$_None_$HR$_$Mode$' does not exist in Configuration.
-2024-04-11_17-13-53 - Config Get: Variable '$ADC$_$HR$_$N$' does not exist in Configuration.
-2024-04-11_17-13-53 - Config Get: Variable 'ResultRow' does not exist in Configuration.
-2024-04-11_17-13-53 - Config Get: Variable 'ResultColumn' does not exist in Configuration.
-2024-04-11_17-13-53 - Config Get: Variable '$$ProberWindow$$_ChuckScope' does not exist in Configuration.
-2024-04-11_17-13-53 - Config Get: Variable '$$ProberWindow$$_Chuck_MoveX' does not exist in Configuration.
-2024-04-11_17-13-53 - Config Get: Variable '$$ProberWindow$$_Chuck_MoveY' does not exist in Configuration.
-2024-04-11_17-13-53 - Config Get: Variable '$$ProberWindow$$_Chuck_MoveXIndex' does not exist in Configuration.
-2024-04-11_17-13-53 - Config Get: Variable '$$ProberWindow$$_Chuck_MoveYIndex' does not exist in Configuration.
-2024-04-11_17-13-53 - Config Get: Variable '$$ProberWindow$$_Chuck_Velocity' does not exist in Configuration.
-2024-04-11_17-13-53 - None is not a Keysight Mainframe (i.e. B1500A)
-2024-04-11_17-13-53 - None is not a Keysight Mainframe (i.e. B1500A)
+2024-04-23_17-50-58 - Measurement is currently running.
+2024-04-23_17-50-58 - Echar - getTools - Oscilloscope - 'NoneType' object is not subscriptable
+2024-04-23_17-50-58 - Echar - getTools - PG 81110A - list index out of range
+2024-04-23_17-50-58 - Echar - getTools - PulseGenerator - 'NoneType' object is not subscriptable
+2024-04-23_17-50-58 - ConfigurationFile: Die File does not exist.
+2024-04-23_17-50-58 - ConfigurationFile: Die File does not exist.
+2024-04-23_17-50-58 - WGFMU WGFMUUseGUI state could not be loaded
+2024-04-23_17-50-58 - Spec File: -- does not exist.
+2024-04-23_17-50-58 - Config Get: Variable '$ADC$_$HS$_$N$' does not exist in Configuration.
+2024-04-23_17-50-58 - Config Get: Variable '$ADC$_$HR$_$N$' does not exist in Configuration.
+2024-04-23_17-50-58 - Config Get: Variable '$ADC$_GPIB0::17::INSTR_$SMU1$' does not exist in Configuration.
+2024-04-23_17-50-58 - Config Get: Variable '$ADC$_GPIB0::17::INSTR_$SMU2$' does not exist in Configuration.
+2024-04-23_17-50-58 - Config Get: Variable '$ADC$_GPIB0::17::INSTR_$SMU3$' does not exist in Configuration.
+2024-04-23_17-50-58 - Config Get: Variable '$ADC$_None_$HS$_$Mode$' does not exist in Configuration.
+2024-04-23_17-50-58 - Config Get: Variable '$ADC$_$HS$_$N$' does not exist in Configuration.
+2024-04-23_17-50-58 - Config Get: Variable '$ADC$_None_$HR$_$Mode$' does not exist in Configuration.
+2024-04-23_17-50-58 - Config Get: Variable '$ADC$_$HR$_$N$' does not exist in Configuration.
+2024-04-23_17-50-58 - Config Get: Variable '$ToolRank$_GPIB0::17::INSTR' does not exist in Configuration.
+2024-04-23_17-50-58 - Config Get: Variable '$ToolRank$_GPIB0::17::INSTR' does not exist in Configuration.
+2024-04-23_17-50-58 - Config Get: Variable 'ResultRow' does not exist in Configuration.
+2024-04-23_17-50-58 - Config Get: Variable 'ResultColumn' does not exist in Configuration.
+2024-04-23_17-50-58 - Config Get: Variable '$$ProberWindow$$_ChuckScope' does not exist in Configuration.
+2024-04-23_17-50-58 - Config Get: Variable '$$ProberWindow$$_Chuck_MoveX' does not exist in Configuration.
+2024-04-23_17-50-58 - Config Get: Variable '$$ProberWindow$$_Chuck_MoveY' does not exist in Configuration.
+2024-04-23_17-50-58 - Config Get: Variable '$$ProberWindow$$_Chuck_MoveXIndex' does not exist in Configuration.
+2024-04-23_17-50-58 - Config Get: Variable '$$ProberWindow$$_Chuck_MoveYIndex' does not exist in Configuration.
+2024-04-23_17-50-58 - Config Get: Variable '$$ProberWindow$$_Chuck_Velocity' does not exist in Configuration.
+2024-04-23_17-50-58 - None is not a Keysight Mainframe (i.e. B1500A)
+2024-04-23_17-51-06 - E-Char FE Endurance Data Analysis, Queue Empty: True, Finished False, Error 
+2024-04-23_17-51-07 - E-Char FE Endurance Data Analysis, Queue Empty: True, Finished False, Error 
+2024-04-23_17-51-08 - E-Char FE Endurance Data Analysis, Queue Empty: True, Finished False, Error 
+2024-04-23_17-51-08 - E-Char FE Endurance Data Analysis, Queue Empty: True, Finished False, Error 
+2024-04-23_17-51-09 - E-Char FE Endurance Data Analysis, Queue Empty: True, Finished False, Error 
+2024-04-23_17-51-09 - Instruments: All sequences are completed and all data is ready to read
+2024-04-23_17-51-10 - E-Char FE Endurance Data Analysis, Queue Empty: True, Finished False, Error 
+2024-04-23_17-51-10 - Instruments: WGFMU: Measurement finished
+2024-04-23_17-51-11 - E-Char FE Endurance Data Analysis, Queue Empty: True, Finished True, Error 

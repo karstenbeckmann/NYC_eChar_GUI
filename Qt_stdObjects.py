@@ -466,7 +466,8 @@ class SMURange(QtWidgets.QComboBox):
             self.removeItem(0)
         self.setEditable(False)
 
-class stdFrame(QtWidgets.QWidget):
+
+class stdFrame(QtWidgets.QFrame):
 
     def __init__(self, parent, MainGI, width=None, height=None, threads=None, **kwargs):
 
@@ -561,10 +562,10 @@ class stdFrameGrid(stdFrame):
         self.layout = QtWidgets.QGridLayout(self)
         
         for n in range(columns):
-            self.layout.setColumnMinimumWidth(n+1, int(self.ColumnWidth))
+            self.layout.setColumnMinimumWidth(n, int(self.ColumnWidth))
         
         for n in range(rows):
-            self.layout.setRowMinimumHeight(n+1, int(self.RowHeight))
+            self.layout.setRowMinimumHeight(n, int(self.RowHeight))
 
     def __getattr__(self, item):
         return getattr(self.parent(), item)
@@ -605,21 +606,24 @@ class TabWidget(QtWidgets.QTabWidget):
         if "alignment" in kwargs:
             self.setAlignment(kwargs['alignment'])
 
-class Checkbutton(QtWidgets.QCheckBox):
+class CheckBox(QtWidgets.QCheckBox):
     
-    def __init__(self, parent, MainGI, valueName, *args, **kwargs):
+    def __init__(self, parent, MainGI, valueName, text=None, *args, **kwargs):
         
         '''
             parent: parent widget
             Configuration: private config class 
             valueName: Value name associated with configuration class 
-            *args: arguments from ttk.Checkbutton
-            **kwargs: keyword arguments form ttk.Checkbutton
+            **kwargs: keyword arguments form ttk.CheckBox
 
             The validatecommand is automatically created, please use the writeFunc
         '''
 
-        super().__init__(parent)
+        if text == None:
+            super().__init__(parent)
+        else: 
+            super().__init__(text, parent)
+
 
         self.MainGI = MainGI
         self.Configuration = MainGI.Configuration
@@ -628,7 +632,7 @@ class Checkbutton(QtWidgets.QCheckBox):
         self.parent = parent
 
         self.AddCommand = None
-
+        
         if 'command' in kwargs:
             self.AddCommand = kwargs['command']
 
@@ -636,7 +640,7 @@ class Checkbutton(QtWidgets.QCheckBox):
         self.setVariable(initValue)
        
         self.MainGI.addWidgetVariables(self, self.valueName)
-        self.clicked.connect(self.callFunc)
+        self.stateChanged.connect(self.callFunc)
     
     def getVariable(self):
         return self.isChecked()
@@ -681,6 +685,8 @@ class ComboBox(QtWidgets.QComboBox):
         self.Type = Type
         self.items = items
 
+        self.setPlaceholderText("")
+
         self.AddCommand = None
         if 'command' in kwargs:
             self.AddCommand = kwargs['command']
@@ -717,7 +723,7 @@ class ComboBox(QtWidgets.QComboBox):
         if self.width != None:
             self.setFixedWidth(self.width)
         
-        self.currentIndexChanged.connect(self.callFunc)
+        self.activated.connect(self.callFunc)
 
     def getVariable(self):
         
@@ -741,6 +747,7 @@ class ComboBox(QtWidgets.QComboBox):
                 pass
     
     def callFunc(self, index):
+        
         value = self.itemText(index)
         if isinstance(self.items, dict):
             value = self.items[value]

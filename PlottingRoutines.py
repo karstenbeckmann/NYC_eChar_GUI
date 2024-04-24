@@ -357,9 +357,6 @@ class WaferMap(plottingRoutine):
             self.data = np.empty((len(self.yticks), len(self.xticks)), np.longdouble)
             self.data[:] = np.nan
                 
-            
-            print("update", darkdetect.isDark())
-
             if darkdetect.isDark():
                 plt.style.use('dark_background')
             else:
