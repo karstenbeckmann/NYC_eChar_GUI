@@ -32,7 +32,6 @@ import traceback
 import StatisticalAnalysis as dh
 
 
-
 def WGFMUSetChannelParameters(eChar, Configuration, Instruments):
 
     if Configuration.getValue("WGFMUUseGUI") and len(Instruments.getInstrumentsByType("B1530A")) != 0:
@@ -186,6 +185,9 @@ def MesurementExecutionPS(deviceCharacterization, eChar, Configuration, threads,
         initPos = ProStat.ReadChuckPosition("X","C")
         eChar.writeMeasLog("Initial Position (um): %s" %(initPos))
 
+        if initPos == None:
+            initPos = [0,0]
+
 
     if Configuration.getUseMatrix() and Configuration.getMatrixConfiguration() == None:
         eChar.writeLog("You selected to use the Matrix but no Matrix Configuration is specified.")
@@ -296,13 +298,10 @@ def MesurementExecutionPS(deviceCharacterization, eChar, Configuration, threads,
     lenDies = len(dies)
 
     MultipleDies = Configuration.getMultipleDies()
-
-
     
     die0 = []
-    for n, x in enumerate(initPos[0:2]):
-        die0.append(int(round(float(x)+Configuration.getCenterLocation()[n])))
-        n+=1
+    die0.append(int(round((float(initPos[0])+Configuration.getCenterLocation()[0])/(1000*Configuration.DieSizeX())))) # X
+    die0.append(int(round((float(initPos[1])+Configuration.getCenterLocation()[1])/(1000*Configuration.DieSizeY())))) # Y
 
     if not MultipleDies:
         lenDies = 1

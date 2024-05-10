@@ -670,22 +670,23 @@ class PlotWidget(pg.PlotWidget):
         self.updateChuckLocation()
     
     def updateChuckLocation(self):
-        if self.currentLocation != None:
-            
-            try:
-                self.plotItem.removeItem(self.roi_LocDot)
-            except AttributeError:
-                pass
+        if isinstance(self.currentLocation, list):
+            if len(self.currentLocation) > 1:
 
-            x = self.currentLocation[0]/self.dieSizeX/1000 + self.waferSize/self.dieSizeX/2
-            y = self.currentLocation[1]/self.dieSizeY/1000 + self.waferSize/self.dieSizeY/2
-            d = 0.5
-            w = d
-            h = d *self.dieSizeX / self.dieSizeY
-            color = QtGui.QColor(0,27,173,60)
-            borCol = QtGui.QColor(0,39,250,120)
-            self.roi_LocDot = LocationDot(x,y,w,h,color=color, borderColor=borCol)
-            self.plotItem.addItem(self.roi_LocDot)
+                try:
+                    self.plotItem.removeItem(self.roi_LocDot)
+                except AttributeError:
+                    pass
+
+                x = self.currentLocation[0]/self.dieSizeX/1000 + self.waferSize/self.dieSizeX/2
+                y = self.currentLocation[1]/self.dieSizeY/1000 + self.waferSize/self.dieSizeY/2
+                d = 0.5
+                w = d
+                h = d *self.dieSizeX / self.dieSizeY
+                color = QtGui.QColor(0,27,173,60)
+                borCol = QtGui.QColor(0,39,250,120)
+                self.roi_LocDot = LocationDot(x,y,w,h,color=color, borderColor=borCol)
+                self.plotItem.addItem(self.roi_LocDot)
 
         self.updateWaferRotation(self.waferRotation)
 

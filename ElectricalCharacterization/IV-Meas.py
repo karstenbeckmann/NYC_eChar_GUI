@@ -260,10 +260,10 @@ def IVsweep(eChar, SweepSMU, start, stop, steps, VorI, Compl, Double, Log, DCSMU
         Xlab = "Voltage"
         xUnit = "V"
         Ylab = "Current"
-        yUnit = "I"
+        yUnit = "A"
     else:
         Xlab = "Current"
-        xUnit = "I"
+        xUnit = "A"
         Ylab = "Voltage"
         yUnit = "V"
 
