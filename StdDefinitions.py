@@ -300,8 +300,8 @@ def MesurementExecutionPS(deviceCharacterization, eChar, Configuration, threads,
     MultipleDies = Configuration.getMultipleDies()
     
     die0 = []
-    die0.append(int(round((float(initPos[0])+Configuration.getCenterLocation()[0])/(1000*Configuration.DieSizeX())))) # X
-    die0.append(int(round((float(initPos[1])+Configuration.getCenterLocation()[1])/(1000*Configuration.DieSizeY())))) # Y
+    die0.append(int(round((float(initPos[0])+Configuration.getCenterLocation()[0])/(1000*Configuration.getDieSizeX())))) # X
+    die0.append(int(round((float(initPos[1])+Configuration.getCenterLocation()[1])/(1000*Configuration.getDieSizeY())))) # Y
 
     if not MultipleDies:
         lenDies = 1
