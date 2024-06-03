@@ -453,6 +453,7 @@ class ResultHandling():
         self.Results = []
         self.ID = 0
         self.setLive()
+        self.CurResult = 0
     
         self.dieXValues = ['']
         self.dieYValues = ['']

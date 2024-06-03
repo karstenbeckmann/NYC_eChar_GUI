@@ -119,7 +119,7 @@ class Agilent_B1500A():
         self.SMUChns = []
         self.CMUChns = []
         
-        for n, module in enumerate(modules):
+        for module in modules:
             module = module.split(',')[0]
             self.Modules.append(module)
             if module == "B1511A" or module == "B1511B":

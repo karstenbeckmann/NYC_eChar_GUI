@@ -684,7 +684,7 @@ def PulseForming(eChar, PulseChn, GroundChn, Vform, delay, trise, tfall, twidth,
     
     header.extend(newline)
     
-    PulseIVDataPrepAndExport(eChar, SepData, header, eChar.curCycle, MeasPoints, 'PulseForming')
+    PulseIVDataPrepAndExport(eChar, SepData, header, eChar.curCycle, MeasPoints)
 
     res = {'Header':header, 'IVdata': SepData['IVdata'], 'Vform':SepData['Vset'], 'LRS':SepData['LRS'], 'HRS':SepData['HRS'], 'ImaxSet': SepData['ImaxSet']}
 
@@ -694,10 +694,10 @@ def PulseForming(eChar, PulseChn, GroundChn, Vform, delay, trise, tfall, twidth,
         Trac = [SepData['IVdata'][3],SepData['IVdata'][1]] 
         
     eChar.plotIVData({"Traces":Trac, 'Xaxis': True, 'Xlabel': 'Voltage (V)', "Ylabel": 'Current (A)', 'Title': "Forming", "ValueName": 'IV'})
-    HRS = eChar.dhValue(eChar, SepData['HRS'][0], 'FirstHRS', Unit='ohm')
-    LRS = eChar.dhValue(eChar, SepData['LRS'][0], 'FirstLRS', Unit='ohm')
-    ImaxForm = eChar.dhValue(eChar, SepData['ImaxSet'][0], 'ImaxForm', Unit='A')
-    Vform = eChar.dhValue(eChar, SepData['Vset'][0], 'Vform', Unit='V')
+    HRS = eChar.dhValue(SepData['HRS'][0], 'FirstHRS', Unit='ohm')
+    LRS = eChar.dhValue(SepData['LRS'][0], 'FirstLRS', Unit='ohm')
+    ImaxForm = eChar.dhValue(SepData['ImaxSet'][0], 'ImaxForm', Unit='A')
+    Vform = eChar.dhValue(SepData['Vset'][0], 'Vform', Unit='V')
     
     row = eChar.dhAddRow([HRS,LRS,ImaxForm,Vform], eChar.curCycle,eChar.curCycle)
 
@@ -797,7 +797,7 @@ def PulseSet(eChar, PulseChn, GroundChn, Vform, delay, trise, tfall, twidth, tba
     
     header.extend(newline)
 
-    PulseIVDataPrepAndExport(eChar, SepData, header, eChar.curCycle, MeasPoints, 'PulseSet')
+    PulseIVDataPrepAndExport(eChar, SepData, header, eChar.curCycle, MeasPoints)
 
     res = {'Header':header, 'IVdata': SepData['IVdata'], 'LRS':SepData['LRS'], 'HRS':SepData['HRS'], 'ImaxSet': SepData['ImaxSet']}
 
@@ -917,7 +917,7 @@ def PulseReset(eChar, PulseChn, GroundChn, Vform, delay, trise, tfall, twidth, t
     
     header.extend(newline)
 
-    PulseIVDataPrepAndExport(eChar, SepData, header, eChar.curCycle, MeasPoints, 'PulseReset')
+    PulseIVDataPrepAndExport(eChar, SepData, header, eChar.curCycle, MeasPoints)
 
     res = {'Header':header, 'IVdata': SepData['IVdata'], 'LRS':SepData['LRS'], 'HRS':SepData['HRS'], 'ImaxReset': SepData['ImaxReset']}
 
@@ -1094,7 +1094,7 @@ def PulseIV(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tfallS, twi
     
     header.extend(newline)
 
-    PulseIVDataPrepAndExport(eChar, SepData, header, eChar.curCycle, MeasPoints, 'PulseIV')
+    PulseIVDataPrepAndExport(eChar, SepData, header, eChar.curCycle, MeasPoints)
 
     if ret[3]["Name"][0].lower() == "i":
         Trac = [SepData['IVdata'][1],SepData['IVdata'][3]] 
