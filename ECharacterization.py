@@ -267,6 +267,7 @@ class ECharacterization:
         self.IVcyc = []
         self.curCycle = 1
 
+
     def checkInstrumentation(self):
         try:
             self.Instruments.checkInstrumentation()
@@ -656,6 +657,7 @@ class ECharacterization:
             return "stop"
 
     def executeMeasurement(self, folder, name, parameters):
+        print(self.deviceCharacterization)
         self.reset(full=False, deviceLevel=False)
         self.updateTime()
         try:

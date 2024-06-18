@@ -32,6 +32,7 @@ import traceback
 import StatisticalAnalysis as dh
 
 
+
 def WGFMUSetChannelParameters(eChar, Configuration, Instruments):
 
     if Configuration.getValue("WGFMUUseGUI") and len(Instruments.getInstrumentsByType("B1530A")) != 0:
@@ -64,6 +65,7 @@ def WGFMUSetChannelParameters(eChar, Configuration, Instruments):
 def MesurementExecution(deviceCharacterization, eChar, Configuration, threads, GraInterface, Instruments, MeasurementSetup):
     #try:
         WGFMUSetChannelParameters(eChar, Configuration, Instruments)
+        verifyB1530DCmode(Instruments, Configuration, deviceCharacterization)
         Prober =  Instruments.getProberInstrument()
 
         # of Experiments
@@ -162,7 +164,6 @@ def MesurementExecutionWPS(deviceCharacterization, eChar, Configuration, threads
 
 
     for entry in deviceCharacterization:
-        
         ret = eChar.executeMeasurement(entry['Folder'], entry['Name'], entry['Parameters']) 
         if ret == "stop":
             break
@@ -184,9 +185,6 @@ def MesurementExecutionPS(deviceCharacterization, eChar, Configuration, threads,
         ProStat = Instruments.getProberInstrument()
         initPos = ProStat.ReadChuckPosition("X","C")
         eChar.writeMeasLog("Initial Position (um): %s" %(initPos))
-
-        if initPos == None:
-            initPos = [0,0]
 
 
     if Configuration.getUseMatrix() and Configuration.getMatrixConfiguration() == None:
@@ -298,10 +296,13 @@ def MesurementExecutionPS(deviceCharacterization, eChar, Configuration, threads,
     lenDies = len(dies)
 
     MultipleDies = Configuration.getMultipleDies()
+
+
     
     die0 = []
-    die0.append(int(round((float(initPos[0])+Configuration.getCenterLocation()[0])/(1000*Configuration.getDieSizeX())))) # X
-    die0.append(int(round((float(initPos[1])+Configuration.getCenterLocation()[1])/(1000*Configuration.getDieSizeY())))) # Y
+    for n, x in enumerate(initPos[0:2]):
+        die0.append(int(round(float(x)+Configuration.getCenterLocation()[n])))
+        n+=1
 
     if not MultipleDies:
         lenDies = 1
@@ -490,7 +491,6 @@ def MesurementExecutionPS(deviceCharacterization, eChar, Configuration, threads,
                                     
                                     logEntry = "execute '%s' in Folder '%s' with Parameters: %s" %(entry['Name'], entry['Folder'], parList)
                                     eChar.writeLog(logEntry)
-
                                     ret = eChar.executeMeasurement(entry['Folder'], entry['Name'], parList) 
                                     if ret == "stop":
                                         stop = True
@@ -532,7 +532,6 @@ def MesurementExecutionPS(deviceCharacterization, eChar, Configuration, threads,
                                     parList = entry["Parameters"]
                                     logEntry = "execute '%s' in Folder '%s' with Parameters: %s" %(entry['Name'], entry['Folder'], parList)
                                     eChar.writeLog(logEntry)
-                                    
                                     ret = eChar.executeMeasurement(entry['Folder'], entry['Name'], parList) 
                                     if ret == "stop":
                                         stop = True
@@ -1019,13 +1018,13 @@ def HandleMeasurementFile(MeasFile, ReadWrite=True):
                                 if row[0].strip().lower() == "folder":
                                     Folder = "".join(row[1:]).strip()
                                 if row[0].strip().lower() == "tools":
-                                    Tools = row[1:]
+                                    Tools = [x.strip() for x in row[1:]]
                                 if row[0].strip().lower() == "variablename":
-                                    VariableName = row[1:]
+                                    VariableName = [x.strip() for x in row[1:]]
                                 if row[0].strip().lower() == "default":
-                                    Default = row[1:]
+                                    Default = [x.strip() for x in row[1:]]
                                 if row[0].strip().lower() == "datatype":
-                                    DataType = row[1:]
+                                    DataType = [x.strip() for x in row[1:]]
                                     if not len(DataType) == len(Default) or not len(DataType) == len(VariableName):
                                         raise ValueError("The Measurment File is not in the correct format! (Line: %d)" %(nRow))
                                     
@@ -1932,3 +1931,22 @@ def getIntegerToBinaryArray(integer, bits, high=True, low=False):
             ret.append(high)
             
     return ret
+
+
+def verifyB1530DCmode(Instruments, Configuration, deviceCharacterization):
+    #set all WGFMUs to SMU mode if WGFMU is not used in any measurement but there is a WGFMU available. 
+
+    if len(Instruments.getInstrumentsByType("B1530A")) == 0:
+        return True
+
+    usedTools = []
+    for entry in deviceCharacterization:
+        det = Configuration.getMeasurementDetail(entry['Name'], entry['Folder'])
+        usedTools.extend(det['Tools'])
+    
+    if not "B1530A" in usedTools:
+        for entry in Instruments.getInstrumentsByType("B1530A"):
+            inst = entry['Instrument']
+            chns = inst.getChannelIDs()['Channels']
+            for chn in chns:
+                inst.setChannelParameter(chn, 2003)

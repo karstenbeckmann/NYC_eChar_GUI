@@ -201,13 +201,15 @@ class Agilent_B1530A:
     STB_REP_TIME = 10 #in seconds
 
     def __init__(self, GPIB, instrument=None, online=False, ChannelIDs=None, calibration=False, selfTest=False, VForceRange=None, VMeasureRange=None, 
-                    IMeasureRange=None, VForceDelay=None, MeasureDelay=None, MeasureMode=None, TriggerOutputMode=None, TriggerOutputPolarity=None, B1500=None):
+                    IMeasureRange=None, VForceDelay=None, MeasureDelay=None, MeasureMode=None, TriggerOutputMode=None, TriggerOutputPolarity=None, B1500=None, debug=False):
         
         if instrument == None:
             self.__inst = WinDLL("C:/Windows/System32/wgfmu.dll")
         else:
             self.__inst = instrument
         
+        self.printOutput = debug
+
         self.__B1500A = B1500
         self.__GPIB = GPIB
 
@@ -384,6 +386,8 @@ class Agilent_B1530A:
         
         self.setOperationMode(chn, operationMode)
         if operationMode == 2003: 
+            self.turnOnline(synchronize=True)
+            self.turnOffline()
             return
 
         if forceVoltageRange != None:
@@ -1045,7 +1049,6 @@ class Agilent_B1530A:
         if not Mode in [2000,2001,2002,2003]:
             self.ValError("The Mode number must be between 2000 and 2003. (%s)" %(Mode))
         self.__OperationMode[self.__getChnIndex(chn)] = Mode
-       
         if self.__online:
             self.__write("WGFMU_setOperationMode(%s,%s)"%(chn, Mode))
             self.checkError(self.__inst.WGFMU_setOperationMode(chn, Mode))

@@ -1211,7 +1211,6 @@ class PlotWidget(pg.GraphicsLayoutWidget):
         mult=255
         for c in cmapTemp.colors:
             cmap.append((int(mult*c[0]),int(mult*c[1]),int(mult*c[2])))
-
         return cmap
 
     def updateColorTable(self, name):
