@@ -1026,8 +1026,8 @@ class ProbeMaster:
     #The command gets the actual wafer size which is stored in the electronics.
     def ReadChuckIndex(self, Pos=1):
         output = None
-        ret = self.instQuery("getdie" )
-        if not type(None):
+        ret = self.instQuery("getdie")
+        if ret != type(None):
             ret = ret.split(',')
             output = []
             for x in ret:
@@ -1037,18 +1037,13 @@ class ProbeMaster:
     #Returns the actual chuck stage position in X, Y and Z. The default Compensation Mode is the currently activated compensation mode of the kernel. 
     def ReadChuckPosition(self, Unit="Y", PosRef="H"):
         output = None
-        ret = self.instQuery("ReadChuckPosition %s %s" %(Unit, PosRef))
-        if not ret == None:
-            ret = ret.split(' ')[1:]
+        ret = self.instQuery("getdie")
+        if ret != type(None):
+            ret = ret.split(',')
             output = []
-            first = True
             for x in ret:
-                if first:
-                    output.append(-float(x))
-                else:
-                    output.append(-float(x))
-                first = False
-            return output
+                output.append(float(x))
+        return output
 
     def ReadChuckPositionX(self, Unit="Y", PosRef="H"):
         ret = self.instQuery("getscope")

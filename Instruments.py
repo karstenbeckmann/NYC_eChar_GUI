@@ -153,6 +153,7 @@ class Instruments:
             if GPIB.find("GPIB") != -1 or GPIB.find("TCPIP") != -1:
 
                 try:
+                    ## disable RST when using Keith Perkins probe station at NRL
                     stb = instrument.write("*RST")
                     tm.sleep(0.05)
                 except:
@@ -164,9 +165,14 @@ class Instruments:
                 contin = False
                 while tryTime > curTime:
                     
-                        
                     try:
+                        
                         stb = instrument.query("*STB?")
+                        
+                        #excluding Keith Perkins Probe Station Instrument
+                        if stb.strip() == "#-1":
+                            stb = 0
+                            break
                         
                         try:
                             stb = int(stb)
@@ -936,8 +942,12 @@ class Instruments:
                         try:
                             stb = int(stb)
                         except ValueError:
-                            stb = int(stb.split(" ")[1].strip())       
-                        if stb == 0:
+                            # if it cant split the results, it is likely to be Keith perkins probe station --> set stb = 0
+                            try:
+                                stb = int(stb.split(" ")[1].strip())
+                            except IndexError:
+                                stb = 0     
+                        if stb != 0:
                             stb = inst.read_stb()
                             try:
                                 stb = int(stb)

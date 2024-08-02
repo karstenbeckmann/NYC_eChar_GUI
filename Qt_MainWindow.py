@@ -293,7 +293,6 @@ class MainUI(QtWidgets.QMainWindow):
         self.ProberWindow.hide()
 
         self.tabs.addTab(self.MatrixTable, "Matrix")
-        
         self.tabs.addTab(self.SpecTable, "Specs")
 
         self.ResultHandling = RH.ResultHandling(self, self.ResultWindow)
