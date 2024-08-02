@@ -70,10 +70,11 @@ class Configuration:
         self.ResultGraphStyle = None
         self.ResultGraphWidth = None
         self.ResultGraphColor = None
-        self.AvailableDieMaps = [0,1,2,3,4]
+        self.AvailableDieMaps = ["",0,1,2,3,4]
         self.LogOn = False
         self.MaxInfoLogFileSize = 1e9
         self.MaxErrorLogFileSize = 1e9
+        self.AutoSaveConfig = False
 
 
         self.CurrentMeasurementType = 'Full Wafer'
@@ -94,7 +95,6 @@ class Configuration:
             File = os.path.join(cwd,configFile)
         else:
             File = configFile
-
         wp = std.HandleConfigFile(File,True)
         for key, value in wp.items():
             if key == "Mainfolder":
@@ -377,7 +377,8 @@ class Configuration:
                 vars(self)[key] = int(value)
             if key == "ResultWindowMon":
                 vars(self)[key] = int(value)
-
+            if key == "AutoSaveConfig":
+                vars(self)[key] = bool(value)
             self.UpdateMultipleDev()
 
         self.computerName = os.environ['COMPUTERNAME']
@@ -388,7 +389,6 @@ class Configuration:
         self.UpdateMeasurementFile(self.ErrorQueue)
 
     def setValue(self, name, value, outputError=True):
-
         try: 
             vars(self)[name] = value
             return True
@@ -398,7 +398,6 @@ class Configuration:
             return False
     
     def getValue(self, name, outputError=True):
-
         try: 
             ret = vars(self)[name.strip()]
             return ret
@@ -406,6 +405,13 @@ class Configuration:
             if outputError:
                 self.ErrorQueue.put("Config Get: Variable '%s' does not exist in Configuration." %(name))
             return None
+
+    def setAutoSaveConfig(self, state):
+        self.AutoSaveConfig = state
+        
+
+    def getAutoSaveConfig(self):
+        return self.AutoSaveConfig
 
     def getComputerName(self):
         return self.computerName
@@ -560,8 +566,9 @@ class Configuration:
 
     def UpdateDies(self, ErrQu=ErrorQueue):
         if self.DieFile == "":
-            if self.DieMap == -1:
-                self.DieMap = 0
+            if self.DieMap == -1 or self.DieMap == "":
+                self.Dies = []
+                return None
             self.Dies = std.CreateDiePattern(self.DieMap,self.WaferSize,self.DieSizeX,self.DieSizeY, [self.CenterLocationX/100,self.CenterLocationY/100])
         else:
             Dies = []

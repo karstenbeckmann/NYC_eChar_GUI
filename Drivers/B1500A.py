@@ -33,8 +33,8 @@ class Agilent_B1500A():
     label = []
     HSMOutput = []
     MainFrame = 'B1500A'
-    Modules = []
-    ModuleDesc = []
+    Modules = ["B1505A"]
+    ModuleDesc = ['GNDU']
     ParameterOutput = []
     VoltageName = ['V1','V2','V3','V4','V5','V6','V7','V8']
     CurrentName = ['I1','I2','I3','I4','I5','I6','I7','I8']
@@ -93,11 +93,15 @@ class Agilent_B1500A():
         
         else:
                 self.inst = Device
-
-        self.instWrite("*IDN?\n")
-        tm.sleep(0.1)
+        
+        self.instWrite("*IDN?")
+        tm.sleep(0.05)
         ret = self.instRead()
-        if ret.strip() == "Agilent Technologies,B1500A,0,A.05.50.2013.0417\r\n".strip() or ret.strip() ==  "Agilent Technologies,B1500A,0,A.04.10.2010.0531".strip():
+        allowedTools = []
+        allowedTools.append("Agilent Technologies,B1500A,0,A.05.50.2013.0417")
+        allowedTools.append("Agilent Technologies,B1500A,0,A.04.10.2010.0531")
+        allowedTools.append("Agilent Technologies,B1500A,0,A.06.02.2022.0401") # NRL Keith Perkins
+        if ret.strip() in allowedTools:
             self.write("You are using the %s" %(ret[:-2]))
         else:
             SystemError("You are using the wrong agilent tool!")
@@ -117,7 +121,6 @@ class Agilent_B1500A():
         
         for module in modules:
             module = module.split(',')[0]
-
             self.Modules.append(module)
             if module == "B1511A" or module == "B1511B":
                 self.SMUChns.append(n)
@@ -148,6 +151,8 @@ class Agilent_B1500A():
                 self.SCUUChns.append(n)
                 self.curSCUU[n] = None
                 self.ModuleDesc.append("MFCMU/SCUU")
+            elif module == "0":
+                self.ModuleDesc.append("NA")
             else:
                 self.ModuleDesc.append(None)
             n+=1
@@ -222,7 +227,7 @@ class Agilent_B1500A():
         self.inst.timeout=150000
         self.session = self.inst.session
 
-    def read_stb():
+    def read_stb(self):
         stb = self.inst.read_stb()
         return stb
 
@@ -511,25 +516,25 @@ class Agilent_B1500A():
 
         return error
 
-    def SMUisAvailable(self, SMUNum):
-        if True == self.SMUActive[SMUNum]:
+    def SMUisAvailable(self, chn):
+        if True == self.SMUActive[chn]:
             return True
-        raise B1500A_InputError("SMU %d is not available." %(SMUNum))
+        raise B1500A_InputError("SMU %d is not available." %(chn))
         
-    def SMUisUsed(self, SMUNum):
-        if False == self.SMUUsed[SMUNum]:
+    def SMUisUsed(self, chn):
+        if False == self.SMUUsed[chn]:
             return False
-        raise B1500A_InputError("CMU %d is used." %(SMUNum))
+        raise B1500A_InputError("CMU %d is used." %(chn))
 
-    def CMUisAvailable(self, CMUNum):
-        if True == self.CMUActive[CMUNum]:
+    def CMUisAvailable(self, chn):
+        if True == self.CMUActive[chn]:
             return True
-        raise B1500A_InputError("CMU %d is not available." %(CMUNum))
+        raise B1500A_InputError("CMU %d is not available." %(chn))
         
-    def CMUisUsed(self, CMUNum):
-        if False == self.CMUUsed[CMUNum]:
+    def CMUisUsed(self, chn):
+        if False == self.CMUUsed[chn]:
             return False
-        raise B1500A_InputError("CMU %d is used." %(CMUNum))
+        raise B1500A_InputError("CMU %d is used." %(chn))
 
 
     def performCalibration(self):
@@ -1385,9 +1390,9 @@ class Agilent_B1500A():
 
         if ADCs == None: ADCs = [0]*len(SMUs)    
 
-        for SMU in SMUs:
-            self.SMUisAvailable(SMU)
-            self.SMUisUsed(SMU)
+        for chn in Chns:
+            self.SMUisAvailable(chn)
+            self.SMUisUsed(chn)
             
         #check if all values in VorI are Boolean
         for element in VorI:
@@ -1395,14 +1400,14 @@ class Agilent_B1500A():
                 raise B1500A_InputError("VorI must only contain boolean values")
 
         # Checks base variables
-        self.CheckADCValues(SMUs, ADCs)
-        self.CheckRanges(SMUs, "Voltage", RV)
-        self.CheckRanges(SMUs, "Current", RI)
-        self.CheckVolCurValues(SMUs, VorI, Val, RV, RI)
-        self.CheckCompliance(SMUs, VorI, Val, IComp, VComp, RV, RI)
-        self.CheckFilter(SMUs, VorI, FL)
-        self.CheckSeriesResistance(SMUs, SSR)
-        self.CheckChannelMode(SMUs, CMM)
+        self.CheckADCValues(Chns, ADCs)
+        self.CheckRanges(Chns, "Voltage", RV)
+        self.CheckRanges(Chns, "Current", RI)
+        self.CheckVolCurValues(Chns, VorI, Val, RV, RI)
+        self.CheckCompliance(Chns, VorI, Val, IComp, VComp, RV, RI)
+        self.CheckFilter(Chns, VorI, FL)
+        self.CheckSeriesResistance(Chns, SSR)
+        self.CheckChannelMode(Chns, CMM)
         self.CheckDelays(hold, delay)
 
         # Clears all the channels
@@ -1522,22 +1527,22 @@ class Agilent_B1500A():
         self.setSMUSCUU()
         if ADCs == None: ADCs = [0]*len(SMUs)  
 
-        for SMU in SMUs:
-            self.SMUisAvailable(SMU)
-            self.SMUisUsed(SMU)
+        for chn in Chns:
+            self.SMUisAvailable(chn)
+            self.SMUisUsed(chn)
         
         #check if all values in VorI are Boolean
         for element in VorI:
             if not isinstance(element, (bool)):
                 raise B1500A_InputError("VorI must only contain boolean values")
 
-        self.CheckRanges(SMUs, "Voltage", RV)
-        self.CheckRanges(SMUs, "Current", RI)
-        self.CheckVolCurValues(SMUs, VorI, Val, RV, RI)
-        self.CheckCompliance(SMUs, VorI, Val, IComp, VComp, RV, RI)
-        self.CheckFilter(SMUs, VorI, FL)
+        self.CheckRanges(Chns, "Voltage", RV)
+        self.CheckRanges(Chns, "Current", RI)
+        self.CheckVolCurValues(Chns, VorI, Val, RV, RI)
+        self.CheckCompliance(Chns, VorI, Val, IComp, VComp, RV, RI)
+        self.CheckFilter(Chns, VorI, FL)
         self.CheckVMIM(VM, IM)
-        self.CheckADCValues(SMUs,ADCs)
+        self.CheckADCValues(Chns,ADCs)
 
         self.instWrite("CL\n")
 
@@ -1650,13 +1655,15 @@ class Agilent_B1500A():
         if complPolarity == None: complPolarity = [0]*len(SMUs)     # auto compliance polarity for all active channels
 
         self.checkListConsistancy([SMUs, VorI, RV, RI, Val, IComp, VComp, FL, SSR, CMM], "Pulsed Spot Measurement")
+        Chns = self.getChnNumFromSMUnum(SMUs)
+        PChn = self.getChnNumFromSMUnum(Psmu)[0]
 
-        self.checkChannel(SMUs)
+        self.checkChannel(Chns)
         self.setSMUSCUU()
 
-        for SMU in SMUs:
-            self.SMUisAvailable(SMU)
-            self.SMUisUsed(SMU)
+        for chn in Chns:
+            self.SMUisAvailable(chn)
+            self.SMUisUsed(chn)
         
         #check if all values in VorI are Boolean
         for element in VorI:
@@ -1666,13 +1673,13 @@ class Agilent_B1500A():
         #if np.any(not PorC):
         #    raise SyntaxError("P or C (Pulse or Constant) must contain one True Value indicating a Pulse channel")
 
-        self.CheckRanges(SMUs, "Voltage", RV)
-        self.CheckRanges(SMUs, "Current", RI)
-        self.CheckVolCurValues(SMUs, VorI, Val, RV, RI)
-        self.CheckCompliance(SMUs, VorI, Val, IComp, VComp, RV, RI)
-        self.CheckFilter(SMUs, VorI, FL)
-        self.CheckSeriesResistance(SMUs, SSR)
-        self.CheckChannelMode(SMUs, CMM)
+        self.CheckRanges(Chns, "Voltage", RV)
+        self.CheckRanges(Chns, "Current", RI)
+        self.CheckVolCurValues(Chns, VorI, Val, RV, RI)
+        self.CheckCompliance(Chns, VorI, Val, IComp, VComp, RV, RI)
+        self.CheckFilter(Chns, VorI, FL)
+        self.CheckSeriesResistance(Chns, SSR)
+        self.CheckChannelMode(Chns, CMM)
 
         hold = np.around(hold, 2)
         width = np.around(width, 4)
@@ -1824,9 +1831,9 @@ class Agilent_B1500A():
         Chns = self.getChnNumFromSMUnum(SMUs)
         self.setSMUSCUU() 
 
-        for SMU in SMUs:
-            self.SMUisAvailable(SMU)
-            self.SMUisUsed(SMU)
+        for chn in Chns:
+            self.SMUisAvailable(chn)
+            self.SMUisUsed(chn)
             
         #check if all values in VorI are Boolean
         for element in VorI:
@@ -1838,25 +1845,27 @@ class Agilent_B1500A():
                 raise B1500A_InputError("Ssmu (Synchronized sweep Channel) must not be defined as Msmu (primary Sweep Channel).")
 
             for SC in Ssmu:
-                if not SC in SMUs:
+                if not SC in Chns:
                     raise B1500A_InputError("Ssmu (Synchronized sweep Channel) must not be defined as an active Channel in SMUs.")
         
-        self.CheckADCValues(SMUs, ADCs)
-        self.CheckRanges(SMUs, "Voltage", RV)
-        self.CheckRanges(SMUs, "Current", RI)
-        self.CheckVolCurValues(SMUs, VorI, Val, RV, RI)
-        self.CheckCompliance(SMUs, VorI, Val, IComp, VComp, RV, RI)
-        self.CheckFilter(SMUs, VorI, FL)
-        self.CheckSeriesResistance(SMUs, SSR)
-        self.CheckChannelMode(SMUs, CMM)
+        self.CheckADCValues(Chns, ADCs)
+        self.CheckRanges(Chns, "Voltage", RV)
+        self.CheckRanges(Chns, "Current", RI)
+        self.CheckVolCurValues(Chns, VorI, Val, RV, RI)
+        self.CheckCompliance(Chns, VorI, Val, IComp, VComp, RV, RI)
+        self.CheckFilter(Chns, VorI, FL)
+        self.CheckSeriesResistance(Chns, SSR)
+        self.CheckChannelMode(Chns, CMM)
         self.CheckSweepParam(hold, delay, sdelay, tdelay, mdelay, AA, AApost, Ssmu, Sstart, Sstop, Msmu, Mstart, Mstop, Mstep, Mmode)
-        self.checkComplPolarity(SMUs, complPolarity)
+        self.checkComplPolarity(Chns, complPolarity)
 
         MChn = self.getChnNumFromSMUnum([Msmu])[0]
         if Ssmu != None:
             SChn = self.getChnNumFromSMUnum([Ssmu])[0]
         else: 
             SChn = None
+
+        print(Chns, MChn, Ssmu)
 
         n = 0
         for SMU in SMUs:
@@ -2043,8 +2052,8 @@ class Agilent_B1500A():
             newChn.append(self.CMUChns[chn-1])
         return newChn
 
-    def MultiChannelSweepMeasurement(self, SMU):
-        self.SMUisAvailable(SMU)
+    def MultiChannelSweepMeasurement(self, chn):
+        self.SMUisAvailable(chn)
 
     ############################################################################################
     # can receive Values for a staircase sweep measurement if the Channels passed calibration and are installed
@@ -2094,14 +2103,14 @@ class Agilent_B1500A():
         if complPolarity == None: complPolarity = [0]*len(SMUs)     # auto compliance polarity for all active channels
         
         self.checkListConsistancy([SMUs, VorI, RV, RI, Val, IComp, VComp, FL, SSR, CMM], "Pulsed Sweep Measurement")
-        self.checkChannel(SMUs)
         Chns = self.getChnNumFromSMUnum(SMUs)
+        self.checkChannel(Chns)
         PChn = self.getChnNumFromSMUnum([Psmu])[0]
         self.setSMUSCUU() 
 
-        for SMU in SMUs:
-            self.SMUisAvailable(SMU)
-            self.SMUisUsed(SMU)
+        for chn in Chns:
+            self.SMUisAvailable(chn)
+            self.SMUisUsed(chn)
         
         #check if all values in VorI are Boolean
         for element in VorI:
@@ -2212,17 +2221,17 @@ class Agilent_B1500A():
         return {'Data': retAr, 'Header': Header}
 
 
-    def StaircaseSweepWPulsedBiasMeasurement(self):
-        self.SMUisAvailable(SMU)
+    def StaircaseSweepWPulsedBiasMeasurement(self, chn):
+        self.SMUisAvailable(chn)
 
-    def QuasiPulsedSpotMeasurement(self):
-        self.SMUisAvailable(SMU)
+    def QuasiPulsedSpotMeasurement(self, chn):
+        self.SMUisAvailable(chn)
 
-    def BinarySearchMeasurement(self):
-        self.SMUisAvailable(SMU)
+    def BinarySearchMeasurement(self, chn):
+        self.SMUisAvailable(chn)
 
-    def LinearSearchMeasurement(self):
-        self.SMUisAvailable(SMU)
+    def LinearSearchMeasurement(self, chn):
+        self.SMUisAvailable(chn)
 
     def CheckVMon(self, VMon):
 
@@ -2306,9 +2315,9 @@ class Agilent_B1500A():
         if ADCs == None: 
             ADCs = [0]*len(SMUs)    
 
-        for SMU in SMUs:
-            self.SMUisAvailable(SMU)
-            self.SMUisUsed(SMU)
+        for chn in Chns:
+            self.SMUisAvailable(chn)
+            self.SMUisUsed(chn)
 
         self.CMUisAvailable(CMU)
         
@@ -2318,14 +2327,14 @@ class Agilent_B1500A():
                 raise B1500A_InputError("VorI must only contain boolean values")
 
         # Checks base variables
-        self.CheckADCValues(SMUs, ADCs)
-        self.CheckRanges(SMUs, "Voltage", RV)
-        self.CheckRanges(SMUs, "Current", RI)
-        self.CheckVolCurValues(SMUs, VorI, Val, RV, RI)
-        self.CheckCompliance(SMUs, VorI, Val, IComp, VComp, RV, RI)
-        self.CheckFilter(SMUs, VorI, FL)
-        self.CheckSeriesResistance(SMUs, SSR)
-        self.CheckChannelMode(SMUs, CMM)
+        self.CheckADCValues(Chns, ADCs)
+        self.CheckRanges(Chns, "Voltage", RV)
+        self.CheckRanges(Chns, "Current", RI)
+        self.CheckVolCurValues(Chns, VorI, Val, RV, RI)
+        self.CheckCompliance(Chns, VorI, Val, IComp, VComp, RV, RI)
+        self.CheckFilter(Chns, VorI, FL)
+        self.CheckSeriesResistance(Chns, SSR)
+        self.CheckChannelMode(Chns, CMM)
         self.CheckCMUValues(freq, Vac, Cmode, Vdc)
         self.CheckVMon(VMon)
         self.CheckCMURange(CMmode, CMrange, freq)
@@ -2462,18 +2471,18 @@ class Agilent_B1500A():
 
         self.checkListConsistancy([SMUs, VorI, Val, VComp, IComp, RV, RI, FL, SSR, CMM], "Spot Measurement")
 
-        self.checkChannel(SMUs)
-        self.checkChannel([CMU])
         Chns = self.getChnNumFromSMUnum(SMUs)
+        self.checkChannel(Chns)
         CMUChn = self.getChnNumFromCMUnum(CMU)[0]
+        self.checkChannel([CMUChn])
         self.setCMUSCUU(CMUChn) 
 
         if ADCs == None: 
             ADCs = [0]*len(SMUs)    
 
-        for SMU in SMUs:
-            self.SMUisAvailable(SMU)
-            self.SMUisUsed(SMU)
+        for chn in Chns:
+            self.SMUisAvailable(chn)
+            self.SMUisUsed(chn)
 
         self.CMUisAvailable(CMU)
         
@@ -2483,14 +2492,14 @@ class Agilent_B1500A():
                 raise B1500A_InputError("VorI must only contain boolean values")
 
         # Checks base variables
-        self.CheckADCValues(SMUs, ADCs)
-        self.CheckRanges(SMUs, "Voltage", RV)
-        self.CheckRanges(SMUs, "Current", RI)
-        self.CheckVolCurValues(SMUs, VorI, Val, RV, RI)
-        self.CheckCompliance(SMUs, VorI, Val, IComp, VComp, RV, RI)
-        self.CheckFilter(SMUs, VorI, FL)
-        self.CheckSeriesResistance(SMUs, SSR)
-        self.CheckChannelMode(SMUs, CMM)
+        self.CheckADCValues(Chns, ADCs)
+        self.CheckRanges(Chns, "Voltage", RV)
+        self.CheckRanges(Chns, "Current", RI)
+        self.CheckVolCurValues(Chns, VorI, Val, RV, RI)
+        self.CheckCompliance(Chns, VorI, Val, IComp, VComp, RV, RI)
+        self.CheckFilter(Chns, VorI, FL)
+        self.CheckSeriesResistance(Chns, SSR)
+        self.CheckChannelMode(Chns, CMM)
         self.CheckCMUValues(freq, Vac, Cmode)
         self.CheckVMon(VMon)
         self.CheckCMUSweepParam(hold, delay, sdelay, tdelay, mdelay, DCstart, DCstop, DCstep, DCmode)

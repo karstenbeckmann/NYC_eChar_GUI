@@ -27,7 +27,7 @@ import Drivers.Instruments as Inst
 import copy as cp
 
 
-class ToolHandle:
+class Instruments:
 
     InitializedInst = []
     instruments = None
@@ -69,6 +69,7 @@ class ToolHandle:
 
         self.CurrentProberAdr = None
         self.CurrentMatrixAdr = None
+        self.ReadChuckPosition = None
         self.ChuckTemp = "--"
         self.offline = offline
         self.commandQueue = qu.Queue()
@@ -76,6 +77,8 @@ class ToolHandle:
         self.threadTimeout = 200 #in milliseconds
         self.toolStatusUpdate = 500 #in milliseconds
         self.tupdateOld = tm.time_ns() #old tool update time in ns
+        self.matrixAvailable = False
+        self.proberAvailable = False
 
         try:
             self.rm = vs.ResourceManager()
@@ -223,12 +226,12 @@ class ToolHandle:
                                 try:
                                     Class = getattr(Inst, self.InitializedInst[n]['Class'])
                                 except (SystemError, ValueError) as e:
-                                    self.Errors.put("ToolHandle:", e)
+                                    self.Errors.put("Instruments:", e)
                                     continue
                                 try:
                                     DevClass = Class(Device=instrument)
                                 except (SystemError) as e:
-                                    self.Errors.put("ToolHandle:", e)
+                                    self.Errors.put("Instruments:", e)
                                     continue
                                 self.InitializedInst[n]['Instrument'] = DevClass 
                                 self.InitializedInst[n]['GPIB'] = GPIB
@@ -359,7 +362,7 @@ class ToolHandle:
                 return self.InitializedInst[n]
             n = n+1
         
-        raise ValueError("ToolHandle: Instrument Address - %s - doesnt exist." %(address))
+        raise ValueError("Instruments: Instrument Address - %s - doesnt exist." %(address))
     
     def getProber(self):
         if not self.ready:
@@ -383,7 +386,6 @@ class ToolHandle:
         except:
             return None
             #self.Warnings.put("Tool Handle: No prober available!")
-
 
     def getChuckTemperature(self):
         if not self.ready:
@@ -409,7 +411,8 @@ class ToolHandle:
         try:
             return Instr[0]
         except:
-            self.Warnings.put("Tool Handle: No Matrix available! Err 1")
+            #self.Warnings.put("Tool Handle: No Matrix available! Err 1")
+            return None
 
     def getMatrixInstrument(self):
         if not self.ready:
@@ -421,7 +424,8 @@ class ToolHandle:
         try:
             return Instr[0]["Instrument"]
         except:
-            self.Warnings.put("Tool Handle: No Matrix available! Err 0")
+            #self.Warnings.put("Tool Handle: No Matrix available! Err 0")
+            return None
 
     def getInstrumentsByName(self, Name):
         if not self.ready:
@@ -566,10 +570,10 @@ class ToolHandle:
                 instrument = self.InitializedInst[ID]
                 address = self.InitializedInst[ID]['GPIB']
             except:
-                raise ValueError("ToolHandle: Calibration - either GPIB or ID must be defined and valid!")
+                raise ValueError("Instruments: Calibration - either GPIB or ID must be defined and valid!")
         
         if instrument == None:
-            raise ValueError("ToolHandle: Calibration - either GPIB or ID must be defined and valid!")
+            raise ValueError("Instruments: Calibration - either GPIB or ID must be defined and valid!")
 
         thread = None
         if instrument['Instrument'] != None:
@@ -589,6 +593,9 @@ class ToolHandle:
 
     def getProberStatus(self):
         return self.proberStatus
+
+    def getProberChuckPosition(self):
+        return self.ReadChuckPosition
     
     def getProberChuckStatus(self):
 
@@ -650,9 +657,9 @@ class ToolHandle:
                 instrument = self.InitializedInst[ID]
                 address = self.InitializedInst[ID]['GPIB']
             except:
-                raise ValueError("ToolHandle: Calibration - either GPIB or ID must be defined and valid!")
+                raise ValueError("Instruments: Calibration - either GPIB or ID must be defined and valid!")
         if instrument == None:
-            raise ValueError("ToolHandle: Calibration - either GPIB or ID must be defined and valid!")
+            raise ValueError("Instruments: Calibration - either GPIB or ID must be defined and valid!")
         
         thread = None
         if instrument['Instrument'] != None:
@@ -684,7 +691,7 @@ class ToolHandle:
             self.Warnings.put("Reset/Initialization is not available for: %s" %(tool))
 
         self.readyQu.put([tool, False])
-
+    
     def close(self):
         cmd = {"Stop":True}
         self.commandQueue.put(cmd)
@@ -706,7 +713,7 @@ class ToolHandle:
             if inst['Type'] == typ and inst["GPIB"] != None and inst['Rank'] == 1:
                 return inst
         return None
-
+    
     def update(self, MainGI):
         for inst in self.InitializedInst:
             try:
@@ -715,6 +722,18 @@ class ToolHandle:
                     self.Warnings.put(logQueue.get())
             except AttributeError:
                 None
+
+
+        if self.getInstrumentsByType('Matrix') == None:
+            self.matrixAvailable = False
+        else:
+            self.matrixAvailable = True
+
+        if self.getInstrumentsByType('Prober') == None:
+            self.proberAvailable = False
+        else:
+            self.proberAvailable = True
+        
 
         while not self.readyQu.empty():
             get = self.readyQu.get()
@@ -740,22 +759,38 @@ class ToolHandle:
             while not self.commandReturnQueue.empty():
                 try: 
                     ret = self.commandReturnQueue.get()
-                    cmd = ret["Command"]
-                    retData = ret["Return"]
-                    retInstr = ret['Instr']
-                    errMsg = ret['ErrorMsg']
-                    err = ret['Error']
-
+                    try:
+                        cmd = ret["Command"]
+                    except KeyError:
+                        cmd = None
+                    try:
+                        retData = ret["Return"]
+                    except KeyError:
+                        retData = None
+                    try:
+                        retInstr = ret['Instr']
+                    except KeyError:
+                        retInstr = None
+                    try:
+                        errMsg = ret['ErrorMsg']
+                    except KeyError:
+                        errMsg = None
+                    try:
+                        err = ret['Error']
+                    except KeyError:
+                        err = None
                     if err:
-                        msg = "ToolHandle: Error in executing command '%s' - %s" %(cmd, errMsg)
+                        msg = "Instruments: Error in executing command '%s' - %s" %(cmd, errMsg)
                         self.Errors.put(msg)
-                    else:
+                    elif retData != None:
                         if cmd == "ReadChuckThermoValue":
                             self.ChuckTemp = retData[0]
                         if cmd == "ReadChuckStatus":
                             self.proberChuckStatus = retData
                         if cmd == "ReadScopeStatus":
                             self.proberScopeStatus = retData
+                        if cmd == "ReadChuckPosition":
+                            self.ReadChuckPosition = retData
                         if cmd =="*STB?":
                             retInstr['Status'] = retData
                             try:
@@ -779,6 +814,8 @@ class ToolHandle:
                             cmd = {"Command": "ReadChuckStatus", "ReturnQueue": self.commandReturnQueue, 'Instr': Prober}
                             self.commandQueue.put(cmd)
                             cmd = {"Command": "ReadScopeStatus", "ReturnQueue": self.commandReturnQueue, 'Instr': Prober}
+                            self.commandQueue.put(cmd)
+                            cmd = {"Command": "ReadChuckPosition", "ReturnQueue": self.commandReturnQueue, 'Instr': Prober}
                             self.commandQueue.put(cmd)
                     else:
                         self.ChuckTemp = "--"
@@ -808,10 +845,10 @@ class ToolHandle:
                 while not initInst['Instrument'].StatusQueue.empty():
                     status =  initInst['Instrument'].StatusQueue.get()
                     if status != initInst['Status']:
-                        self.Warnings.put("ToolHandle: %s" %(status))
+                        self.Warnings.put("Instruments: %s" %(status))
                 while not initInst['Instrument'].ErrQueue.empty():
                     err = initInst['Instrument'].ErrQueue.get()
-                    self.Errors.put("ToolHandle: %s" %(err))
+                    self.Errors.put("Instruments: %s" %(err))
                 
     def commandThread(self, commandQueue, errorQueue, sleep, timeout=200):
         
@@ -950,7 +987,7 @@ class ToolHandle:
                     retQu.put(ret)
 
             except KeyError:
-                errorQueue.put("ToolHandle: InstrumentCommand could not be interpreted - %s." %(cmd))
+                errorQueue.put("Instruments: InstrumentCommand could not be interpreted - %s." %(cmd))
 
 
     def checkInstrumentation(self, Instruments=None):
@@ -970,7 +1007,7 @@ class ToolHandle:
                                 errInt = int(ret)
                             except (SystemError, ValueError, AttributeError) as e:
                                 errInt = int(ret.split(":")[0])
-                                self.Errors.put("ToolHandle: %s" %(e))
+                                self.Errors.put("Instruments: %s" %(e))
 
                             if errInt == 0:
                                 err = 0
@@ -979,7 +1016,7 @@ class ToolHandle:
                                 err = errInt 
                         except (SystemError, ValueError, AttributeError) as e:
                             err = 1 
-                            self.Errors.put("ToolHandle: %s" %(e))
+                            self.Errors.put("Instruments: %s" %(e))
                     if err != 0:
                         raise SystemError(ret)
         elif Instruments == None:
@@ -993,22 +1030,22 @@ class ToolHandle:
                             try: 
                                 try:
                                     ret = inst['Instrument'].getError()
-                                    self.Errors.put("ToolHandle: %s" %(ret))
+                                    self.Errors.put("Instruments: %s" %(ret))
                                 except OSError:
-                                    self.Errors.put("ToolHandle: No error on the tool.")
+                                    self.Errors.put("Instruments: No error on the tool.")
 
                                 inst['Instrument'].reset()
 
                                 #ret = inst['Instrument'].doSelfTest()
-                                #self.Errors.put("ToolHandle B1530A selfTest: %s" %(ret))
+                                #self.Errors.put("Instruments B1530A selfTest: %s" %(ret))
                                 ret = inst['Instrument'].initialize()
-                                self.Errors.put("ToolHandle B1530A initialize: %s" %(ret))
+                                self.Errors.put("Instruments B1530A initialize: %s" %(ret))
                                 inst['Instrument'].turnOffline()
                                 try: 
                                     errInt = int(ret)
                                 except (SystemError, ValueError, AttributeError) as e:
                                     errInt = int(ret.split(":")[0])
-                                    self.Errors.put("ToolHandle: %s" %(e))
+                                    self.Errors.put("Instruments: %s" %(e))
 
                                 if errInt == 0:
                                     err = 0
@@ -1018,7 +1055,7 @@ class ToolHandle:
 
                             except (SystemError, ValueError, AttributeError) as e:
                                 err = 1 
-                                self.Errors.put("ToolHandle: %s" %(e))
+                                self.Errors.put("Instruments: %s" %(e))
                             
                             twait = 20
                             for n in range(twait):
@@ -1026,7 +1063,7 @@ class ToolHandle:
                                 tm.sleep(1)
                         
                         if err != 0:
-                            msg = "ToolHandle: checkInstrumentation after 3 recoverings: %s" %(err)
+                            msg = "Instruments: checkInstrumentation after 3 recoverings: %s" %(err)
                             self.Errors.put(msg)
                             raise SystemError(msg)
 
@@ -1036,7 +1073,7 @@ class ToolHandle:
                         for n in range(3):
                             try:
                                 ret = inst['Instrument'].SelfTest()
-                                self.Errors.put("ToolHandle B1500A selfTest: %s" %(ret))
+                                self.Errors.put("Instruments B1500A selfTest: %s" %(ret))
                                 if int(ret) == 0:
                                     err = 0
                                     break
@@ -1045,7 +1082,7 @@ class ToolHandle:
                             except (SystemError, ValueError) as e:
                                 err = 1
                         if err != 0:
-                            msg = "ToolHandle: checkInstrumentation after 3 recoverings: %s" %(err)
+                            msg = "Instruments: checkInstrumentation after 3 recoverings: %s" %(err)
                             self.Errors.put(msg)
                             raise SystemError(msg)
                     if inst['Type'] == "PG":
@@ -1054,7 +1091,7 @@ class ToolHandle:
                         for n in range(3):
                             try:
                                 ret = inst['Instrument'].doSelfTest()
-                                self.Errors.put("ToolHandle %s selfTest: %s" %(inst['Class'], ret))
+                                self.Errors.put("Instruments %s selfTest: %s" %(inst['Class'], ret))
                                 if int(ret) == 0:
                                     break
                                 else:
@@ -1062,7 +1099,7 @@ class ToolHandle:
                             except (SystemError, ValueError) as e:
                                 None
                         if err != 0:
-                            msg = "ToolHandle: checkInstrumentation after 3 recoverings: %s" %(err)
+                            msg = "Instruments: checkInstrumentation after 3 recoverings: %s" %(err)
                             self.Errors.put(msg)
                             raise SystemError(msg)
 

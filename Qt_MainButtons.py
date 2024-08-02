@@ -121,7 +121,6 @@ class MainButtons(QtWidgets.QWidget):
             msgBox.setWindowTitle("Start Measurement")
             msgBox.setText("Are the probes Positioned on the First Device?")
             ret = int(msgBox.exec())
-        
             if ret == 16384: 
                 self.MainGI.startExecution()
                 self.__ContinueButton.setDisabled(True)
@@ -212,7 +211,7 @@ class sideButtons(QtWidgets.QWidget):
             self.MainGI.ProberWindow.hide()
         else:
             self.MainGI.ProberWindow.show()
-            self.MainGI.setProberWindowPosition()
+            self.MainGI.setWindowPosition(self.MainGI.ProberWindow, "ProberWindow")
 
     def HideProbeButton(self):
         self.__ProbeButton.hide()

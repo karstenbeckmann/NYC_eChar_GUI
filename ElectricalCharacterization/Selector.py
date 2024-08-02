@@ -271,7 +271,6 @@ def SelectorPulseIV(eChar, PulseChn, GroundChn, Vhigh, VlowMeas, delay, trise, t
         header.append('Measurement,Endurance.StartPoint,%d' %(eChar.curCycle))
         header.append('Measurement,Endurance.EndPoint,%d' %(eChar.curCycle+Cycles))
 
-    header.extend(eChar.getHeader("External"))
 
     newline = [None]*3
     newline[0] = 'DataName'
@@ -553,7 +552,6 @@ def selectorOutput(eChar, WriteHeader, DoYield, MaxRowsPerFile=1e6):
                 header.append('Measurement,Endurance.StartPoint,%d' %(StartCycResOn))
                 header.append('Measurement,Endurance.EndPoint,%d' %(EndCyc))
 
-                header.extend(eChar.getHeader("External"))
                 header.append('DataName, Cycle, Rhigh, Rlow, Ilow, Ihigh')
                 header.append('Unit, #, ohm, ohm, A, A')
                 header.append('Dimension, %d,%d,%d,%d' %(len(OutResOn[0]), len(OutResOn[1]), len(OutResOn[2]), len(OutResOn[3])))
@@ -571,8 +569,6 @@ def selectorOutput(eChar, WriteHeader, DoYield, MaxRowsPerFile=1e6):
                 header.extend(eChar.getHeader("DC"))
                 header.append('Measurement,Endurance.StartPoint,%d' %(StartCycComp))
                 header.append('Measurement,Endurance.EndPoint,%d' %(EndCyc))
-
-                header.extend(eChar.getHeader("External"))
                 header.append('DataName, Cycle, Rhigh, Rlow, Ilow, Ihigh, VthPos, VthNeg')
                 header.append('Unit, #, ohm, ohm, A, A, V, V')
                 header.append('Dimension, %d,%d,%d,%d,%d,%d,%d' %(len(OutComp[0]), len(OutComp[1]), len(OutComp[2]), len(OutComp[3]), len(OutComp[4]), len(OutComp[5]), len(OutComp[6])))

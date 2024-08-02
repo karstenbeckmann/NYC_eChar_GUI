@@ -174,7 +174,7 @@ class FormFactor:
         self.checkPosRef(relativTo)
         if not (X == 0 and Y == 0 and (not relativTo=="C")):
             ret = self.instQuery("MoveChuckIndex  %s %s %s %s" %(X,Y,relativTo, velocity))
-            if not ret.strip() == "0:":
+            if not ret.strip().find("0:") != -1:
                 raise ProbeStationError(ret)
 
     def MoveChuckMicron(self, X, Y, relativTo="R", velocity=100):
@@ -183,7 +183,7 @@ class FormFactor:
         if not (X == 0 and Y == 0):
             self.checkPosRef(relativTo)
             ret = self.instQuery("MoveChuck %s %s %s Y %s" %(X,Y,relativTo, velocity))
-            if not ret.strip() == "0:":
+            if not ret.strip().find("0:") != -1:
                 raise ProbeStationError(ret)
 
     def MoveChuckAlign(self, velocity=100):
@@ -191,7 +191,7 @@ class FormFactor:
 
     def MoveChuckContact(self, vel=100):
         ret = self.instQuery("MoveChuckContact %d" %(vel))
-        if not ret.strip() == "0:":
+        if not ret.strip().find("0:") != -1:
             raise ProbeStationError(ret)
 
     #Moves the chuck to the upper (0) or lower = lifted (1) position. This initiates motion only, the actual movement may take some seconds.
@@ -236,9 +236,17 @@ class FormFactor:
             first = True
             for x in ret:
                 if first:
-                    output.append(-float(x))
+                    try:
+                        output.append(-float(x))
+                    except ValueError as e:
+                        self.errorQueue.put("ProbeStation: ReadChuckPosition %s" %(e))
+                        return None
                 else:
-                    output.append(-float(x))
+                    try:
+                        output.append(-float(x))
+                    except ValueError as e:
+                        self.errorQueue.put("ProbeStation: ReadChuckPosition %s" %(e))
+                        return None
                 first = False
             return output
 

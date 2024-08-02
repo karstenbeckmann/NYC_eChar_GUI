@@ -87,45 +87,73 @@ class ResultWindow(QtWidgets.QMainWindow):
         self.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         self.layout = self._main.layout
 
+        cols = 8
+        rows = 2
+        frWidth = int(self.ColumnWidth*(4.5))
+        frHeight = self.RowHeight*2
+        self.comboBoxFrame = stdObj.stdFrameGrid(self._main, self.MainGI, cols, rows, frWidth, frHeight, cell=False, fixSize=False)
+        self.comboBoxFrame.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        self.comboBoxFrame.setLineWidth(2)
+        self.comboBoxFrame.setMidLineWidth(2)
+        self.comboBoxFrame.setFrameStyle(2)
+        self.comboBoxFrame.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self.layout.addWidget(self.comboBoxFrame, 0, 0, 2, 5)
+        self.layoutComboBox = self.comboBoxFrame.layout
+        
+
         self.Menus = []
         self.IntWid = []
 
-        self.IntWid.append(ComboBox(self._main, self.layout, "DieX", row=1, column=0, columnspan=1))
+        self.IntWid.append(ComboBox(self._main, self.layoutComboBox, "DieX", row=1, column=0, columnspan=1))
         
-        self.IntWid.append(ComboBox(self._main, self.layout, "DieY", row=1, column=1, columnspan=1))
+        self.IntWid.append(ComboBox(self._main, self.layoutComboBox, "DieY", row=1, column=1, columnspan=1))
         
-        self.IntWid.append(ComboBox(self._main, self.layout, "DevX", row=1, column=2, columnspan=1))
+        self.IntWid.append(ComboBox(self._main, self.layoutComboBox, "DevX", row=1, column=2, columnspan=1))
         
-        self.IntWid.append(ComboBox(self._main, self.layout, "DevY", row=1, column=3, columnspan=1))
+        self.IntWid.append(ComboBox(self._main, self.layoutComboBox, "DevY", row=1, column=3, columnspan=1))
         
-        self.IntWid.append(ComboBox(self._main, self.layout, "Meas", row=1, column=4, columnspan=1))
+        self.IntWid.append(ComboBox(self._main, self.layoutComboBox, "Meas", row=1, column=4, columnspan=2))
         self.IntWid[-1].view().setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         
-        self.IntWid.append(ComboBox(self._main, self.layout, "Val", row=1, column=5, columnspan=1))
+        self.IntWid.append(ComboBox(self._main, self.layoutComboBox, "Val", row=1, column=6, columnspan=2))
         self.IntWid[-1].view().setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         
-        self.IntWid.append(ComboBox(self._main, self.layout, "Num", default='Live', items=['Live'], row=1, column=6, columnspan=3))
+        
+        self.TxTab7DieX=Label(self._main, "Die X",self.layoutComboBox, row=0, column=0, columnspan=1)
+        
+        self.TxTab7DieY=Label(self._main, "Die Y",self.layoutComboBox, row=0, column=1, columnspan=1)
+        
+        self.TxTab7DevX=Label(self._main, "Device X",self.layoutComboBox, row=0, column=2, columnspan=1)
+
+        self.TxTab7DevY=Label(self._main, "Device Y",self.layoutComboBox, row=0, column=3, columnspan=1)
+        
+        self.TxTab7Meas=Label(self._main, "Measurement",self.layoutComboBox, row=0, column=4, columnspan=2)
+        
+        self.TxTab7Val=Label(self._main, "Value", self.layoutComboBox, row=0, column=6, columnspan=2)
+
+        cols = 3
+        rows = 2
+        frWidth = self.ColumnWidth*3-3
+        frHeight = self.RowHeight*2
+        self.comboBoxFrame2 = stdObj.stdFrameGrid(self._main, self.MainGI, cols, rows, frWidth, frHeight, cell=False, fixSize=False)
+        self.comboBoxFrame2.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        self.comboBoxFrame2.setLineWidth(2)
+        self.comboBoxFrame2.setMidLineWidth(2)
+        self.comboBoxFrame2.setFrameStyle(2)
+        self.comboBoxFrame2.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self.layout.addWidget(self.comboBoxFrame2, 0, 5, 2, 4)
+        self.layoutComboBox2 = self.comboBoxFrame2.layout
+        
+        self.IntWid.append(ComboBox(self._main, self.layoutComboBox2, "Num", default='Live', items=['', 'Live'], row=1, column=0, columnspan=3))
         self.IntWid[-1].view().setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-        
-        self.TxTab7DieX=Label(self._main, "Die X",self.layout, row=0, column=0, columnspan=1)
-        
-        self.TxTab7DieY=Label(self._main, "Die Y",self.layout, row=0, column=1, columnspan=1)
-        
-        self.TxTab7DevX=Label(self._main, "Device X",self.layout, row=0, column=2, columnspan=1)
 
-        self.TxTab7DevY=Label(self._main, "Device Y",self.layout, row=0, column=3, columnspan=1)
-        
-        self.TxTab7Meas=Label(self._main, "Measurement",self.layout, row=0, column=4, columnspan=1)
-        
-        self.TxTab7Val=Label(self._main, "Value", self.layout, row=0, column=5, columnspan=2)
+        self.TxTab7Num=Label(self.comboBoxFrame2, "Predefined Graphs", self.layoutComboBox2, row=0, column=0, columnspan=3)
 
-        self.TxTab7Num=Label(self._main, "Number", self.layout, row=0, column=6, columnspan=2)
-
-        self.SaveBut = QtWidgets.QPushButton("Save Plot", self._main)
+        self.SaveBut = QtWidgets.QPushButton("Save\nPlot", self._main)
         self.SaveBut.clicked.connect(self.SaveFigure)
         self.SaveBut.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         self.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-        self.layout.addWidget(self.SaveBut, 18, 6, 1, 2)
+        self.layout.addWidget(self.SaveBut, 18, 8, 2, 1)
 
 
         self.ResultPlot = PlotWidget(self._main, self.MainGI, name="ResultPlotWidget", background=self.MainGI.getBackgroundColor(True), labelColor=self.MainGI.getLabelColor(True), title="Result Plotting")
@@ -138,12 +166,12 @@ class ResultWindow(QtWidgets.QMainWindow):
         graphProp=self.ResultPlot.getStdGraphProperties()
         
         self.TxRow=Label(self._main, "Row", self.layout, row=18, column=2, columnspan=1, alignment=QtCore.Qt.AlignRight)
-        self.Row = stdObj.Entry(self, MainGI, "ResultRow", validate='all', validateNumbers="-1|-2|[0-9]+", type=int, default=-2, command=self.updateGraph, sizePolicy=(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding))
+        self.Row = stdObj.Entry(self, MainGI, "ResultRow", validate='all', validateNumbers="-1|[0-9]+", type=int, default=-1, command=self.updateGraph, sizePolicy=(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding))
         self.SaveBut.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         self.layout.addWidget(self.Row, 18, 3, 1, 1)
         
         self.TxColumn=Label(self._main, "Column", self.layout, row=18, column=4, columnspan=1, alignment=QtCore.Qt.AlignRight)
-        self.Column = stdObj.Entry(self, MainGI, "ResultColumn", validate='all', validateNumbers="-1|-2|[0-9]+", type=int, default=-2, command=self.updateGraph, sizePolicy=(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding))
+        self.Column = stdObj.Entry(self, MainGI, "ResultColumn", validate='all', validateNumbers="-1|[0-9]+", type=int, default=-1, command=self.updateGraph, sizePolicy=(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding))
         self.layout.addWidget(self.Column, 18, 5, 1, 1)
         
         self.TxStyle=Label(self._main, "Style", self.layout, row=19, column=2, columnspan=1, alignment=QtCore.Qt.AlignRight)
@@ -165,8 +193,11 @@ class ResultWindow(QtWidgets.QMainWindow):
         self.LabelSize = ComboBox(self._main, self.layout, "labelSize", row=19, column=1, default=self.ResultPlot.getLabelSizeOptions()[0], items=self.ResultPlot.getLabelSizeOptions(), columnspan=1, command=self.updateLabelSize)
 
         #self.TxAppendGraph=Label(self._main, "Append Pl.", self.layout, row=18, column=6, columnspan=1, alignment=QtCore.Qt.AlignRight)
-        #self.AppendGraph = CheckBox(self._main, self.layout, "appendGraph", row=18, column=7, columnspan=1, command=self.updateAppendGraph)
+        #self.AppendGraph = CheckBox(self._main, self.layout, "appendGraph", row=18, column=7, columnspan=1, command=self.appendGraph)
         
+        #self.AppendGraph = PushButton(self._main, "Append Graph", "appendGraph", row=18, column=6, columnspan=1, command=self.appendGraph)
+        self.AddGraph = PushButton(self._main, "Add Graph", "addGraph", self.layout,  row=18, column=6, columnspan=1)
+
         self.ClearBut = PushButton(self._main, "Clear Results", "clear", self.layout, row=18, column=0, columnspan=2, command=self.clearResults)
         self.updateStyle(graphProp['Style'])
 
@@ -212,10 +243,7 @@ class ResultWindow(QtWidgets.QMainWindow):
             else:
                 self.ScatterSize.change(gp['ScatterSize'])
                 self.ScatterStyle.change(gp['ScatterStyle'])
-
-    def updateAppendGraph(self, state):
-        self.ResultPlot.updateAppendGraph(state)
-
+        
     def getCurrentRow(self):
         return self.Row.getVariable()
     
@@ -310,6 +338,11 @@ class ResultWindow(QtWidgets.QMainWindow):
         
         graphUpdate = False
         dataUpdate = False
+        appendGraph = False
+        addFigData = []
+        addGraph = False
+        graphProp = []
+        data = []
         
         if "BackgroundColor" in kwargs:
             self.ResultPlot.updateBackground(kwargs["BackgroundColor"])
@@ -320,39 +353,59 @@ class ResultWindow(QtWidgets.QMainWindow):
         row = -1
         column = -1
 
+        graphUpdate = False
+        dataUpdate = False
+        appendGraph = False
+        addFigData = []
+        addGraph = False
+        graphProp = []
+        data = []
+        
         while not self.updates.empty():
-            graphProp = []
+
             entry = self.updates.get()
-            for key, item in entry.items():
-
+            for key, value in entry.items():
                 for widget in self.IntWid:
-
                     name = widget.getName()
                     if key == name:
-                        widget.update(item)
-
+                        widget.update(value)
                     if key == "%sChn" %(name):
-                        widget.change(item)
+                        widget.change(value)
                 
+                if key == "Default":
+                    for defKey, defValue in value.items():
+                        for widget in self.IntWid:
+                            name = widget.getName()
+                            if defKey == name:
+                                widget.change(defValue)
+                                break
+
+                if key == "AppendGraph":
+                    appendGraph = True
+                    appendFigData = value
+                    
+                if key == "AddGraph":
+                    addGraph = True
+                    addFigData = value
+
                 if key == "GraphData":
-                    for gkey, gitem in item.items():
-                        if gkey =="GraphInfo":
-                            graphProp = gitem
+                    for gkey, gvalue in value.items():
+                        if gkey =="GraphProp":
+                            graphProp = gvalue
                             
                         if gkey =="Data":
-                            self.figData = gitem
-                            graphUpdate = True
+                            data = gvalue
 
                         if gkey =="Filename":
-                            self.filename = gitem
+                            self.filename = gvalue
                         
                         if gkey =="Folder":
-                            self.folder = gitem
+                            self.folder = gvalue
                         
                     graphUpdate = True
 
                 if key == "Data":
-                    self.figData = item
+                    data = value
                     dataUpdate = True
 
                 if key == "Show":
@@ -361,9 +414,19 @@ class ResultWindow(QtWidgets.QMainWindow):
         if self.darkMode != darkdetect.isDark():
             self.darkMode = darkdetect.isDark()
             graphUpdate = True
+        
+        if appendGraph:
+            self.ResultPlot.appendGraph(appendFigData)
+
+        if addGraph:
+            self.ResultPlot.addGraph(addFigData, self.Row.getVariable(), self.Column.getVariable())
             
+            cbox = self.getComboBox("Num")
+            if cbox != None:
+                cbox.change("")
+
         if graphUpdate:
-            self.ResultPlot.updateGraphs(self.figData, graphProp)
+            self.ResultPlot.updateGraphs(data, graphProp)
 
     def checkIfinList(self, item, lis):
         if item in lis:
@@ -376,6 +439,10 @@ class ResultWindow(QtWidgets.QMainWindow):
             if value == val:
                 return key
 
+    def getComboBox(self, name):
+        for w in self.IntWid:
+            if w.name == name:
+                return w
 
     def updateOptionMenu(self, menu, variable, newChoices):
         if len(newChoices) == 0:
@@ -608,8 +675,13 @@ class PlotWidget(pg.GraphicsLayoutWidget):
     def axisPrep(self, plotItem, figIndex):
         graphProp = self.figData[figIndex]['GraphProp']
         labelStyle = {'font-weight': 'bold', 'color': self.labelColor}
+
+
         if 'LabelSize' in graphProp.keys():
             labelStyle['font-size'] = "%spt" %(graphProp["LabelSize"])
+
+        if 'Title' in graphProp.keys():
+            plotItem.setTitle(title=graphProp['Title']['PlotTitle'], **labelStyle)
 
         if 'Ylabel' in graphProp.keys():
             ylabel = graphProp['Ylabel']
@@ -686,55 +758,19 @@ class PlotWidget(pg.GraphicsLayoutWidget):
 
         self.updatePlotItems(figIndex=figIndex)
 
-    def addPlot(self):
+    
+    def appendGraph(self, figData, graphData):
         pass
 
     def updatePlotItems(self, figIndex=0, **kwargs):
         
         try:
             figData = self.figData[figIndex]
-            data = self.figData[figIndex]["Data"]
-            graphProp = self.figData[figIndex]["GraphProp"]
+            data = figData["Data"]
+            graphProp = figData["GraphProp"]
         except ValueError:
             return False
-        
-        for key, value in self.getStdGraphProperties().items():
-            if not key in list(graphProp.keys()):
-                graphProp[key] = value
-
-        keys = ['Row', 'Column', 'Rowspan', 'Columnspan']
-
-        for key in keys:
-            if key in kwargs.keys():
-                graphProp[key] = kwargs[key]
-
-        if not 'X' in graphProp.keys():
-            graphProp['X'] = False
-        if not 'Map' in graphProp.keys():
-            graphProp['Map'] = False
-
-        plotType = self.checkData(figData)
-        graphProp['PlotType'] = plotType
-        
-        ## most permanent manipulations are done - create copy for strorage
-
-        if 'Legend' in graphProp.keys():
-            self.legend = graphProp['Legend']
-
-        if 'LineStyle' in graphProp.keys():
-            graphProp['LineStyle'] = self.adjustInput(graphProp['LineStyle'], data, plotType)
-        if 'LineWidth' in graphProp.keys():
-            graphProp['LineWidth'] = self.adjustInput(graphProp['LineWidth'], data, plotType)
-        if 'ScatterStyle' in graphProp.keys():
-            graphProp['ScatterStyle'] = self.adjustInput(graphProp['ScatterStyle'], data, plotType)
-        if 'ScatterSize' in graphProp.keys():
-            graphProp['ScatterSize'] = self.adjustInput(graphProp['ScatterSize'], data, plotType)
-        
-        listLength = self.getRequiredLength(data, plotType)
-        org = cp.deepcopy(graphProp['ColorTable'])
-        graphProp['ColorTable'] = []
-        while len(graphProp['ColorTable']) < listLength:
-            graphProp['ColorTable'].extend(org)
+                
 
         if not isinstance(graphProp['Map'], pg.ImageItem) and not graphProp['PlotType'] == 'Map':
             self.checkInputDimensions(graphProp, "LineStyle")
@@ -743,16 +779,13 @@ class PlotWidget(pg.GraphicsLayoutWidget):
             self.checkInputDimensions(graphProp, "ScatterSize")
             self.checkInputDimensions(graphProp, "ColorTable")
 
-        if plotType == "Map":
+        if graphProp['PlotType'] == "Map":
             graphProp['Map'] = pg.ImageItem()
         
         ## if no row/column are defined (automatically asign None) the plots will we appended if specified in the GUI
         clear = False
-        append = self.appendGraph
         if graphProp['Row'] == None and graphProp['Column'] == None:
-            append = self.appendGraph
-            if not append: 
-                clear = True
+            clear = True
                 
         if graphProp['Row'] == -2 or graphProp['Column'] == -2:
             clear = True
@@ -761,6 +794,7 @@ class PlotWidget(pg.GraphicsLayoutWidget):
             graphProp['Row'] = -1
         if graphProp['Column'] == None or graphProp['Column'] == -2:
             graphProp['Column'] = -1
+
 
         if graphProp['Row'] == -1 and graphProp['Column'] == -1:
             if clear:
@@ -779,12 +813,30 @@ class PlotWidget(pg.GraphicsLayoutWidget):
         self.axisPrep(plotItem, figIndex)
         self.updatePlot(plotItem, figIndex)
     
-    def updateGraphs(self, graphData, graphProp):
+    def addGraph(self, figData, row=None, column=None):
+        for d in figData:
+            graphProp = d['GraphProp']
+            data = d['Data']
+            
+            graphProp['Row'] = -1
+            graphProp['Column'] = -1
+            if row != None:
+                graphProp['Row'] = row
+            if column != None:
+                graphProp['Column'] = row
+
+            self.figData.append({"Data": data, "GraphProp":graphProp})
+            self.updatePlotItems(-1)
+
+    def updateGraphs(self, data, graphProp):
         self.clear()
         self.figData = []
         
+        if 'Title' in graphProp[0].keys():
+            self.setWindowTitle(graphProp[0]['Title']['GraphTitle'])
+
         n = 0
-        for d, i in zip(graphData, graphProp):
+        for d, i in zip(data, graphProp):
             self.figData.append({"Data": d, "GraphProp":i})
             self.updatePlotItems(n)
             n = n+1
@@ -856,7 +908,6 @@ class PlotWidget(pg.GraphicsLayoutWidget):
         return figData['GraphProp']['PlotType']
 
     def checkInputDimensions(self, graphProp, description):
-        
         plotType = graphProp['PlotType']
         n = graphProp[description]
                 
@@ -888,6 +939,10 @@ class PlotWidget(pg.GraphicsLayoutWidget):
         scatterstyle = graphProp["ScatterStyle"]
         scattersize = graphProp["ScatterSize"]
         colorTable = graphProp["ColorTable"]
+
+        
+        if 'Legend' in graphProp.keys():
+            pass
 
         xState = False
         if graphProp['Xscale'] == 'log':
@@ -1028,6 +1083,9 @@ class PlotWidget(pg.GraphicsLayoutWidget):
             plotItem.addItem(graphProp['Map'])
 
     def getFilename(self):
+        if len(self.figData) == 0:
+            return ""
+        
         grProp = self.figData[0]["GraphProp"]
         
         timestamp = dt.datetime.now().strftime("%Y%m%d_%H-%M-%S-%f")
@@ -1036,6 +1094,9 @@ class PlotWidget(pg.GraphicsLayoutWidget):
         return filename
 
     def SaveToFile(self, folder):
+        
+        if len(self.figData) == 0:
+            return None
         
         currentRowMax = 0
         currentColMax = 0
