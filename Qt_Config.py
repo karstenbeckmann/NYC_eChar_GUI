@@ -271,16 +271,16 @@ class ConfigurationFrame(stdObj.stdFrameGrid):
             tempTools.append([])
 
         for instr in self.Instruments.getAvailableInstrumentsComplete():
-            if instr['Type'] == "Prober":
+            if instr['ToolType'] == "Prober":
                 Probers.append(instr)
                 ProberAdrs.append(instr["GPIB"])
-            elif instr['Type'] == "Matrix":
+            elif instr['ToolType'] == "Matrix":
                 Matrixs.append(instr)
                 MatrixAdrs.append(instr["GPIB"])
             else:
                 k = 0
                 for typ in toolOrder[2:]:
-                    if typ == instr['Type']:
+                    if typ == instr['ToolType']:
                         try:
                             tempTools[k].append(instr)
                         except IndexError:

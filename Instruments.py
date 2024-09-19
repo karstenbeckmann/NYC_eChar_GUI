@@ -54,13 +54,21 @@ class Instruments:
     supportedDevices.append(['Agilent_B1500A', 'B1500A', 'Agilent Technologies,B1500A'])
     supportedDevices.append(['Keithley_707A', 'Matrix', "707A03"])
     supportedDevices.append(['Keithley_7002', 'Matrix', "MODEL 7002"])
-    supportedDevices.append(['Agilent_81110A', 'PG81110A', "HEWLETT-PACKARD,HP81110A"])
-    supportedDevices.append(['BNC_Model765', 'PGBNC765', "ACTIVE TECHNOLOGIES,AT-PULSE-RIDER-PG1074"])
-    supportedDevices.append(['LeCroy_WP740Zi', 'LeCroyOsc', 'LECROY,WP740ZI'])
-    supportedDevices.append(['LeCroy_WR640Zi', 'LeCroyOsc', 'LECROY,WR640ZI'])
+    supportedDevices.append(['Agilent_81110A', 'PG-81110A', "HEWLETT-PACKARD,HP81110A"])
+    supportedDevices.append(['BNC_Model765', 'PG-BNC765', "ACTIVE TECHNOLOGIES,AT-PULSE-RIDER-PG1074"])
+    supportedDevices.append(['LeCroy_WP740Zi', 'OSC-LeCroy', 'LECROY,WP740ZI'])
+    supportedDevices.append(['LeCroy_WR640Zi', 'OSC-LeCroy', 'LECROY,WR640ZI'])
     supportedDevices.append(['Agilent_E5274A', 'E5274A', "Agilent Technologies,E5270A"])
 
-    toolTypes = ['Prober', "Matrix", "B1500A", 'PG81110A', "PGBNC765", "B1530A", 'E5274A', 'LeCroyOsc']
+    toolTypes = {}
+    toolTypes['Prober'] = ['Prober']
+    toolTypes['Matrix'] = ['Matrix']
+    toolTypes['SPA'] = ['B1500A', "E5274A"]
+    toolTypes['B1530A'] = ['B1530A']
+    toolTypes['PG'] = ['PG81110A', "PGBNC765"]
+    toolTypes['OSC'] = ['LeCroyOsc']
+
+
 
     WGFMU_Channels = []
     SMUs = []
@@ -104,10 +112,11 @@ class Instruments:
             self.InitializedInst[n]['Identifier'] = dev[2]
             self.InitializedInst[n]['Class'] = dev[0]
             self.InitializedInst[n]['Type'] = dev[1]
+            self.InitializedInst[n]['ToolType'] = self.getToolType(dev[1])
             n = n + 1
     
     def getToolTypes(self):
-        return self.toolTypes
+        return tuple(self.toolTypes.keys())
 
     def ReInitialize(self):
         self.readyQu.put(False)
@@ -340,11 +349,16 @@ class Instruments:
                 return True
         return False
     
-    def getNextAvailableRank(self, typ):
-
+    def getToolType(self, instTyp):
+        for key, value in self.toolTypes.items():
+            for iTyp in value: 
+                if iTyp == instTyp:
+                    return key
+    
+    def getNextAvailableRank(self, toolType):
         ranks = []
         for inst in self.InitializedInst:
-            if inst['Instrument'] != None and inst['Type'] == typ and inst['Rank'] != None:
+            if inst['Instrument'] != None and inst['ToolType'] == toolType and inst['Rank'] != None:
                 ranks.append(inst['Rank'])
         ranks.sort()
 
@@ -715,8 +729,12 @@ class Instruments:
             None
 
     def getPrimaryTool(self, typ):
+
+        if not typ in list(self.toolTypes.keys()):
+            return None
+
         for inst in self.InitializedInst:
-            if inst['Type'] == typ and inst["GPIB"] != None and inst['Rank'] == 1:
+            if inst['Type'] in self.toolTypes[typ] and inst["GPIB"] != None and inst['Rank'] == 1:
                 return inst
         return None
     
