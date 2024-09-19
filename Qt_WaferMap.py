@@ -671,6 +671,7 @@ class PlotWidget(pg.PlotWidget):
     
     def updateChuckLocation(self):
         if isinstance(self.currentLocation, list):
+            
             if len(self.currentLocation) > 1:
 
                 try:

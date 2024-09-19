@@ -1865,6 +1865,8 @@ class Agilent_B1500A():
         else: 
             SChn = None
 
+        print(Chns, MChn, Ssmu)
+
         n = 0
         for SMU in SMUs:
             if SMU == Msmu:

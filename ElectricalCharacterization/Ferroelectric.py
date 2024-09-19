@@ -13,6 +13,7 @@ import numpy as np
 import queue as qu
 import traceback
 import copy as cp
+import traceback as tb
 
 
 ###########################################################################################################################
@@ -264,7 +265,7 @@ def saveEnduranceData(eChar, DoYield, MaxRowsPerFile, MaxDataPerPlot):
             finished = eChar.finished.get()
         eChar.finished.put(finished)
         
-        #print("finished: ", finished, eChar.rawData.empty())
+        print("finished: ", finished, eChar.rawData.empty())
         tm.sleep(0.5)
 
         try:
@@ -279,6 +280,7 @@ def saveEnduranceData(eChar, DoYield, MaxRowsPerFile, MaxDataPerPlot):
             curCount = complData["CurCount"]
             if complData['Header'] != []:
                 header = complData['Header']
+
             FEdata = calculateFEdata(eChar, ret, tslope, twidth, MeasPoints, initPulse, area)                  
 
             PupTemp = []
@@ -301,8 +303,10 @@ def saveEnduranceData(eChar, DoYield, MaxRowsPerFile, MaxDataPerPlot):
                 maxCurDenDown = eChar.dhValue([min(entry['dJdown'])], 'max. Jdown', Unit='A/m2')
                 valPup = eChar.dhValue([entry['Scalar']['Pup']], 'Pup', Unit='uC/cm2')
                 valPdown = eChar.dhValue([entry['Scalar']['Pdown']], 'Pdown', Unit='uC/cm2')
-                eChar.dhAddRow([maxVoltUp, maxVoltDown, maxCurUp, maxCurDown, maxCurDenUp, maxCurDenDown, valPup, valPdown],cycleStart=cycStart+n,cycleStop=cycStart+n)
-
+                VoltUpP0 = eChar.dhValue([entry['Scalar']['VupP0']], 'VupP0', Unit='V')
+                VoltDownP0 = eChar.dhValue([entry['Scalar']['VdownP0']], 'VdownP0', Unit='V')
+                
+                eChar.dhAddRow([maxVoltUp, maxVoltDown, maxCurUp, maxCurDown, maxCurDenUp, maxCurDenDown, valPup, valPdown, VoltUpP0, VoltDownP0],cycleStart=cycStart+n,cycleStop=cycStart+n)
 
                 PTemp.append([])
                 for x in entry['Pup']:
@@ -323,7 +327,6 @@ def saveEnduranceData(eChar, DoYield, MaxRowsPerFile, MaxDataPerPlot):
                 VTemp[-1].extend(entry['Vup'])
                 VTemp[-1].extend(entry['Vdown'])
             
-
             Pup.extend(PupTemp)
             Pdown.extend(PdownTemp)
 
@@ -400,10 +403,12 @@ def saveEnduranceData(eChar, DoYield, MaxRowsPerFile, MaxDataPerPlot):
             headerTemp.append(newline[0])
             headerTemp.append(newline[1])
             headerTemp.append(newline[2])
+            print("start", FEDataPrepAndExport)
             eChar.startThread(target = FEDataPrepAndExport, args=(eChar, cycStart, FEdata, headerTemp))
             
 
         except (TypeError, ValueError, IndexError, NameError, qu.Empty) as e:
+            trace = tb.format_exc()
             eChar.ErrorQueue.put("E-Char FE Endurance Data Analysis, Queue Empty: %s, Finished %s, Error %s" %(eChar.rawData.empty(), finished, e))
 
     eChar.SubProcessThread.put({'Finished': True})
@@ -422,6 +427,7 @@ def FEDataPrepAndExport(eChar, curCycle, data, header):
                     line = "%s, %s" %(line, value[n])
 
         OutputData.append(line)
+    
     eChar.writeDataToFile(header, OutputData, startCyc=curCycle)
 
 def calculateFEdata(eChar, ret, tslope, twidth, MeasPoints, initPulse, area):
@@ -491,10 +497,13 @@ def calculateFEdata(eChar, ret, tslope, twidth, MeasPoints, initPulse, area):
         #move from C/cm2 to uC/cm2
         dPup = np.multiply(dPup,1000000)
         dPdown = np.multiply(dPdown,1000000)
+        
+        dVupP0 = Vn1[np.argmin(np.absolute(Pup))]
+        dVdownP0 = Vn3[np.argmin(np.absolute(Pdown))]
 
         time = np.subtract(np.array(tn1),tn1[0])
-        
-        ret.append({"t": time, "Vup": Vn1, "Vdown": Vn3, "dIup": dIup, "dIdown": dIdown, "dJup": dJup, "dJdown": dJdown, "Pup": Pup, "Pdown": Pdown, "Scalar": {"Pup": dPup, "Pdown": dPdown}})
+
+        ret.append({"t": time, "Vup": Vn1, "Vdown": Vn3, "dIup": dIup, "dIdown": dIdown, "dJup": dJup, "dJdown": dJdown, "Pup": Pup, "Pdown": Pdown, "Scalar": {"Pup": dPup, "Pdown": dPdown, "VupP0":dVupP0, "VdownP0":dVdownP0}})
         
     return ret
 

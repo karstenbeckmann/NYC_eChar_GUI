@@ -47,7 +47,7 @@ class ResultHandling():
         self.devXValues = ['']
         self.devYValues = ['']
         self.MeasValues = ['']
-        self.VarValues = ['']
+        self.ValValues = ['']
         self.NumValues = ['', 'Live']
         self.appendGraph = False
 
@@ -371,7 +371,7 @@ class ResultHandling():
             n = n+1
 
         Val.insert(0,'')
-        self.VarValues = Val
+        self.ValValues = Val
         return Val
 
     def updateNum(self):
@@ -460,7 +460,7 @@ class ResultHandling():
         self.devXValues = ['']
         self.devYValues = ['']
         self.MeasValues = ['']
-        self.VarValues = ['']
+        self.ValValues = ['']
         self.NumValues = ['', 'Live']
         
         self.CurDieX = ''
@@ -477,7 +477,7 @@ class ResultHandling():
         upd['DevX'] = self.devXValues
         upd['DevY'] = self.devYValues
         upd['Meas'] = self.MeasValues
-        upd['Var'] = self.VarValues
+        upd['Val'] = self.ValValues
         upd['Num'] = self.NumValues
         upd['Default'] = defaultValues
 

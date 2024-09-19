@@ -1,37 +1,66 @@
-2024-04-23_17-50-58 - Measurement is currently running.
-2024-04-23_17-50-58 - Echar - getTools - Oscilloscope - 'NoneType' object is not subscriptable
-2024-04-23_17-50-58 - Echar - getTools - PG 81110A - list index out of range
-2024-04-23_17-50-58 - Echar - getTools - PulseGenerator - 'NoneType' object is not subscriptable
-2024-04-23_17-50-58 - ConfigurationFile: Die File does not exist.
-2024-04-23_17-50-58 - ConfigurationFile: Die File does not exist.
-2024-04-23_17-50-58 - WGFMU WGFMUUseGUI state could not be loaded
-2024-04-23_17-50-58 - Spec File: -- does not exist.
-2024-04-23_17-50-58 - Config Get: Variable '$ADC$_$HS$_$N$' does not exist in Configuration.
-2024-04-23_17-50-58 - Config Get: Variable '$ADC$_$HR$_$N$' does not exist in Configuration.
-2024-04-23_17-50-58 - Config Get: Variable '$ADC$_GPIB0::17::INSTR_$SMU1$' does not exist in Configuration.
-2024-04-23_17-50-58 - Config Get: Variable '$ADC$_GPIB0::17::INSTR_$SMU2$' does not exist in Configuration.
-2024-04-23_17-50-58 - Config Get: Variable '$ADC$_GPIB0::17::INSTR_$SMU3$' does not exist in Configuration.
-2024-04-23_17-50-58 - Config Get: Variable '$ADC$_None_$HS$_$Mode$' does not exist in Configuration.
-2024-04-23_17-50-58 - Config Get: Variable '$ADC$_$HS$_$N$' does not exist in Configuration.
-2024-04-23_17-50-58 - Config Get: Variable '$ADC$_None_$HR$_$Mode$' does not exist in Configuration.
-2024-04-23_17-50-58 - Config Get: Variable '$ADC$_$HR$_$N$' does not exist in Configuration.
-2024-04-23_17-50-58 - Config Get: Variable '$ToolRank$_GPIB0::17::INSTR' does not exist in Configuration.
-2024-04-23_17-50-58 - Config Get: Variable '$ToolRank$_GPIB0::17::INSTR' does not exist in Configuration.
-2024-04-23_17-50-58 - Config Get: Variable 'ResultRow' does not exist in Configuration.
-2024-04-23_17-50-58 - Config Get: Variable 'ResultColumn' does not exist in Configuration.
-2024-04-23_17-50-58 - Config Get: Variable '$$ProberWindow$$_ChuckScope' does not exist in Configuration.
-2024-04-23_17-50-58 - Config Get: Variable '$$ProberWindow$$_Chuck_MoveX' does not exist in Configuration.
-2024-04-23_17-50-58 - Config Get: Variable '$$ProberWindow$$_Chuck_MoveY' does not exist in Configuration.
-2024-04-23_17-50-58 - Config Get: Variable '$$ProberWindow$$_Chuck_MoveXIndex' does not exist in Configuration.
-2024-04-23_17-50-58 - Config Get: Variable '$$ProberWindow$$_Chuck_MoveYIndex' does not exist in Configuration.
-2024-04-23_17-50-58 - Config Get: Variable '$$ProberWindow$$_Chuck_Velocity' does not exist in Configuration.
-2024-04-23_17-50-58 - None is not a Keysight Mainframe (i.e. B1500A)
-2024-04-23_17-51-06 - E-Char FE Endurance Data Analysis, Queue Empty: True, Finished False, Error 
-2024-04-23_17-51-07 - E-Char FE Endurance Data Analysis, Queue Empty: True, Finished False, Error 
-2024-04-23_17-51-08 - E-Char FE Endurance Data Analysis, Queue Empty: True, Finished False, Error 
-2024-04-23_17-51-08 - E-Char FE Endurance Data Analysis, Queue Empty: True, Finished False, Error 
-2024-04-23_17-51-09 - E-Char FE Endurance Data Analysis, Queue Empty: True, Finished False, Error 
-2024-04-23_17-51-09 - Instruments: All sequences are completed and all data is ready to read
-2024-04-23_17-51-10 - E-Char FE Endurance Data Analysis, Queue Empty: True, Finished False, Error 
-2024-04-23_17-51-10 - Instruments: WGFMU: Measurement finished
-2024-04-23_17-51-11 - E-Char FE Endurance Data Analysis, Queue Empty: True, Finished True, Error 
+2024-08-02_15-44-05 - Measurement is currently running.
+2024-08-02_15-44-05 - Echar - getTools - Oscilloscope - 'NoneType' object is not subscriptable
+2024-08-02_15-44-05 - Echar - getTools - PG 81110A - list index out of range
+2024-08-02_15-44-05 - Echar - getTools - PulseGenerator - 'NoneType' object is not subscriptable
+2024-08-02_15-44-05 - ConfigurationFile: Die File does not exist.
+2024-08-02_15-44-05 - ConfigurationFile: Die File does not exist.
+2024-08-02_15-44-05 - ConfigurationFile: Die File does not exist.
+2024-08-02_15-44-05 - WGFMU WGFMUUseGUI state could not be loaded
+2024-08-02_15-44-05 - Spec File: -- does not exist.
+2024-08-02_15-44-05 - Config Get: Variable '$ADC$_$HS$_$N$' does not exist in Configuration.
+2024-08-02_15-44-05 - Config Get: Variable '$ADC$_$HR$_$N$' does not exist in Configuration.
+2024-08-02_15-44-05 - Config Get: Variable '$ADC$_GPIB0::17::INSTR_$SMU2$' does not exist in Configuration.
+2024-08-02_15-44-05 - Config Get: Variable '$ADC$_GPIB0::17::INSTR_$SMU3$' does not exist in Configuration.
+2024-08-02_15-44-05 - Config Get: Variable '$ADC$_None_$HS$_$Mode$' does not exist in Configuration.
+2024-08-02_15-44-05 - Config Get: Variable '$ADC$_$HS$_$N$' does not exist in Configuration.
+2024-08-02_15-44-05 - Config Get: Variable '$ADC$_None_$HR$_$Mode$' does not exist in Configuration.
+2024-08-02_15-44-05 - Config Get: Variable '$ADC$_$HR$_$N$' does not exist in Configuration.
+2024-08-02_15-44-05 - Config Get: Variable '$ToolRank$_GPIB0::17::INSTR' does not exist in Configuration.
+2024-08-02_15-44-05 - Config Get: Variable '$ToolRank$_GPIB0::17::INSTR' does not exist in Configuration.
+2024-08-02_15-44-05 - Config Get: Variable 'ResultRow' does not exist in Configuration.
+2024-08-02_15-44-05 - Config Get: Variable 'ResultColumn' does not exist in Configuration.
+2024-08-02_15-44-05 - Config Get: Variable '$$ProberWindow$$_ChuckScope' does not exist in Configuration.
+2024-08-02_15-44-05 - Config Get: Variable '$$ProberWindow$$_Chuck_MoveX' does not exist in Configuration.
+2024-08-02_15-44-05 - Config Get: Variable '$$ProberWindow$$_Chuck_MoveY' does not exist in Configuration.
+2024-08-02_15-44-05 - Config Get: Variable '$$ProberWindow$$_Chuck_MoveXIndex' does not exist in Configuration.
+2024-08-02_15-44-05 - Config Get: Variable '$$ProberWindow$$_Chuck_MoveYIndex' does not exist in Configuration.
+2024-08-02_15-44-05 - Config Get: Variable '$$ProberWindow$$_Chuck_Velocity' does not exist in Configuration.
+2024-08-02_15-44-05 - None is not a Keysight Mainframe (i.e. B1500A)
+2024-08-02_15-46-22 - Measurement is currently running.
+2024-08-02_15-46-29 - Measurement is currently running.
+2024-08-02_15-46-32 - Measurement is currently running.
+2024-08-02_15-46-34 - Measurement is currently running.
+2024-08-02_15-49-07 - E-Char FE Endurance Data Analysis, Queue Empty: True, Finished False, Error 
+2024-08-02_15-49-07 - E-Char FE Endurance Data Analysis, Queue Empty: True, Finished False, Error 
+2024-08-02_15-49-08 - E-Char FE Endurance Data Analysis, Queue Empty: True, Finished False, Error 
+2024-08-02_15-49-09 - E-Char FE Endurance Data Analysis, Queue Empty: True, Finished False, Error 
+2024-08-02_15-49-09 - E-Char FE Endurance Data Analysis, Queue Empty: True, Finished False, Error 
+2024-08-02_15-49-10 - Instruments: All sequences are completed and all data is ready to read
+2024-08-02_15-49-10 - E-Char FE Endurance Data Analysis, Queue Empty: True, Finished False, Error 
+2024-08-02_15-49-11 - Instruments: WGFMU: Measurement finished
+2024-08-02_15-49-11 - E-Char FE Endurance Data Analysis, Queue Empty: True, Finished False, Error 
+2024-08-02_15-49-12 - E-Char FE Endurance Data Analysis, Queue Empty: True, Finished False, Error 
+2024-08-02_15-49-13 - E-Char FE Endurance Data Analysis, Queue Empty: True, Finished False, Error 
+2024-08-02_15-49-14 - E-Char FE Endurance Data Analysis, Queue Empty: True, Finished False, Error 
+2024-08-02_15-49-14 - E-Char FE Endurance Data Analysis, Queue Empty: True, Finished False, Error 
+2024-08-02_15-49-14 - Instruments: All sequences are completed and all data is ready to read
+2024-08-02_15-49-15 - E-Char FE Endurance Data Analysis, Queue Empty: True, Finished False, Error 
+2024-08-02_15-49-15 - Instruments: WGFMU: Measurement finished
+2024-08-02_15-49-16 - E-Char FE Endurance Data Analysis, Queue Empty: True, Finished True, Error 
+2024-08-02_15-50-41 - E-Char FE Endurance Data Analysis, Queue Empty: True, Finished False, Error 
+2024-08-02_15-50-41 - E-Char FE Endurance Data Analysis, Queue Empty: True, Finished False, Error 
+2024-08-02_15-50-42 - E-Char FE Endurance Data Analysis, Queue Empty: True, Finished False, Error 
+2024-08-02_15-50-43 - E-Char FE Endurance Data Analysis, Queue Empty: True, Finished False, Error 
+2024-08-02_15-50-43 - E-Char FE Endurance Data Analysis, Queue Empty: True, Finished False, Error 
+2024-08-02_15-50-44 - Instruments: All sequences are completed and all data is ready to read
+2024-08-02_15-50-44 - E-Char FE Endurance Data Analysis, Queue Empty: True, Finished False, Error 
+2024-08-02_15-50-45 - Instruments: WGFMU: Measurement finished
+2024-08-02_15-50-45 - E-Char FE Endurance Data Analysis, Queue Empty: True, Finished False, Error 
+2024-08-02_15-50-46 - E-Char FE Endurance Data Analysis, Queue Empty: True, Finished False, Error 
+2024-08-02_15-50-47 - E-Char FE Endurance Data Analysis, Queue Empty: True, Finished False, Error 
+2024-08-02_15-50-48 - E-Char FE Endurance Data Analysis, Queue Empty: True, Finished False, Error 
+2024-08-02_15-50-48 - E-Char FE Endurance Data Analysis, Queue Empty: True, Finished False, Error 
+2024-08-02_15-50-48 - Instruments: All sequences are completed and all data is ready to read
+2024-08-02_15-50-49 - E-Char FE Endurance Data Analysis, Queue Empty: True, Finished False, Error 
+2024-08-02_15-50-49 - Instruments: WGFMU: Measurement finished
+2024-08-02_15-50-50 - E-Char FE Endurance Data Analysis, Queue Empty: True, Finished True, Error 

@@ -657,7 +657,7 @@ class ECharacterization:
             return "stop"
 
     def executeMeasurement(self, folder, name, parameters):
-        print(self.deviceCharacterization)
+        
         self.reset(full=False, deviceLevel=False)
         self.updateTime()
         try:

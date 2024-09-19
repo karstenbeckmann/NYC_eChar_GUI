@@ -51,7 +51,7 @@ def FormingDCE5274A(eChar, SweepSMU, GNDSMU, GateSMU, Vform, Vgate, steps, Compl
     Plot = [out['Data'][-1]]
     Plot.extend([out['Data'][0]])
 
-    eChar.plotIVData({"Add": False, 'Xaxis': True, 'Yscale': 'lin',  "Traces": Plot, 'Xlabel': Xlab, "Ylabel": Ylab, 'Title': "Forming", "ValueName": 'Forming'})
+    eChar.plotIVData({"Add": False, 'Xaxis': True, 'Yscale': 'lin',  "Traces": Plot, 'Xlabel': Xlab, "Ylabel": Ylab, 'Title': "Forming", "ValueName": 'IV'})
             
     try: 
 
@@ -126,7 +126,7 @@ def SetDCE5274A(eChar, SweepSMU, GNDSMU, GateSMU, Vset, Vgate, steps, Compl, Gat
     Plot = [out['Data'][-1]]
     Plot.extend([out['Data'][0]])
 
-    eChar.plotIVData({"Add": False, 'Xaxis': True, 'Yscale': 'lin',  "Traces": Plot, 'Xlabel': Xlab, "Ylabel": Ylab, 'Title': "Set", "ValueName": 'Set'})
+    eChar.plotIVData({"Add": False, 'Xaxis': True, 'Yscale': 'lin',  "Traces": Plot, 'Xlabel': Xlab, "Ylabel": Ylab, 'Title': "Set", "ValueName": 'IV'})
             
     try: 
 
@@ -202,7 +202,7 @@ def ResetDCE5274A(eChar, SweepSMU, GNDSMU, GateSMU, Vreset, Vgate, steps, Compl,
     Plot = [out['Data'][-1]]
     Plot.extend([out['Data'][0]])
 
-    eChar.plotIVData({"Add": False, 'Xaxis': True, 'Yscale': 'lin',  "Traces": Plot, 'Xlabel': Xlab, "Ylabel": Ylab, 'Title': "Reset", "ValueName": 'Reset'})
+    eChar.plotIVData({"Add": False, 'Xaxis': True, 'Yscale': 'lin',  "Traces": Plot, 'Xlabel': Xlab, "Ylabel": Ylab, 'Title': "Reset", "ValueName": 'IV'})
             
     try: 
 
@@ -233,6 +233,8 @@ def ResetDCE5274A(eChar, SweepSMU, GNDSMU, GateSMU, Vreset, Vgate, steps, Compl,
     eChar.writeDataToFile(header, data, startCyc=CycStart)
            
 def FormingDC(eChar, SweepSMU, GNDSMU, GateSMU, Vform, Vgate, steps, Compl, GateCompl, hold, delay, DCSMUs, Vdc, DCcompl):
+
+    print(SweepSMU, GNDSMU, GateSMU, Vform, Vgate, steps, Compl, GateCompl, hold, delay, DCSMUs, Vdc, DCcompl)
 
     Chns = [SweepSMU, GNDSMU, GateSMU]
     Chns.extend(DCSMUs)
@@ -270,7 +272,7 @@ def FormingDC(eChar, SweepSMU, GNDSMU, GateSMU, Vform, Vgate, steps, Compl, Gate
     Plot = [out['Data'][-1]]
     Plot.extend([out['Data'][0]])
 
-    eChar.plotIVData({"Add": False, 'Xaxis': True, 'Yscale': 'lin',  "Traces": Plot, 'Xlabel': Xlab, "Ylabel": Ylab, 'Title': "Forming", "ValueName": 'Forming'})
+    eChar.plotIVData({"Add": False, 'Xaxis': True, 'Yscale': 'lin',  "Traces": Plot, 'Xlabel': Xlab, "Ylabel": Ylab, 'Title': "Forming", "ValueName": 'IV'})
             
     try: 
 
@@ -359,7 +361,7 @@ def SetDC(eChar, SweepSMU, GNDSMU, GateSMU, Vset, Vgate, steps, Compl, GateCompl
     Plot = [out['Data'][-1]]
     Plot.extend([out['Data'][0]])
 
-    eChar.plotIVData({"Add": False, 'Xaxis': True, 'Yscale': 'lin',  "Traces": Plot, 'Xlabel': Xlab, "Ylabel": Ylab, 'Title': "Set",  "ValueName": 'Set'})
+    eChar.plotIVData({"Add": False, 'Xaxis': True, 'Yscale': 'lin',  "Traces": Plot, 'Xlabel': Xlab, "Ylabel": Ylab, 'Title': "Set",  "ValueName": 'IV'})
             
     try: 
 
@@ -453,7 +455,7 @@ def ResetDC(eChar, SweepSMU, GNDSMU, GateSMU, Vreset, Vgate, steps, Compl, GateC
     Plot = [out['Data'][-1]]
     Plot.extend([out['Data'][0]])
 
-    eChar.plotIVData({"Add": False, 'Xaxis': True, 'Yscale': 'lin',  "Traces": Plot, 'Xlabel': Xlab, "Ylabel": Ylab, 'Title': "Reset", "ValueName": 'Reset'})
+    eChar.plotIVData({"Add": False, 'Xaxis': True, 'Yscale': 'lin',  "Traces": Plot, 'Xlabel': Xlab, "Ylabel": Ylab, 'Title': "Reset", "ValueName": 'IV'})
             
     try: 
         header = out['Header']
@@ -688,6 +690,9 @@ def PulseForming(eChar, PulseChn, GroundChn, Vform, delay, trise, tfall, twidth,
 
     res = {'Header':header, 'IVdata': SepData['IVdata'], 'Vform':SepData['Vset'], 'LRS':SepData['LRS'], 'HRS':SepData['HRS'], 'ImaxSet': SepData['ImaxSet']}
 
+    Trac = [SepData['IVdata'][2],SepData['IVdata'][3]]
+    eChar.plotIVData({"Traces":Trac, 'Xaxis': True, 'Xlabel': 'Time (s)', "Ylabel": 'Current (A)', 'Title': "Forming", "ValueName": 'tI'})
+
     if ret[3]["Name"][0].lower() == "i":
         Trac = [SepData['IVdata'][1],SepData['IVdata'][3]] 
     else:
@@ -801,11 +806,14 @@ def PulseSet(eChar, PulseChn, GroundChn, Vform, delay, trise, tfall, twidth, tba
 
     res = {'Header':header, 'IVdata': SepData['IVdata'], 'LRS':SepData['LRS'], 'HRS':SepData['HRS'], 'ImaxSet': SepData['ImaxSet']}
 
+    Trac = [SepData['IVdata'][2],SepData['IVdata'][3]]
+    eChar.plotIVData({"Traces":Trac, 'Xaxis': True, 'Xlabel': 'Time (s)', "Ylabel": 'Current (A)', 'Title': "Pulse IV", "ValueName": 'tI'})
+
     if ret[3]["Name"][0].lower() == "i":
         Trac = [SepData['IVdata'][1],SepData['IVdata'][3]] 
     else:
         Trac = [SepData['IVdata'][3],SepData['IVdata'][1]] 
-    eChar.plotIVData({"Traces":Trac, 'Xaxis': True, 'Xlabel': 'Voltage (V)', "Ylabel": 'Current (A)', 'Title': "Set", "ValueName": 'IV'})
+    eChar.plotIVData({"Traces":Trac, 'Xaxis': True, 'Xlabel': 'Voltage (V)', "Ylabel": 'Current (A)', 'Title': "Pulse IV", "ValueName": 'IV'})
 
     LRS = eChar.dhValue(SepData['LRS'][0], 'LRS', Unit='ohm')
     ImaxSet = eChar.dhValue(SepData['ImaxSet'][0], 'ImaxSet', Unit='A')
@@ -922,15 +930,16 @@ def PulseReset(eChar, PulseChn, GroundChn, Vform, delay, trise, tfall, twidth, t
     res = {'Header':header, 'IVdata': SepData['IVdata'], 'LRS':SepData['LRS'], 'HRS':SepData['HRS'], 'ImaxReset': SepData['ImaxReset']}
 
 
+    
+    Trac = [SepData['IVdata'][2],SepData['IVdata'][3]]
+    eChar.plotIVData({"Traces":Trac, 'Xaxis': True, 'Xlabel': 'Time (s)', "Ylabel": 'Current (A)', 'Title': "Pulse IV", "ValueName": 'tI'})
+    
     if ret[3]["Name"][0].lower() == "i":
         Trac = [SepData['IVdata'][1],SepData['IVdata'][3]] 
     else:
         Trac = [SepData['IVdata'][3],SepData['IVdata'][1]] 
-    eChar.plotIVData({"Traces":Trac, 'Xaxis': True, 'Xlabel': 'Voltage (V)', "Ylabel": 'Current (A)', 'Title': "Reset", "ValueName": 'IV'})
-    
-    Trac = [SepData['IVdata'][2],SepData['IVdata'][3]]
-    eChar.plotIVData({"Traces":Trac, 'Xaxis': True, 'Xlabel': 'Time (s)', "Ylabel": 'Current (A)', 'Title': "Reset: t-I", "ValueName": 'tI'})
-    
+    eChar.plotIVData({"Traces":Trac, 'Xaxis': True, 'Xlabel': 'Voltage (V)', "Ylabel": 'Current (A)', 'Title': "Pulse IV", "ValueName": 'IV'})
+
     HRS = eChar.dhValue(SepData['HRS'][0], 'HRS', Unit='ohm')
     ImaxReset = eChar.dhValue(SepData['ImaxReset'][0], 'ImaxReset', Unit='A')
     Vreset = eChar.dhValue(SepData['Vreset'][0], 'Vreset', Unit='V')
@@ -1105,7 +1114,7 @@ def PulseIV(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tfallS, twi
     Trac = [SepData['LRS'],SepData['HRS']]
     eChar.plotIVData({"Add": True,  "lineStyle": 'o', "lineWidth":0.5, 'Yscale': 'log', "Traces":Trac, 'Xaxis': False, 'Xlabel': '# of cycles', "Ylabel": 'resistance (ohm)', 'Title': "HRS/LRS", "ValueName": 'HRS/LRS'})
 
-    res = {'Header':header, 'IVdata': SepData['IVdata'], 'LRS':SepData['LRS'], 'HRS':SepData['HRS'], 'Vset':SepData['Vset'], 'Vreset':SepData['Vreset'], 'ImaxSet': SepData['ImaxSet'], 'ImaxReset': SepData['ImaxReset']}
+    res = {'Header':header, 'IVdata': SepData['IVdata'], 'LRS':SepData['LRS'], 'HRS':SepData['HRS'], 'Vset':SepData['Vset'], 'Vreset':SepData['Vreset'], 'ImaxSet': SepData['ImaxSet'], 'ImaxReset': SepData['ImaxReset'], 'Type':'PulseIV'}
 
     if Primary:
         HRS = eChar.dhValue(SepData['HRS'], 'HRS', Unit='ohm')
@@ -1513,6 +1522,7 @@ def performEndurance(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tf
     DCcompl:   Array of DC comliances
     """
 
+    #eChar.LogData.put("Endurance1")
     eChar.updateTime()
     CurCount = 1
     initialRead = True
@@ -1520,7 +1530,7 @@ def performEndurance(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tf
         IVcount =0
 
     eChar.startThread(target = saveDataEndurance, args=(eChar, WriteHeader,DoYield, eChar.getMaxRowsPerFile(), eChar.getMaxDataPerPlot()))
-    
+    eChar.LogData.put(eChar)
 
     stop =  False
     #Run repetitions until number of ran cycles reaches programmed count
@@ -1533,8 +1543,10 @@ def performEndurance(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tf
             eChar.finished.put(True)
             break
 
+        eChar.LogData.put("HEHEHE1")
         #IV characterization + Endurance
         if IVIteration > 20:
+            eChar.LogData.put("Hello1")
             addHeader= []
             addHeader.append('Measurement,Type.Primary,Endurance')
             addHeader.append('Measurement,Type.Secondary,PulseIV')
@@ -1567,6 +1579,7 @@ def performEndurance(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tf
                 break
             #Pulsing]
             if (Count - CurCount) < (IVIteration - IVcount):
+                eChar.LogData.put("Hello2")
                 
                 IVIteration = Count - CurCount - IVcount
                 if IVIteration < 1: 
@@ -1574,6 +1587,8 @@ def performEndurance(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tf
                 
                 #Less cycles left than in one iteration
                 if IVIteration > eChar.getMaxNumSingleEnduranceRun() and ReadEndurance:
+                    eChar.LogData.put("Hello3")
+
                     sol = IVIteration/eChar.getMaxNumSingleEnduranceRun()
                     frac, whole = ma.modf(sol)
                     for n in range(int(whole)):
@@ -1617,6 +1632,8 @@ def performEndurance(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tf
                         eChar.curCycle += count_Last
                         CurCount += count_Last
                 else:
+                    eChar.LogData.put("Hello4")
+
                     createEndurancePulse(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tfallS, twidthS, triseR, tfallR, twidthR, tbase, 
                                                 IVIteration, read=ReadEndurance, tread=tread, Vread=Vread, initialRead=initialRead)
                     
@@ -1637,6 +1654,7 @@ def performEndurance(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tf
 
             #more cycles left than in one iteration
             else:
+                eChar.LogData.put("Hello5")
                 
                 #Less cycles left than in one iteration
                 if IVIteration > eChar.getMaxNumSingleEnduranceRun() and ReadEndurance:
@@ -1699,6 +1717,7 @@ def performEndurance(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tf
 
         #only endurance
         else:
+            eChar.LogData.put("OnlyEnd")
             #Run as many 2e6 cycles as you need to get to IVIteration
             if Count > eChar.getMaxNumSingleEnduranceRun() and ReadEndurance:
                 sol = Count/eChar.getMaxNumSingleEnduranceRun()
@@ -1742,14 +1761,18 @@ def performEndurance(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tf
                     eChar.curCycle += count_Last
 
             else:
+                eChar.LogData.put("OnlyEnd2")
                 createEndurancePulse(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tfallS, twidthS, triseR, tfallR, twidthR, tbase, 
                                             Count, read=ReadEndurance, tread=10e-6, Vread=-0.2, initialRead=initialRead)
 
                 initialRead = False
 
                 if ReadEndurance:
+                    eChar.LogData.put("OnlyEnd3")
                     ret = eChar.wgfmu.executeMeasurement()
+                    eChar.LogData.put(ret)
                     ret = getSepEnduranceData(ret)
+                    eChar.LogData.put(ret)
                     eChar.rawData.put({'Name': ret['Name'], 'Channel': ret['Channel'], 'Length': ret['Length'], 'Data': ret['Data'], 'Type':'Endurance'})
                     eChar.RDstart.put(eChar.curCycle)
                     eChar.RDstop.put(eChar.curCycle + Count-1)
@@ -1762,8 +1785,11 @@ def performEndurance(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tf
             CurCount+=1
             eChar.writeHeader("Endurance", eChar.wgfmu.getHeader())
             initialRead = False
+    eChar.LogData.put("OutsideHello")
+    #eChar.LogData.put(ret)
 
     if IVIteration > 0:
+
         addHeader = []
         addHeader.append('Measurement,Type.Primary,Endurance')
         addHeader.append('Measurement,Type.Secondary,PulseIV')
@@ -1795,10 +1821,12 @@ def performEndurance(eChar, PulseChn, GroundChn, Vset, Vreset, delay, triseS, tf
 
     while True:
         try:
+            #eChar.LogData.put("True1")
             entry = eChar.SubProcessThread.get(block=True, timeout=1)
         except qu.Empty:
+            #eChar.LogData.put("Empty1")
             entry = None
-            
+        eChar.LogData.put(entry)
         if entry != None:
             try:
                 if entry['Finished'] == True:
@@ -1842,6 +1870,7 @@ def saveDataEndurance(eChar, WriteHeader, DoYield, MaxRowsPerFile, MaxDataPerPlo
     first = True
     usedPulsedIV = False
     Typ = "Endurance"
+    eChar.LogData.put("SaveData1")
     
     if DoYield:
         DoYield = eChar.DoYield      
@@ -1880,7 +1909,12 @@ def saveDataEndurance(eChar, WriteHeader, DoYield, MaxRowsPerFile, MaxDataPerPlo
 
             HRS = []
             LRS = []
-            if (complData['Type'] == 'Endurance'):
+            
+            if not 'Type' in list(complData.keys()):
+                eChar.LogData.put("Couldnt find key 'Type' in data from PulseEndurance.")
+                continue
+
+            if complData['Type'] == 'Endurance':
                 
                 data = np.array(complData['Data'])
 
@@ -1960,7 +1994,7 @@ def saveDataEndurance(eChar, WriteHeader, DoYield, MaxRowsPerFile, MaxDataPerPlo
         
         try:
             if usedPulsedIV:
-                with eChar.DataAnalysisLock:
+                with eChar.dataAnalysisLock:
                     if len(eChar.IVHRS) > MaxRowsPerFile or (finished and eChar.rawData.empty()): 
                         header = eChar.getHeader("Endurance")
                         header.append('Measurement,Endurance.StartPoint,%d' %(eChar.IVcyc[0]))
@@ -1972,7 +2006,6 @@ def saveDataEndurance(eChar, WriteHeader, DoYield, MaxRowsPerFile, MaxDataPerPlo
                         header.append('Dimension, %d,%d,%d,%d,%d' %(len(eChar.IVcyc), len(eChar.IVLRS), len(eChar.IVHRS), len(eChar.ImaxSet), len(eChar.ImaxReset)))
                         
                         outputData = getOutputFormat([eChar.IVcyc,eChar.IVLRS,eChar.IVHRS,eChar.ImaxSet,eChar.ImaxReset])
-                        print("writeEnd")
                         eChar.writeDataToFile(header, outputData, subFolder="Endurance", Typ="IVSummaryEndurance", startCyc=1)
 
                         eChar.IVLRS = []
@@ -1987,7 +2020,7 @@ def saveDataEndurance(eChar, WriteHeader, DoYield, MaxRowsPerFile, MaxDataPerPlo
 
             tm.sleep(0.1)
 
-            with eChar.DataAnalysisLock:
+            with eChar.dataAnalysisLock:
                 if len(eChar.HRS) > MaxRowsPerFile or (finished and eChar.rawData.empty()): 
                     header = eChar.getHeader("Endurance")
                     header.append('Measurement,Endurance.StartPoint,%d' %(eChar.cyc[0]))
